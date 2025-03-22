@@ -1,0 +1,7 @@
+.idea
+.DS_Store
+.gradle
+common/build
+host/build
+customer/build
+admin/build
