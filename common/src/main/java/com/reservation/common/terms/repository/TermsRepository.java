@@ -1,6 +1,7 @@
 package com.reservation.common.terms.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,10 @@ import com.reservation.common.terms.domain.Clauses;
 import com.reservation.common.terms.domain.Terms;
 import com.reservation.common.terms.domain.Terms.TermsBuilder;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
+import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonmodel.terms.TermsCode;
+import com.reservation.commonmodel.terms.TermsStatus;
 
 @Repository
 public class TermsRepository implements AdminTermsRepository {
@@ -27,7 +31,22 @@ public class TermsRepository implements AdminTermsRepository {
 		return fromTermsToAdminTermDto(jpaTermsRepository.save(terms));
 	}
 
+	@Override
+	public boolean existsByCodeAndStatus(TermsCode code, TermsStatus status) {
+		return this.jpaTermsRepository.existsByCodeAndStatus(code, status);
+	}
+
+	@Override
+	public Optional<Integer> findMaxVersionByCode(TermsCode code) {
+		return this.jpaTermsRepository.findMaxVersionByCode(code);
+	}
+
 	public AdminTermsDto fromTermsToAdminTermDto(Terms terms) {
+		List<AdminClauseDto> adminClauses = terms.getClauses()
+			.stream()
+			.map(c -> new AdminClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
+			.toList();
+
 		return new AdminTermsDto(
 			terms.getId(),
 			terms.getCode(),
@@ -40,7 +59,7 @@ public class TermsRepository implements AdminTermsRepository {
 			terms.getDisplayOrder(),
 			terms.getCreatedAt(),
 			terms.getUpdatedAt(),
-			null);
+			adminClauses);
 	}
 
 	public Terms fromAdminTermDtoToTerms(AdminTermsDto adminTermsDto) {
@@ -49,6 +68,7 @@ public class TermsRepository implements AdminTermsRepository {
 			.title(adminTermsDto.title())
 			.type(adminTermsDto.type())
 			.status(adminTermsDto.status())
+			.rowVersion(adminTermsDto.rowVersion())
 			.exposedFrom(adminTermsDto.exposedFrom())
 			.exposedTo(adminTermsDto.exposedTo())
 			.displayOrder(adminTermsDto.displayOrder())

@@ -5,14 +5,14 @@ import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 
 public class AdminTermsDtoMapper {
 
-	public static AdminTermsDto fromAdminCreateTermsRequest(AdminCreateTermsRequest request) {
+	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(AdminCreateTermsRequest request, Integer version) {
 		return new AdminTermsDto(
 			null, // id
 			request.code(),
 			request.title(),
 			request.type(),
 			request.status(),
-			null, // rowVersion
+			version,
 			request.exposedFrom(),
 			request.exposedTo(),
 			request.displayOrder(),
