@@ -23,6 +23,7 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
+			.rowVersion(1)
 			.exposedFrom(now)
 			.displayOrder(1)
 			.build();
@@ -43,6 +44,7 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
+			.rowVersion(1)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
@@ -70,11 +72,112 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
+			.rowVersion(1)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
 
 		Exception exception = assertThrows(IllegalStateException.class, terms::validateComplete);
 		assertEquals("약관은 하나 이상의 조항을 포함해야 합니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_제목_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.type(TermsType.REQUIRED)
+				.status(TermsStatus.ACTIVE)
+				.rowVersion(1)
+				.exposedFrom(now)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("약관 제목은 필수입니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_타입_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.status(TermsStatus.ACTIVE)
+				.rowVersion(1)
+				.exposedFrom(now)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("약관 타입은 필수입니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_상태_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.type(TermsType.REQUIRED)
+				.rowVersion(1)
+				.exposedFrom(now)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("약관 상태는 필수입니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_버전_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.type(TermsType.REQUIRED)
+				.status(TermsStatus.ACTIVE)
+				.exposedFrom(now)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("버전은 1 이상이어야 합니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_노출시작일_누락() {
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.type(TermsType.REQUIRED)
+				.status(TermsStatus.ACTIVE)
+				.rowVersion(1)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("노출 시작일은 필수입니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_정렬순서_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.type(TermsType.REQUIRED)
+				.status(TermsStatus.ACTIVE)
+				.rowVersion(1)
+				.exposedFrom(now)
+				.build();
+		});
+		assertEquals("정렬 순서는 1 이상이어야 합니다.", exception.getMessage());
 	}
 }
