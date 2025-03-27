@@ -3,6 +3,10 @@ package com.reservation.admin.terms.controller.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.reservation.commonmodel.terms.TermsCode;
+import com.reservation.commonmodel.terms.TermsStatus;
+import com.reservation.commonmodel.terms.TermsType;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
@@ -11,10 +15,10 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public record AdminCreateTermsRequest(
-	@NotNull String code,
+	@NotNull TermsCode code,
 	@NotBlank String title,
-	@NotNull String type,
-	@NotNull String status,
+	@NotNull TermsType type,
+	@NotNull TermsStatus status,
 	@NotNull LocalDateTime exposedFrom,
 	@Future LocalDateTime exposedTo,
 	@Min(1) Integer displayOrder,
