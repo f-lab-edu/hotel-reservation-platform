@@ -12,8 +12,6 @@ import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 
-import ch.qos.logback.core.spi.ErrorCodes;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
