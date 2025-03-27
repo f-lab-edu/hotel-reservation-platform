@@ -2,6 +2,7 @@
 .DS_Store
 .gradle
 common/build
+common-model/build
 host/build
 customer/build
 admin/build
