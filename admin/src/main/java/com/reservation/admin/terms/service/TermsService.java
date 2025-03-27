@@ -11,7 +11,6 @@ import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -19,14 +18,16 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class TermsService {
+	private static final int NOTHING_VERSION = 0;
+
 	private final AdminTermsRepository adminTermsRepository;
 
 	public Long createTerms(AdminCreateTermsRequest request) {
 		checkActiveTermsExists(request.code());
 
 		// Versioning
-		int nextVersion = this.adminTermsRepository.findMaxVersionByCode(request.code()).orElse(0) + 1;
-		AdminTermsDto adminTermsDto = fromAdminCreateTermsRequestAndVersion(request, nextVersion);
+		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(request.code()).orElse(NOTHING_VERSION);
+		AdminTermsDto adminTermsDto = fromAdminCreateTermsRequestAndVersion(request, ++maxVersion);
 
 		try {
 			return adminTermsRepository.save(adminTermsDto).id();
