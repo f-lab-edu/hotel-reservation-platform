@@ -1,11 +1,13 @@
 package com.reservation.admin.terms.service.mapper;
 
 import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.AdminUpdateTermsRequest;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 
 public class AdminTermsDtoMapper {
 
-	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(AdminCreateTermsRequest request, Integer version) {
+	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(AdminCreateTermsRequest request,
+		Integer version) {
 		return new AdminTermsDto(
 			null, // id
 			request.code(),
@@ -20,6 +22,26 @@ public class AdminTermsDtoMapper {
 			null, // updatedAt
 			request.clauses().stream()
 				.map(AdminClauseDtoMapper::fromAdminCreateClauseRequest)
+				.toList()
+		);
+	}
+
+	public static AdminTermsDto fromAdminUpdateTermsRequestAndVersion(AdminUpdateTermsRequest request,
+		Integer version) {
+		return new AdminTermsDto(
+			request.id(), // id
+			request.code(),
+			request.title(),
+			request.type(),
+			request.status(),
+			version,
+			request.exposedFrom(),
+			request.exposedTo(),
+			request.displayOrder(),
+			null, // createdAt
+			null, // updatedAt
+			request.clauses().stream()
+				.map(AdminClauseDtoMapper::fromAdminUpdateClauseRequest)
 				.toList()
 		);
 	}

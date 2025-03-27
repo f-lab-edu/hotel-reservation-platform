@@ -41,6 +41,12 @@ public class TermsRepository implements AdminTermsRepository {
 		return this.jpaTermsRepository.findMaxVersionByCode(code);
 	}
 
+	@Override
+	public AdminTermsDto findById(Long id) {
+		jpaTermsRepository.findById(id);
+		return fromTermsToAdminTermDto(null);
+	}
+
 	public AdminTermsDto fromTermsToAdminTermDto(Terms terms) {
 		List<AdminClauseDto> adminClauses = terms.getClauses()
 			.stream()

@@ -23,6 +23,6 @@ public record AdminUpdateTermsRequest(
 	@NotNull LocalDateTime exposedFrom,
 	@Future LocalDateTime exposedTo,
 	@Min(1) Integer displayOrder,
-	@NotEmpty List<@Valid AdminUpdateTermsRequest> clauses
+	@NotEmpty List<@Valid AdminUpdateClauseRequest> clauses
 ) {
 }
