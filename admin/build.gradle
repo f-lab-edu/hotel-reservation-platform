@@ -1,7 +1,6 @@
 dependencies {
     implementation project(':common') // 공통 모듈 참조
-    implementation project(':common-model') // 공통 모듈 참조
-    implementation project(':common-api') // 공통 모듈 참조
+    implementation project(':common-model') // 공통 model 모듈 참조
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'

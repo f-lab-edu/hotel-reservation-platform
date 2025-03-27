@@ -1,6 +1,7 @@
 .idea
 .DS_Store
 .gradle
+data
 common/build
 common-model/build
 common-api/build
