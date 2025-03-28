@@ -191,4 +191,8 @@ public class Terms extends BaseEntity {
 			throw new IllegalStateException("약관은 하나 이상의 조항을 포함해야 합니다.");
 		}
 	}
+
+	public void deprecate() {
+		this.status = TermsStatus.DEPRECATED;
+	}
 }

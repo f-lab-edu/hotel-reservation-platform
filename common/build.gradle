@@ -7,6 +7,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core:5.16.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.16.1'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.12.20'
 
     runtimeOnly 'com.h2database:h2'
 
@@ -18,4 +22,6 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs += ['-Xshare:off']
+    jvmArgs += '-javaagent:' + configurations.testRuntimeClasspath.find { it.name.contains("byte-buddy-agent") }
 }
