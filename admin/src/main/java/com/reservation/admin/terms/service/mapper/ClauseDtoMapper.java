@@ -4,7 +4,7 @@ import com.reservation.admin.terms.controller.dto.CreateClauseRequest;
 import com.reservation.admin.terms.controller.dto.UpdateClauseRequest;
 import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
 
-public class AdminClauseDtoMapper {
+public class ClauseDtoMapper {
 	public static AdminClauseDto fromCreateClauseRequest(CreateClauseRequest request) {
 		return new AdminClauseDto(
 			null, // id

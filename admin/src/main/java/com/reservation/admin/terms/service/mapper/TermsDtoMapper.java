@@ -4,7 +4,7 @@ import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
 import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 
-public class AdminTermsDtoMapper {
+public class TermsDtoMapper {
 
 	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(CreateTermsRequest request,
 		Integer version) {
@@ -21,7 +21,7 @@ public class AdminTermsDtoMapper {
 			null, // createdAt
 			null, // updatedAt
 			request.clauses().stream()
-				.map(AdminClauseDtoMapper::fromCreateClauseRequest)
+				.map(ClauseDtoMapper::fromCreateClauseRequest)
 				.toList()
 		);
 	}
@@ -41,7 +41,7 @@ public class AdminTermsDtoMapper {
 			null, // createdAt
 			null, // updatedAt
 			request.clauses().stream()
-				.map(AdminClauseDtoMapper::fromUpdateClauseRequest)
+				.map(ClauseDtoMapper::fromUpdateClauseRequest)
 				.toList()
 		);
 	}

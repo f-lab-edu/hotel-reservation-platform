@@ -1,6 +1,6 @@
 package com.reservation.admin.terms.service;
 
-import static com.reservation.admin.terms.service.mapper.AdminTermsDtoMapper.*;
+import static com.reservation.admin.terms.service.mapper.TermsDtoMapper.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
