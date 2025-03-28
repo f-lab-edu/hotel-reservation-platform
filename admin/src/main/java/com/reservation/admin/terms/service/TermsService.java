@@ -32,7 +32,7 @@ public class TermsService {
 
 		// Versioning
 		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(request.code()).orElse(NOTHING_VERSION);
-		TermsDto createdTerms = fromAdminCreateTermsRequestAndVersion(request, ++maxVersion);
+		TermsDto createdTerms = fromCreateTermsRequestAndVersion(request, ++maxVersion);
 
 		return saveTermsWithIntegrityCheck(createdTerms);
 	}
@@ -53,7 +53,7 @@ public class TermsService {
 		termsCommandService.deprecateTerms(request.id());
 
 		// Versioning
-		TermsDto updatedTerms = fromAdminUpdateTermsRequestAndVersion(request, ++maxVersion);
+		TermsDto updatedTerms = fromUpdateTermsRequestAndVersion(request, ++maxVersion);
 
 		return saveTermsWithIntegrityCheck(updatedTerms);
 	}

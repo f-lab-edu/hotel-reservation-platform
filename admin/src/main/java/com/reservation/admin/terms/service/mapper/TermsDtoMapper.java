@@ -6,7 +6,7 @@ import com.reservation.commonapi.terms.repository.dto.TermsDto;
 
 public class TermsDtoMapper {
 
-	public static TermsDto fromAdminCreateTermsRequestAndVersion(CreateTermsRequest request,
+	public static TermsDto fromCreateTermsRequestAndVersion(CreateTermsRequest request,
 		Integer version) {
 		return new TermsDto(
 			null, // id
@@ -26,7 +26,7 @@ public class TermsDtoMapper {
 		);
 	}
 
-	public static TermsDto fromAdminUpdateTermsRequestAndVersion(UpdateTermsRequest request,
+	public static TermsDto fromUpdateTermsRequestAndVersion(UpdateTermsRequest request,
 		Integer version) {
 		return new TermsDto(
 			request.id(), // id
