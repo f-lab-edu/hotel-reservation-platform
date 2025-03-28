@@ -1,0 +1,3 @@
+dependencies {
+    implementation project(':common-model') // 공통 model 모듈 참조
+}
