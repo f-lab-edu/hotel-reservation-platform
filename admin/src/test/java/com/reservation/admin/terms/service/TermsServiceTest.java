@@ -20,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import com.reservation.admin.terms.controller.dto.AdminCreateClauseRequest;
 import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
+import com.reservation.common.exception.BusinessException;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
 import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
@@ -85,21 +86,21 @@ public class TermsServiceTest {
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(0));
 		when(adminTermsRepository.save(any(AdminTermsDto.class))).thenThrow(DataIntegrityViolationException.class);
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		BusinessException businessException = assertThrows(BusinessException.class, () -> {
 			termsService.createTerms(request);
 		});
 
-		assertThat(exception.getMessage()).isEqualTo("동일한 약관이 이미 등록되었습니다.");
+		assertThat(businessException.getMessage()).isEqualTo("동일한 약관이 이미 등록되었습니다.");
 	}
 
 	@Test
 	void 약관저장_실패_이미사용중인약관존재() {
 		when(adminTermsRepository.existsByCodeAndStatus(any(TermsCode.class), eq(TermsStatus.ACTIVE))).thenReturn(true);
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		BusinessException businessException = assertThrows(BusinessException.class, () -> {
 			termsService.createTerms(request);
 		});
 
-		assertThat(exception.getMessage()).isEqualTo("이미 사용 중인 약관이 존재합니다. 기존 약관을 수정하세요.");
+		assertThat(businessException.getMessage()).isEqualTo("이미 사용 중인 약관이 존재합니다. 기존 약관을 수정하세요.");
 	}
 }
