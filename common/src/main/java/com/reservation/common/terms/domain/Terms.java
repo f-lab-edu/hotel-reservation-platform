@@ -52,7 +52,7 @@ public class Terms extends BaseEntity {
 	private TermsStatus status; // 사용 or 미사용
 
 	@Version
-	private Integer rowVersion; // 시행일 (버전 역할)
+	private Integer version; // 시행일 (버전 역할)
 
 	@Column(nullable = false)
 	private LocalDateTime exposedFrom; // 노출 시작일
@@ -73,7 +73,8 @@ public class Terms extends BaseEntity {
 	protected Terms() {
 	}
 
-	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer rowVersion, LocalDateTime exposedFrom,
+	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer version,
+		LocalDateTime exposedFrom,
 		LocalDateTime exposedTo, Integer displayOrder) {
 		if (code == null) {
 			throw new IllegalArgumentException("약관 코드는 필수입니다.");
@@ -87,7 +88,7 @@ public class Terms extends BaseEntity {
 		if (status == null) {
 			throw new IllegalArgumentException("약관 상태는 필수입니다.");
 		}
-		if (rowVersion == null || rowVersion < 1) {
+		if (version == null || version < 1) {
 			throw new IllegalArgumentException("버전은 1 이상이어야 합니다.");
 		}
 		if (exposedFrom == null) {
@@ -103,7 +104,7 @@ public class Terms extends BaseEntity {
 		this.title = title;
 		this.type = type;
 		this.status = status;
-		this.rowVersion = rowVersion;
+		this.version = version;
 		this.exposedFrom = exposedFrom;
 		this.exposedTo = exposedTo;
 		this.displayOrder = displayOrder;
@@ -114,7 +115,7 @@ public class Terms extends BaseEntity {
 		private String title;
 		private TermsType type;
 		private TermsStatus status;
-		private Integer rowVersion;
+		private Integer version;
 		private LocalDateTime exposedFrom;
 		private LocalDateTime exposedTo;
 		private Integer displayOrder;
@@ -139,8 +140,8 @@ public class Terms extends BaseEntity {
 			return this;
 		}
 
-		public TermsBuilder rowVersion(Integer rowVersion) {
-			this.rowVersion = rowVersion;
+		public TermsBuilder version(Integer version) {
+			this.version = version;
 			return this;
 		}
 
@@ -160,7 +161,7 @@ public class Terms extends BaseEntity {
 		}
 
 		public Terms build() {
-			return new Terms(code, title, type, status, rowVersion, exposedFrom, exposedTo, displayOrder);
+			return new Terms(code, title, type, status, version, exposedFrom, exposedTo, displayOrder);
 		}
 	}
 
