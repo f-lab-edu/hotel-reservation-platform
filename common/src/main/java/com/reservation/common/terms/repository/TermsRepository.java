@@ -27,8 +27,8 @@ public class TermsRepository implements AdminTermsRepository {
 
 	@Override
 	public TermsDto save(TermsDto termsDto) {
-		Terms terms = fromAdminTermDtoToTerms(termsDto);
-		return fromTermsToAdminTermDto(jpaTermsRepository.save(terms));
+		Terms terms = fromTermsDtoToTerms(termsDto);
+		return fromTermsToTermsDto(jpaTermsRepository.save(terms));
 	}
 
 	@Override
@@ -43,15 +43,10 @@ public class TermsRepository implements AdminTermsRepository {
 
 	@Override
 	public Optional<TermsDto> findById(Long id) {
-		return this.jpaTermsRepository.findById(id).map(this::fromTermsToAdminTermDto);
+		return this.jpaTermsRepository.findById(id).map(this::fromTermsToTermsDto);
 	}
 
-	@Override
-	public Optional<TermsDto> findByCodeAndStatus(TermsCode code, TermsStatus termsStatus) {
-		return this.jpaTermsRepository.findByCodeAndStatus(code, termsStatus).map(this::fromTermsToAdminTermDto);
-	}
-
-	public TermsDto fromTermsToAdminTermDto(Terms terms) {
+	public TermsDto fromTermsToTermsDto(Terms terms) {
 		List<ClauseDto> adminClauses = terms.getClauses()
 			.stream()
 			.map(c -> new ClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
@@ -72,7 +67,7 @@ public class TermsRepository implements AdminTermsRepository {
 			adminClauses);
 	}
 
-	public Terms fromAdminTermDtoToTerms(TermsDto termsDto) {
+	public Terms fromTermsDtoToTerms(TermsDto termsDto) {
 		Terms terms = new TermsBuilder()
 			.code(termsDto.code())
 			.title(termsDto.title())
