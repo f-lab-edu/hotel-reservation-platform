@@ -24,8 +24,8 @@ import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.terms.repository.dto.ClauseDto;
+import com.reservation.commonapi.terms.repository.dto.TermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
@@ -80,7 +80,7 @@ public class TermsServiceTest {
 	@Test
 	void 약관저장_성공ID반환() {
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(0));
-		AdminTermsDto adminTermsDto = new AdminTermsDto(1L,
+		TermsDto termsDto = new TermsDto(1L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -92,10 +92,10 @@ public class TermsServiceTest {
 			null,
 			null,
 			List.of(
-				new AdminClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
-				new AdminClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			));
-		when(adminTermsRepository.save(any(AdminTermsDto.class))).thenReturn(adminTermsDto);
+		when(adminTermsRepository.save(any(TermsDto.class))).thenReturn(termsDto);
 
 		Long id = termsService.createTerms(createRequest);
 
@@ -105,7 +105,7 @@ public class TermsServiceTest {
 	@Test
 	void 약관저장_실패_동일한약관존재() {
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(0));
-		when(adminTermsRepository.save(any(AdminTermsDto.class))).thenThrow(DataIntegrityViolationException.class);
+		when(adminTermsRepository.save(any(TermsDto.class))).thenThrow(DataIntegrityViolationException.class);
 
 		BusinessException businessException = assertThrows(BusinessException.class, () -> {
 			termsService.createTerms(createRequest);
@@ -127,7 +127,7 @@ public class TermsServiceTest {
 
 	@Test
 	void 약관수정_성공ID반환() {
-		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new AdminTermsDto(1L,
+		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new TermsDto(1L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -139,11 +139,11 @@ public class TermsServiceTest {
 			null,
 			null,
 			List.of(
-				new AdminClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
-				new AdminClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			))));
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(1));
-		AdminTermsDto adminTermsDto = new AdminTermsDto(2L,
+		TermsDto termsDto = new TermsDto(2L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -155,10 +155,10 @@ public class TermsServiceTest {
 			null,
 			null,
 			List.of(
-				new AdminClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
-				new AdminClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			));
-		when(adminTermsRepository.save(any(AdminTermsDto.class))).thenReturn(adminTermsDto);
+		when(adminTermsRepository.save(any(TermsDto.class))).thenReturn(termsDto);
 
 		Long id = termsService.updateTerms(updateRequest);
 
@@ -167,7 +167,7 @@ public class TermsServiceTest {
 
 	@Test
 	void 약관수정_실패_동일한약관존재() {
-		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new AdminTermsDto(1L,
+		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new TermsDto(1L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -179,11 +179,11 @@ public class TermsServiceTest {
 			null,
 			null,
 			List.of(
-				new AdminClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
-				new AdminClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			))));
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(1));
-		when(adminTermsRepository.save(any(AdminTermsDto.class))).thenThrow(DataIntegrityViolationException.class);
+		when(adminTermsRepository.save(any(TermsDto.class))).thenThrow(DataIntegrityViolationException.class);
 
 		BusinessException businessException = assertThrows(BusinessException.class, () -> {
 			termsService.updateTerms(updateRequest);
@@ -194,7 +194,7 @@ public class TermsServiceTest {
 
 	@Test
 	void 약관수정_실패_과거버전수정() {
-		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new AdminTermsDto(1L,
+		when(adminTermsRepository.findById(anyLong())).thenReturn(Optional.of(new TermsDto(1L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -206,8 +206,8 @@ public class TermsServiceTest {
 			null,
 			null,
 			List.of(
-				new AdminClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
-				new AdminClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			))));
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(2));
 

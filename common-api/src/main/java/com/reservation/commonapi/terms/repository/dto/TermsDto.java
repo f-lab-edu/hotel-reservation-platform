@@ -7,7 +7,7 @@ import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
 
-public record AdminTermsDto(
+public record TermsDto(
 	Long id,
 	TermsCode code,
 	String title,
@@ -19,7 +19,7 @@ public record AdminTermsDto(
 	Integer displayOrder,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,
-	List<AdminClauseDto> clauses
+	List<ClauseDto> clauses
 ) {
 
 }

@@ -2,11 +2,11 @@ package com.reservation.admin.terms.service.mapper;
 
 import com.reservation.admin.terms.controller.dto.CreateClauseRequest;
 import com.reservation.admin.terms.controller.dto.UpdateClauseRequest;
-import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
+import com.reservation.commonapi.terms.repository.dto.ClauseDto;
 
 public class ClauseDtoMapper {
-	public static AdminClauseDto fromCreateClauseRequest(CreateClauseRequest request) {
-		return new AdminClauseDto(
+	public static ClauseDto fromCreateClauseRequest(CreateClauseRequest request) {
+		return new ClauseDto(
 			null, // id
 			request.clauseOrder(),
 			request.title(),
@@ -14,8 +14,8 @@ public class ClauseDtoMapper {
 		);
 	}
 
-	public static AdminClauseDto fromUpdateClauseRequest(UpdateClauseRequest request) {
-		return new AdminClauseDto(
+	public static ClauseDto fromUpdateClauseRequest(UpdateClauseRequest request) {
+		return new ClauseDto(
 			null,
 			request.clauseOrder(),
 			request.title(),
