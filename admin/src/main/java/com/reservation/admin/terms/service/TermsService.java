@@ -23,7 +23,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class TermsService {
 	private static final int NOTHING_VERSION = 0;
-	private static final int MAX_TERMS_SAVE_OPTIMISTIC_LOCK_RETRY_COUNT = 3;
 
 	private final AdminTermsRepository adminTermsRepository;
 	private final TermsCommandService termsCommandService;
@@ -33,13 +32,9 @@ public class TermsService {
 
 		// Versioning
 		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(request.code()).orElse(NOTHING_VERSION);
-		AdminTermsDto adminTermsDto = fromAdminCreateTermsRequestAndVersion(request, ++maxVersion);
+		AdminTermsDto createdTerms = fromAdminCreateTermsRequestAndVersion(request, ++maxVersion);
 
-		try {
-			return this.adminTermsRepository.save(adminTermsDto).id();
-		} catch (DataIntegrityViolationException dataIntegrityViolationException) {
-			throw ErrorCode.CONFLICT.exception("데이터 무결성 위반으로 인한 작업 실패, 데이터 확인 요청 필요");
-		}
+		return saveTermsWithIntegrityCheck(createdTerms);
 	}
 
 	public void checkActiveTermsExists(TermsCode code) {
@@ -58,9 +53,9 @@ public class TermsService {
 		termsCommandService.deprecateTerms(request.id());
 
 		// Versioning
-		AdminTermsDto updatedDto = fromAdminUpdateTermsRequestAndVersion(request, ++maxVersion);
+		AdminTermsDto updatedTerms = fromAdminUpdateTermsRequestAndVersion(request, ++maxVersion);
 
-		return adminTermsRepository.save(updatedDto).id();
+		return saveTermsWithIntegrityCheck(updatedTerms);
 	}
 
 	public int checkUpdateTermsVersion(Long id) {
@@ -71,10 +66,18 @@ public class TermsService {
 		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(findAdminTermsDto.code())
 			.orElseThrow(() -> ErrorCode.CONFLICT.exception("올바른 약관 버전을 찾을 수 없습니다."));
 
-		if (findAdminTermsDto.rowVersion() != maxVersion) {
+		if (findAdminTermsDto.version() != maxVersion) {
 			throw ErrorCode.BAD_REQUEST.exception("과거 버전의 약관은 수정할 수 없습니다.");
 		}
 
 		return maxVersion;
+	}
+
+	public Long saveTermsWithIntegrityCheck(AdminTermsDto adminTermsDto) {
+		try {
+			return this.adminTermsRepository.save(adminTermsDto).id();
+		} catch (DataIntegrityViolationException dataIntegrityViolationException) {
+			throw ErrorCode.CONFLICT.exception("데이터 무결성 위반으로 인한 작업 실패, 데이터 확인 요청 필요");
+		}
 	}
 }

@@ -13,7 +13,7 @@ public record AdminTermsDto(
 	String title,
 	TermsType type,
 	TermsStatus status,
-	Integer rowVersion,
+	Integer version,
 	LocalDateTime exposedFrom,
 	LocalDateTime exposedTo,
 	Integer displayOrder,

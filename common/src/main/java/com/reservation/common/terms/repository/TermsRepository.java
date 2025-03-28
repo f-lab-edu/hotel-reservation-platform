@@ -63,7 +63,7 @@ public class TermsRepository implements AdminTermsRepository {
 			terms.getTitle(),
 			terms.getType(),
 			terms.getStatus(),
-			terms.getRowVersion(),
+			terms.getVersion(),
 			terms.getExposedFrom(),
 			terms.getExposedTo(),
 			terms.getDisplayOrder(),
@@ -78,7 +78,7 @@ public class TermsRepository implements AdminTermsRepository {
 			.title(adminTermsDto.title())
 			.type(adminTermsDto.type())
 			.status(adminTermsDto.status())
-			.rowVersion(adminTermsDto.rowVersion())
+			.version(adminTermsDto.version())
 			.exposedFrom(adminTermsDto.exposedFrom())
 			.exposedTo(adminTermsDto.exposedTo())
 			.displayOrder(adminTermsDto.displayOrder())

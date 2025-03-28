@@ -17,6 +17,7 @@ public class ClauseTest {
 		.title("이용약관")
 		.type(TermsType.REQUIRED)
 		.status(TermsStatus.ACTIVE)
+		.version(1)
 		.exposedFrom(LocalDateTime.now())
 		.displayOrder(1)
 		.build();
