@@ -23,6 +23,7 @@ public class ClausesTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
+			.version(1)
 			.exposedFrom(now)
 			.displayOrder(1)
 			.build();
