@@ -17,10 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import com.reservation.admin.terms.controller.dto.AdminCreateClauseRequest;
-import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.AdminUpdateClauseRequest;
-import com.reservation.admin.terms.controller.dto.AdminUpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.CreateClauseRequest;
+import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.UpdateClauseRequest;
+import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
@@ -42,12 +42,12 @@ public class TermsServiceTest {
 	@InjectMocks
 	private TermsService termsService;
 
-	private AdminCreateTermsRequest createRequest;
-	private AdminUpdateTermsRequest updateRequest;
+	private CreateTermsRequest createRequest;
+	private UpdateTermsRequest updateRequest;
 
 	@BeforeEach
 	void setUp() {
-		createRequest = new AdminCreateTermsRequest(
+		createRequest = new CreateTermsRequest(
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
@@ -56,12 +56,12 @@ public class TermsServiceTest {
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
 			List.of(
-				new AdminCreateClauseRequest(1, "제1조 (목적)", "이 약관은..."),
-				new AdminCreateClauseRequest(2, "제2조 (정의)", "여기서 사용하는 용어는...")
+				new CreateClauseRequest(1, "제1조 (목적)", "이 약관은..."),
+				new CreateClauseRequest(2, "제2조 (정의)", "여기서 사용하는 용어는...")
 			)
 		);
 
-		updateRequest = new AdminUpdateTermsRequest(
+		updateRequest = new UpdateTermsRequest(
 			1L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
@@ -71,8 +71,8 @@ public class TermsServiceTest {
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
 			List.of(
-				new AdminUpdateClauseRequest(1, "제1조 (목적)", "이 약관은..."),
-				new AdminUpdateClauseRequest(2, "제2조 (정의)", "여기서 사용하는 용어는...")
+				new UpdateClauseRequest(1, "제1조 (목적)", "이 약관은..."),
+				new UpdateClauseRequest(2, "제2조 (정의)", "여기서 사용하는 용어는...")
 			)
 		);
 	}

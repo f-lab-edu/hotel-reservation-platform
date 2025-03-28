@@ -1,12 +1,12 @@
 package com.reservation.admin.terms.service.mapper;
 
-import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.AdminUpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 
 public class AdminTermsDtoMapper {
 
-	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(AdminCreateTermsRequest request,
+	public static AdminTermsDto fromAdminCreateTermsRequestAndVersion(CreateTermsRequest request,
 		Integer version) {
 		return new AdminTermsDto(
 			null, // id
@@ -21,12 +21,12 @@ public class AdminTermsDtoMapper {
 			null, // createdAt
 			null, // updatedAt
 			request.clauses().stream()
-				.map(AdminClauseDtoMapper::fromAdminCreateClauseRequest)
+				.map(AdminClauseDtoMapper::fromCreateClauseRequest)
 				.toList()
 		);
 	}
 
-	public static AdminTermsDto fromAdminUpdateTermsRequestAndVersion(AdminUpdateTermsRequest request,
+	public static AdminTermsDto fromAdminUpdateTermsRequestAndVersion(UpdateTermsRequest request,
 		Integer version) {
 		return new AdminTermsDto(
 			request.id(), // id
@@ -41,7 +41,7 @@ public class AdminTermsDtoMapper {
 			null, // createdAt
 			null, // updatedAt
 			request.clauses().stream()
-				.map(AdminClauseDtoMapper::fromAdminUpdateClauseRequest)
+				.map(AdminClauseDtoMapper::fromUpdateClauseRequest)
 				.toList()
 		);
 	}

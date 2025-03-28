@@ -5,8 +5,8 @@ import static com.reservation.admin.terms.service.mapper.AdminTermsDtoMapper.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.AdminUpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
@@ -27,7 +27,7 @@ public class TermsService {
 	private final AdminTermsRepository adminTermsRepository;
 	private final TermsCommandService termsCommandService;
 
-	public Long createTerms(AdminCreateTermsRequest request) {
+	public Long createTerms(CreateTermsRequest request) {
 		checkActiveTermsExists(request.code());
 
 		// Versioning
@@ -45,7 +45,7 @@ public class TermsService {
 	}
 
 	@Transactional
-	public Long updateTerms(AdminUpdateTermsRequest request) {
+	public Long updateTerms(UpdateTermsRequest request) {
 		// 가장 최신 약관 버전이 맞는지 확인한다
 		int maxVersion = checkUpdateTermsVersion(request.id());
 

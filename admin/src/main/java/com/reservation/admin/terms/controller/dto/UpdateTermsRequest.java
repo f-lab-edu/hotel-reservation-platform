@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public record AdminUpdateTermsRequest(
+public record UpdateTermsRequest(
 	@NotNull @Min(1L) Long id,
 	@NotNull TermsCode code,
 	@NotBlank String title,
@@ -23,6 +23,6 @@ public record AdminUpdateTermsRequest(
 	@NotNull LocalDateTime exposedFrom,
 	@Future LocalDateTime exposedTo,
 	@Min(1) Integer displayOrder,
-	@NotEmpty List<@Valid AdminUpdateClauseRequest> clauses
+	@NotEmpty List<@Valid UpdateClauseRequest> clauses
 ) {
 }
