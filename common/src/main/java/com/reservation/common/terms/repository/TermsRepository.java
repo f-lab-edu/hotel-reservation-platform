@@ -11,8 +11,8 @@ import com.reservation.common.terms.domain.Clauses;
 import com.reservation.common.terms.domain.Terms;
 import com.reservation.common.terms.domain.Terms.TermsBuilder;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.AdminClauseDto;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.terms.repository.dto.ClauseDto;
+import com.reservation.commonapi.terms.repository.dto.TermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 
@@ -26,9 +26,9 @@ public class TermsRepository implements AdminTermsRepository {
 	}
 
 	@Override
-	public AdminTermsDto save(AdminTermsDto adminTermsDto) {
-		Terms terms = fromAdminTermDtoToTerms(adminTermsDto);
-		return fromTermsToAdminTermDto(jpaTermsRepository.save(terms));
+	public TermsDto save(TermsDto termsDto) {
+		Terms terms = fromTermsDtoToTerms(termsDto);
+		return fromTermsToTermsDto(jpaTermsRepository.save(terms));
 	}
 
 	@Override
@@ -42,22 +42,17 @@ public class TermsRepository implements AdminTermsRepository {
 	}
 
 	@Override
-	public Optional<AdminTermsDto> findById(Long id) {
-		return this.jpaTermsRepository.findById(id).map(this::fromTermsToAdminTermDto);
+	public Optional<TermsDto> findById(Long id) {
+		return this.jpaTermsRepository.findById(id).map(this::fromTermsToTermsDto);
 	}
 
-	@Override
-	public Optional<AdminTermsDto> findByCodeAndStatus(TermsCode code, TermsStatus termsStatus) {
-		return this.jpaTermsRepository.findByCodeAndStatus(code, termsStatus).map(this::fromTermsToAdminTermDto);
-	}
-
-	public AdminTermsDto fromTermsToAdminTermDto(Terms terms) {
-		List<AdminClauseDto> adminClauses = terms.getClauses()
+	public TermsDto fromTermsToTermsDto(Terms terms) {
+		List<ClauseDto> adminClauses = terms.getClauses()
 			.stream()
-			.map(c -> new AdminClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
+			.map(c -> new ClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
 			.toList();
 
-		return new AdminTermsDto(
+		return new TermsDto(
 			terms.getId(),
 			terms.getCode(),
 			terms.getTitle(),
@@ -72,19 +67,19 @@ public class TermsRepository implements AdminTermsRepository {
 			adminClauses);
 	}
 
-	public Terms fromAdminTermDtoToTerms(AdminTermsDto adminTermsDto) {
+	public Terms fromTermsDtoToTerms(TermsDto termsDto) {
 		Terms terms = new TermsBuilder()
-			.code(adminTermsDto.code())
-			.title(adminTermsDto.title())
-			.type(adminTermsDto.type())
-			.status(adminTermsDto.status())
-			.version(adminTermsDto.version())
-			.exposedFrom(adminTermsDto.exposedFrom())
-			.exposedTo(adminTermsDto.exposedTo())
-			.displayOrder(adminTermsDto.displayOrder())
+			.code(termsDto.code())
+			.title(termsDto.title())
+			.type(termsDto.type())
+			.status(termsDto.status())
+			.version(termsDto.version())
+			.exposedFrom(termsDto.exposedFrom())
+			.exposedTo(termsDto.exposedTo())
+			.displayOrder(termsDto.displayOrder())
 			.build();
 
-		List<Clause> clauses = adminTermsDto.clauses().stream()
+		List<Clause> clauses = termsDto.clauses().stream()
 			.map(dto -> new ClauseBuilder()
 				.terms(terms)
 				.clauseOrder(dto.clauseOrder())

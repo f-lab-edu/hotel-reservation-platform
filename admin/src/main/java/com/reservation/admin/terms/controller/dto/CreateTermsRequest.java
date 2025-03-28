@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public record AdminCreateTermsRequest(
+public record CreateTermsRequest(
 	@NotNull TermsCode code,
 	@NotBlank String title,
 	@NotNull TermsType type,
@@ -22,6 +22,6 @@ public record AdminCreateTermsRequest(
 	@NotNull LocalDateTime exposedFrom,
 	@Future LocalDateTime exposedTo,
 	@Min(1) Integer displayOrder,
-	@NotEmpty List<@Valid AdminCreateClauseRequest> clauses
+	@NotEmpty List<@Valid CreateClauseRequest> clauses
 ) {
 }

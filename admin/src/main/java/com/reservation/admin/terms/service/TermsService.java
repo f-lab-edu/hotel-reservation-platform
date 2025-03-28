@@ -1,16 +1,16 @@
 package com.reservation.admin.terms.service;
 
-import static com.reservation.admin.terms.service.mapper.AdminTermsDtoMapper.*;
+import static com.reservation.admin.terms.service.mapper.TermsDtoMapper.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import com.reservation.admin.terms.controller.dto.AdminCreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.AdminUpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
 import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.terms.repository.dto.TermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 
@@ -27,12 +27,12 @@ public class TermsService {
 	private final AdminTermsRepository adminTermsRepository;
 	private final TermsCommandService termsCommandService;
 
-	public Long createTerms(AdminCreateTermsRequest request) {
+	public Long createTerms(CreateTermsRequest request) {
 		checkActiveTermsExists(request.code());
 
 		// Versioning
 		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(request.code()).orElse(NOTHING_VERSION);
-		AdminTermsDto createdTerms = fromAdminCreateTermsRequestAndVersion(request, ++maxVersion);
+		TermsDto createdTerms = fromCreateTermsRequestAndVersion(request, ++maxVersion);
 
 		return saveTermsWithIntegrityCheck(createdTerms);
 	}
@@ -45,7 +45,7 @@ public class TermsService {
 	}
 
 	@Transactional
-	public Long updateTerms(AdminUpdateTermsRequest request) {
+	public Long updateTerms(UpdateTermsRequest request) {
 		// 가장 최신 약관 버전이 맞는지 확인한다
 		int maxVersion = checkUpdateTermsVersion(request.id());
 
@@ -53,29 +53,29 @@ public class TermsService {
 		termsCommandService.deprecateTerms(request.id());
 
 		// Versioning
-		AdminTermsDto updatedTerms = fromAdminUpdateTermsRequestAndVersion(request, ++maxVersion);
+		TermsDto updatedTerms = fromUpdateTermsRequestAndVersion(request, ++maxVersion);
 
 		return saveTermsWithIntegrityCheck(updatedTerms);
 	}
 
 	public int checkUpdateTermsVersion(Long id) {
-		AdminTermsDto findAdminTermsDto = this.adminTermsRepository.findById(id)
+		TermsDto findTermsDto = this.adminTermsRepository.findById(id)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("약관이 존재하지 않습니다."));
 
 		// 같은 약관 코드 중 가창 최신 약관 버전을 가져온다
-		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(findAdminTermsDto.code())
+		int maxVersion = this.adminTermsRepository.findMaxVersionByCode(findTermsDto.code())
 			.orElseThrow(() -> ErrorCode.CONFLICT.exception("올바른 약관 버전을 찾을 수 없습니다."));
 
-		if (findAdminTermsDto.version() != maxVersion) {
+		if (findTermsDto.version() != maxVersion) {
 			throw ErrorCode.BAD_REQUEST.exception("과거 버전의 약관은 수정할 수 없습니다.");
 		}
 
 		return maxVersion;
 	}
 
-	public Long saveTermsWithIntegrityCheck(AdminTermsDto adminTermsDto) {
+	public Long saveTermsWithIntegrityCheck(TermsDto termsDto) {
 		try {
-			return this.adminTermsRepository.save(adminTermsDto).id();
+			return this.adminTermsRepository.save(termsDto).id();
 		} catch (DataIntegrityViolationException dataIntegrityViolationException) {
 			throw ErrorCode.CONFLICT.exception("데이터 무결성 위반으로 인한 작업 실패, 데이터 확인 요청 필요");
 		}
