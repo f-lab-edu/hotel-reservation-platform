@@ -23,7 +23,7 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
-			.rowVersion(1)
+			.version(1)
 			.exposedFrom(now)
 			.displayOrder(1)
 			.build();
@@ -44,7 +44,7 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
-			.rowVersion(1)
+			.version(1)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
@@ -72,7 +72,7 @@ public class TermsTest {
 			.title("이용약관")
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
-			.rowVersion(1)
+			.version(1)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
@@ -90,7 +90,7 @@ public class TermsTest {
 				.code(TermsCode.TERMS_USE)
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
-				.rowVersion(1)
+				.version(1)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -107,7 +107,7 @@ public class TermsTest {
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.status(TermsStatus.ACTIVE)
-				.rowVersion(1)
+				.version(1)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -124,7 +124,7 @@ public class TermsTest {
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
-				.rowVersion(1)
+				.version(1)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -157,7 +157,7 @@ public class TermsTest {
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
-				.rowVersion(1)
+				.version(1)
 				.displayOrder(1)
 				.build();
 		});
@@ -174,7 +174,7 @@ public class TermsTest {
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
-				.rowVersion(1)
+				.version(1)
 				.exposedFrom(now)
 				.build();
 		});

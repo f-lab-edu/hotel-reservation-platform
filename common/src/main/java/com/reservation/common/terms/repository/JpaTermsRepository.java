@@ -14,6 +14,6 @@ public interface JpaTermsRepository extends JpaRepository<Terms, Long> {
 
 	boolean existsByCodeAndStatus(TermsCode code, TermsStatus status);
 
-	@Query("SELECT MAX(t.rowVersion) FROM Terms t WHERE t.code = :code")
+	@Query("SELECT MAX(t.version) FROM Terms t WHERE t.code = :code")
 	Optional<Integer> findMaxVersionByCode(@Param("code") TermsCode code);
 }
