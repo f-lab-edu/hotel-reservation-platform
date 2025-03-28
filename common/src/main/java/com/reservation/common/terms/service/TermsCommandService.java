@@ -2,8 +2,8 @@ package com.reservation.common.terms.service;
 
 import org.springframework.stereotype.Service;
 
+import com.reservation.common.terms.domain.Terms;
 import com.reservation.common.terms.repository.JpaTermsRepository;
-import com.reservation.commonmodel.terms.TermsCode;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class TermsCommandService {
 
 	private final JpaTermsRepository jpaTermsRepository;
 
-	public void deprecateWithoutIncrement(TermsCode code) {
-		jpaTermsRepository.deprecateWithoutIncrement(code);
+	public void deprecateTerms(Long id) {
+		jpaTermsRepository.findById(id).ifPresent(Terms::deprecate);
 	}
 }

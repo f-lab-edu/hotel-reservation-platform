@@ -21,7 +21,6 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -51,7 +50,7 @@ public class Terms extends BaseEntity {
 	@Column(nullable = false)
 	private TermsStatus status; // 사용 or 미사용
 
-	@Version
+	@Column(nullable = false)
 	private Integer rowVersion; // 시행일 (버전 역할)
 
 	@Column(nullable = false)
@@ -192,5 +191,9 @@ public class Terms extends BaseEntity {
 		if (clauses == null || clauses.isEmpty()) {
 			throw new IllegalStateException("약관은 하나 이상의 조항을 포함해야 합니다.");
 		}
+	}
+
+	public void deprecate() {
+		this.status = TermsStatus.DEPRECATED;
 	}
 }
