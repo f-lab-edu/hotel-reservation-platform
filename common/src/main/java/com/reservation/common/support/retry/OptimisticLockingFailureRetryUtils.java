@@ -1,6 +1,9 @@
 package com.reservation.common.support.retry;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+
+import com.reservation.common.exception.ErrorCode;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -19,10 +22,13 @@ public class OptimisticLockingFailureRetryUtils {
 
 			if (retryCount >= maxRetryCount) {
 				log.error("최대 재시도 초과 - 작업 실패", e);
-				throw e;
+				throw ErrorCode.INTERNAL_SERVER_ERROR.exception("서버 내부 오류로 인한 작업 실패, 재시도 요청 필요");
 			}
 
 			return executeWithRetry(maxRetryCount, operation, retryCount);
+		} catch (DataIntegrityViolationException e) {
+			log.error("데이터 무결성 위반 - 작업 실패", e);
+			throw ErrorCode.CONFLICT.exception("데이터 무결성 위반으로 인한 작업 실패, 데이터 확인 요청 필요");
 		}
 	}
 

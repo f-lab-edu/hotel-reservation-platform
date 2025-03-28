@@ -16,7 +16,7 @@ public class AdminClauseDtoMapper {
 
 	public static AdminClauseDto fromAdminUpdateClauseRequest(AdminUpdateClauseRequest request) {
 		return new AdminClauseDto(
-			request.id(),
+			null,
 			request.clauseOrder(),
 			request.title(),
 			request.content()

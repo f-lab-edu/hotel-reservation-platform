@@ -73,7 +73,8 @@ public class Terms extends BaseEntity {
 	protected Terms() {
 	}
 
-	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer rowVersion, LocalDateTime exposedFrom,
+	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer rowVersion,
+		LocalDateTime exposedFrom,
 		LocalDateTime exposedTo, Integer displayOrder) {
 		if (code == null) {
 			throw new IllegalArgumentException("약관 코드는 필수입니다.");

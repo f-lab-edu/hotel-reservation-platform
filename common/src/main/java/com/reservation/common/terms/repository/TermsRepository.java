@@ -42,9 +42,8 @@ public class TermsRepository implements AdminTermsRepository {
 	}
 
 	@Override
-	public AdminTermsDto findById(Long id) {
-		jpaTermsRepository.findById(id);
-		return fromTermsToAdminTermDto(null);
+	public Optional<AdminTermsDto> findById(Long id) {
+		return jpaTermsRepository.findById(id).map(this::fromTermsToAdminTermDto);
 	}
 
 	public AdminTermsDto fromTermsToAdminTermDto(Terms terms) {
@@ -93,5 +92,4 @@ public class TermsRepository implements AdminTermsRepository {
 
 		return terms;
 	}
-
 }
