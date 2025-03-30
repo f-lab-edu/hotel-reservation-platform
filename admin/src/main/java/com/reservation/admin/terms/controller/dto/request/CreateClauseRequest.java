@@ -1,9 +1,9 @@
-package com.reservation.admin.terms.controller.dto;
+package com.reservation.admin.terms.controller.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
-public record UpdateClauseRequest(
+public record CreateClauseRequest(
 	@Min(1) Integer clauseOrder,
 	@NotBlank String title,
 	@NotBlank String content

@@ -1,7 +1,7 @@
 package com.reservation.admin.terms.service.mapper;
 
-import com.reservation.admin.terms.controller.dto.CreateClauseRequest;
-import com.reservation.admin.terms.controller.dto.UpdateClauseRequest;
+import com.reservation.admin.terms.controller.dto.request.CreateClauseRequest;
+import com.reservation.admin.terms.controller.dto.request.UpdateClauseRequest;
 import com.reservation.commonapi.terms.repository.dto.ClauseDto;
 
 public class ClauseDtoMapper {

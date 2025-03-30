@@ -26,9 +26,9 @@ public class TermsRepository implements AdminTermsRepository {
 	}
 
 	@Override
-	public TermsDto save(TermsDto termsDto) {
-		Terms terms = fromTermsDtoToTerms(termsDto);
-		return fromTermsToTermsDto(jpaTermsRepository.save(terms));
+	public TermsDto save(TermsDto adminTermsDto) {
+		Terms terms = fromAdminTermDtoToTerms(adminTermsDto);
+		return fromTermsToAdminTermDto(jpaTermsRepository.save(terms));
 	}
 
 	@Override
@@ -43,10 +43,10 @@ public class TermsRepository implements AdminTermsRepository {
 
 	@Override
 	public Optional<TermsDto> findById(Long id) {
-		return this.jpaTermsRepository.findById(id).map(this::fromTermsToTermsDto);
+		return this.jpaTermsRepository.findById(id).map(this::fromTermsToAdminTermDto);
 	}
 
-	public TermsDto fromTermsToTermsDto(Terms terms) {
+	public TermsDto fromTermsToAdminTermDto(Terms terms) {
 		List<ClauseDto> adminClauses = terms.getClauses()
 			.stream()
 			.map(c -> new ClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
@@ -67,19 +67,19 @@ public class TermsRepository implements AdminTermsRepository {
 			adminClauses);
 	}
 
-	public Terms fromTermsDtoToTerms(TermsDto termsDto) {
+	public Terms fromAdminTermDtoToTerms(TermsDto adminTermsDto) {
 		Terms terms = new TermsBuilder()
-			.code(termsDto.code())
-			.title(termsDto.title())
-			.type(termsDto.type())
-			.status(termsDto.status())
-			.version(termsDto.version())
-			.exposedFrom(termsDto.exposedFrom())
-			.exposedTo(termsDto.exposedTo())
-			.displayOrder(termsDto.displayOrder())
+			.code(adminTermsDto.code())
+			.title(adminTermsDto.title())
+			.type(adminTermsDto.type())
+			.status(adminTermsDto.status())
+			.version(adminTermsDto.version())
+			.exposedFrom(adminTermsDto.exposedFrom())
+			.exposedTo(adminTermsDto.exposedTo())
+			.displayOrder(adminTermsDto.displayOrder())
 			.build();
 
-		List<Clause> clauses = termsDto.clauses().stream()
+		List<Clause> clauses = adminTermsDto.clauses().stream()
 			.map(dto -> new ClauseBuilder()
 				.terms(terms)
 				.clauseOrder(dto.clauseOrder())

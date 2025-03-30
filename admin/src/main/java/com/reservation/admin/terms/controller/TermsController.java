@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.admin.terms.service.TermsService;
 import com.reservation.common.response.ApiSuccessResponse;
 

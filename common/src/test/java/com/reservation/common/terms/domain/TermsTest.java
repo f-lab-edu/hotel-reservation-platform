@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.clause.domain.Clause.ClauseBuilder;
+import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.domain.Terms.TermsBuilder;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
@@ -77,7 +78,7 @@ public class TermsTest {
 			.displayOrder(1)
 			.build();
 
-		Exception exception = assertThrows(IllegalStateException.class, terms::validateComplete);
+		Exception exception = assertThrows(BusinessException.class, terms::validateComplete);
 		assertEquals("약관은 하나 이상의 조항을 포함해야 합니다.", exception.getMessage());
 	}
 
@@ -85,7 +86,7 @@ public class TermsTest {
 	public void 생성자_실패_제목_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.type(TermsType.REQUIRED)
@@ -102,7 +103,7 @@ public class TermsTest {
 	public void 생성자_실패_타입_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
@@ -119,7 +120,7 @@ public class TermsTest {
 	public void 생성자_실패_상태_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
@@ -136,7 +137,7 @@ public class TermsTest {
 	public void 생성자_실패_버전_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
@@ -151,7 +152,7 @@ public class TermsTest {
 
 	@Test
 	public void 생성자_실패_노출시작일_누락() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
@@ -168,7 +169,7 @@ public class TermsTest {
 	public void 생성자_실패_정렬순서_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")

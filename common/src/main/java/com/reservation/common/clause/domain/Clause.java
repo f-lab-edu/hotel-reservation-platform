@@ -1,6 +1,7 @@
 package com.reservation.common.clause.domain;
 
 import com.reservation.common.domain.BaseEntity;
+import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.domain.Terms;
 
 import jakarta.persistence.Column;
@@ -47,16 +48,16 @@ public class Clause extends BaseEntity {
 
 	private Clause(Terms terms, int clauseOrder, String title, String content) {
 		if (terms == null) {
-			throw new IllegalArgumentException("약관 정보는 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("약관 정보는 필수입니다.");
 		}
 		if (clauseOrder < 1) {
-			throw new IllegalArgumentException("조문 순서는 1 이상이어야 합니다.");
+			throw ErrorCode.CONFLICT.exception("조문 순서는 1 이상이어야 합니다.");
 		}
 		if (title == null || title.isBlank()) {
-			throw new IllegalArgumentException("조문 제목은 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("조문 제목은 필수입니다.");
 		}
 		if (content == null || content.isBlank()) {
-			throw new IllegalArgumentException("조문 내용은 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("조문 내용은 필수입니다.");
 		}
 		this.terms = terms;
 		this.clauseOrder = clauseOrder;

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.domain.BaseEntity;
+import com.reservation.common.exception.ErrorCode;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
@@ -75,28 +76,28 @@ public class Terms extends BaseEntity {
 		LocalDateTime exposedFrom,
 		LocalDateTime exposedTo, Integer displayOrder) {
 		if (code == null) {
-			throw new IllegalArgumentException("약관 코드는 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("약관 코드는 필수입니다.");
 		}
 		if (title == null || title.isBlank()) {
-			throw new IllegalArgumentException("약관 제목은 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("약관 제목은 필수입니다.");
 		}
 		if (type == null) {
-			throw new IllegalArgumentException("약관 타입은 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("약관 타입은 필수입니다.");
 		}
 		if (status == null) {
-			throw new IllegalArgumentException("약관 상태는 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("약관 상태는 필수입니다.");
 		}
 		if (version == null || version < 1) {
-			throw new IllegalArgumentException("버전은 1 이상이어야 합니다.");
+			throw ErrorCode.CONFLICT.exception("버전은 1 이상이어야 합니다.");
 		}
 		if (exposedFrom == null) {
-			throw new IllegalArgumentException("노출 시작일은 필수입니다.");
+			throw ErrorCode.CONFLICT.exception("노출 시작일은 필수입니다.");
 		}
 		if (displayOrder == null || displayOrder < 1) {
-			throw new IllegalArgumentException("정렬 순서는 1 이상이어야 합니다.");
+			throw ErrorCode.CONFLICT.exception("정렬 순서는 1 이상이어야 합니다.");
 		}
 		if (exposedTo != null && exposedFrom.isAfter(exposedTo)) {
-			throw new IllegalArgumentException("노출 종료일은 노출 시작일보다 늦어야 합니다.");
+			throw ErrorCode.CONFLICT.exception("노출 종료일은 노출 시작일보다 늦어야 합니다.");
 		}
 		this.code = code;
 		this.title = title;
@@ -188,7 +189,7 @@ public class Terms extends BaseEntity {
 
 	public void validateComplete() {
 		if (clauses == null || clauses.isEmpty()) {
-			throw new IllegalStateException("약관은 하나 이상의 조항을 포함해야 합니다.");
+			throw ErrorCode.CONFLICT.exception("약관은 하나 이상의 조항을 포함해야 합니다.");
 		}
 	}
 

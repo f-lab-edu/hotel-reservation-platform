@@ -1,7 +1,7 @@
 package com.reservation.admin.terms.service.mapper;
 
-import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.commonapi.terms.repository.dto.TermsDto;
 
 public class TermsDtoMapper {

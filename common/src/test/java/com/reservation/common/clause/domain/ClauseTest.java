@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.domain.Terms;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
@@ -40,7 +41,7 @@ public class ClauseTest {
 
 	@Test
 	public void 조문생성_약관매핑누락() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () ->
+		Exception exception = assertThrows(BusinessException.class, () ->
 			new Clause.ClauseBuilder()
 				.terms(null)
 				.clauseOrder(1)
@@ -53,7 +54,7 @@ public class ClauseTest {
 
 	@Test
 	public void 조문생성_순서오류() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () ->
+		Exception exception = assertThrows(BusinessException.class, () ->
 			new Clause.ClauseBuilder()
 				.terms(terms)
 				.clauseOrder(0)
@@ -66,7 +67,7 @@ public class ClauseTest {
 
 	@Test
 	public void 조문생성_제목누락() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () ->
+		Exception exception = assertThrows(BusinessException.class, () ->
 			new Clause.ClauseBuilder()
 				.terms(terms)
 				.clauseOrder(1)
@@ -79,7 +80,7 @@ public class ClauseTest {
 
 	@Test
 	public void 조문생성_내용누락() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () ->
+		Exception exception = assertThrows(BusinessException.class, () ->
 			new Clause.ClauseBuilder()
 				.terms(terms)
 				.clauseOrder(1)

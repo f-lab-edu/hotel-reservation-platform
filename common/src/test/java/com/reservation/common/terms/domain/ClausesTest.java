@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.clause.domain.Clause.ClauseBuilder;
+import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.domain.Terms.TermsBuilder;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
@@ -50,7 +51,7 @@ public class ClausesTest {
 
 	@Test
 	public void 조문리스트일급컬렉션생성_조항최소개수미달() {
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> new Clauses(List.of()));
+		Exception exception = assertThrows(BusinessException.class, () -> new Clauses(List.of()));
 
 		assertEquals("조항은 최소 1개 이상이어야 합니다.", exception.getMessage());
 	}

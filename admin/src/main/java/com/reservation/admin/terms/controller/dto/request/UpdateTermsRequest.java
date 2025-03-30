@@ -1,4 +1,4 @@
-package com.reservation.admin.terms.controller.dto;
+package com.reservation.admin.terms.controller.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +14,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public record CreateTermsRequest(
+public record UpdateTermsRequest(
+	@NotNull @Min(1L) Long id,
 	@NotNull TermsCode code,
 	@NotBlank String title,
 	@NotNull TermsType type,
@@ -22,6 +23,6 @@ public record CreateTermsRequest(
 	@NotNull LocalDateTime exposedFrom,
 	@Future LocalDateTime exposedTo,
 	@Min(1) Integer displayOrder,
-	@NotEmpty List<@Valid CreateClauseRequest> clauses
+	@NotEmpty List<@Valid UpdateClauseRequest> clauses
 ) {
 }

@@ -17,10 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import com.reservation.admin.terms.controller.dto.CreateClauseRequest;
-import com.reservation.admin.terms.controller.dto.CreateTermsRequest;
-import com.reservation.admin.terms.controller.dto.UpdateClauseRequest;
-import com.reservation.admin.terms.controller.dto.UpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.CreateClauseRequest;
+import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.UpdateClauseRequest;
+import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
