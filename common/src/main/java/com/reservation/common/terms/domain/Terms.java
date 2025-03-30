@@ -51,7 +51,11 @@ public class Terms extends BaseEntity {
 	@Column(nullable = false)
 	private TermsStatus status; // 사용 or 미사용
 
+	@Column(nullable = false)
 	private Integer version; // 버전 역할
+
+	@Column(nullable = false)
+	private Boolean isLatest; // 최신 버전 여부
 
 	@Column(nullable = false)
 	private LocalDateTime exposedFrom; // 노출 시작일
@@ -72,7 +76,7 @@ public class Terms extends BaseEntity {
 	protected Terms() {
 	}
 
-	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer version,
+	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer version, Boolean isLatest,
 		LocalDateTime exposedFrom,
 		LocalDateTime exposedTo, Integer displayOrder) {
 		if (code == null) {
@@ -90,6 +94,9 @@ public class Terms extends BaseEntity {
 		if (version == null || version < 1) {
 			throw ErrorCode.CONFLICT.exception("버전은 1 이상이어야 합니다.");
 		}
+		if (isLatest == null) {
+			throw ErrorCode.CONFLICT.exception("최신 여부는 필수입니다.");
+		}
 		if (exposedFrom == null) {
 			throw ErrorCode.CONFLICT.exception("노출 시작일은 필수입니다.");
 		}
@@ -104,6 +111,7 @@ public class Terms extends BaseEntity {
 		this.type = type;
 		this.status = status;
 		this.version = version;
+		this.isLatest = isLatest;
 		this.exposedFrom = exposedFrom;
 		this.exposedTo = exposedTo;
 		this.displayOrder = displayOrder;
@@ -115,6 +123,7 @@ public class Terms extends BaseEntity {
 		private TermsType type;
 		private TermsStatus status;
 		private Integer version;
+		private Boolean isLatest;
 		private LocalDateTime exposedFrom;
 		private LocalDateTime exposedTo;
 		private Integer displayOrder;
@@ -144,6 +153,11 @@ public class Terms extends BaseEntity {
 			return this;
 		}
 
+		public TermsBuilder isLatest(Boolean isLatest) {
+			this.isLatest = isLatest;
+			return this;
+		}
+
 		public TermsBuilder exposedFrom(LocalDateTime exposedFrom) {
 			this.exposedFrom = exposedFrom;
 			return this;
@@ -160,7 +174,7 @@ public class Terms extends BaseEntity {
 		}
 
 		public Terms build() {
-			return new Terms(code, title, type, status, version, exposedFrom, exposedTo, displayOrder);
+			return new Terms(code, title, type, status, version, isLatest, exposedFrom, exposedTo, displayOrder);
 		}
 	}
 
@@ -195,5 +209,6 @@ public class Terms extends BaseEntity {
 
 	public void deprecate() {
 		this.status = TermsStatus.DEPRECATED;
+		this.isLatest = false;
 	}
 }

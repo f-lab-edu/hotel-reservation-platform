@@ -1,4 +1,4 @@
-package com.reservation.commonapi.terms.repository.dto;
+package com.reservation.commonmodel.terms;
 
 public record ClauseDto(
 	Long id,

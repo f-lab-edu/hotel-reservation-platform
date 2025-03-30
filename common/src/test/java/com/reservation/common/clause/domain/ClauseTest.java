@@ -19,6 +19,7 @@ public class ClauseTest {
 		.type(TermsType.REQUIRED)
 		.status(TermsStatus.ACTIVE)
 		.version(1)
+		.isLatest(true)
 		.exposedFrom(LocalDateTime.now())
 		.displayOrder(1)
 		.build();

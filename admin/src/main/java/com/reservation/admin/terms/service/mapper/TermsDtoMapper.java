@@ -2,7 +2,7 @@ package com.reservation.admin.terms.service.mapper;
 
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
-import com.reservation.commonapi.terms.repository.dto.TermsDto;
+import com.reservation.commonmodel.terms.TermsDto;
 
 public class TermsDtoMapper {
 
@@ -15,6 +15,7 @@ public class TermsDtoMapper {
 			request.type(),
 			request.status(),
 			version,
+			true, // isLatest
 			request.exposedFrom(),
 			request.exposedTo(),
 			request.displayOrder(),
@@ -35,6 +36,7 @@ public class TermsDtoMapper {
 			request.type(),
 			request.status(),
 			version,
+			true, // isLatest
 			request.exposedFrom(),
 			request.exposedTo(),
 			request.displayOrder(),

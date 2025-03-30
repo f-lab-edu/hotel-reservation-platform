@@ -25,6 +25,7 @@ public class TermsTest {
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
 			.version(1)
+			.isLatest(true)
 			.exposedFrom(now)
 			.displayOrder(1)
 			.build();
@@ -34,6 +35,8 @@ public class TermsTest {
 		assertEquals("이용약관", terms.getTitle());
 		assertEquals(TermsType.REQUIRED, terms.getType());
 		assertEquals(TermsStatus.ACTIVE, terms.getStatus());
+		assertEquals(1, terms.getVersion());
+		assertTrue(terms.getIsLatest());
 		assertEquals(now, terms.getExposedFrom());
 		assertEquals(1, terms.getDisplayOrder());
 	}
@@ -46,6 +49,7 @@ public class TermsTest {
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
 			.version(1)
+			.isLatest(true)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
@@ -74,11 +78,12 @@ public class TermsTest {
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
 			.version(1)
+			.isLatest(true)
 			.exposedFrom(LocalDateTime.now())
 			.displayOrder(1)
 			.build();
 
-		Exception exception = assertThrows(BusinessException.class, terms::validateComplete);
+		BusinessException exception = assertThrows(BusinessException.class, terms::validateComplete);
 		assertEquals("약관은 하나 이상의 조항을 포함해야 합니다.", exception.getMessage());
 	}
 
@@ -86,12 +91,13 @@ public class TermsTest {
 	public void 생성자_실패_제목_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(BusinessException.class, () -> {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
 				.version(1)
+				.isLatest(true)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -103,12 +109,13 @@ public class TermsTest {
 	public void 생성자_실패_타입_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(BusinessException.class, () -> {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.status(TermsStatus.ACTIVE)
 				.version(1)
+				.isLatest(true)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -120,12 +127,13 @@ public class TermsTest {
 	public void 생성자_실패_상태_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(BusinessException.class, () -> {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.version(1)
+				.isLatest(true)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -137,12 +145,13 @@ public class TermsTest {
 	public void 생성자_실패_버전_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(BusinessException.class, () -> {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
+				.isLatest(true)
 				.exposedFrom(now)
 				.displayOrder(1)
 				.build();
@@ -151,14 +160,33 @@ public class TermsTest {
 	}
 
 	@Test
-	public void 생성자_실패_노출시작일_누락() {
-		Exception exception = assertThrows(BusinessException.class, () -> {
+	public void 생성자_실패_최신버전여부_누락() {
+		LocalDateTime now = LocalDateTime.now();
+
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
 				.version(1)
+				.exposedFrom(now)
+				.displayOrder(1)
+				.build();
+		});
+		assertEquals("최신 여부는 필수입니다.", exception.getMessage());
+	}
+
+	@Test
+	public void 생성자_실패_노출시작일_누락() {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
+			new Terms.TermsBuilder()
+				.code(TermsCode.TERMS_USE)
+				.title("이용약관")
+				.type(TermsType.REQUIRED)
+				.status(TermsStatus.ACTIVE)
+				.version(1)
+				.isLatest(true)
 				.displayOrder(1)
 				.build();
 		});
@@ -169,13 +197,14 @@ public class TermsTest {
 	public void 생성자_실패_정렬순서_누락() {
 		LocalDateTime now = LocalDateTime.now();
 
-		Exception exception = assertThrows(BusinessException.class, () -> {
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			new Terms.TermsBuilder()
 				.code(TermsCode.TERMS_USE)
 				.title("이용약관")
 				.type(TermsType.REQUIRED)
 				.status(TermsStatus.ACTIVE)
 				.version(1)
+				.isLatest(false)
 				.exposedFrom(now)
 				.build();
 		});

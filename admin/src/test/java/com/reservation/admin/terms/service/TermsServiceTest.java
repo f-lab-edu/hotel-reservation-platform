@@ -24,9 +24,9 @@ import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.ClauseDto;
-import com.reservation.commonapi.terms.repository.dto.TermsDto;
+import com.reservation.commonmodel.terms.ClauseDto;
 import com.reservation.commonmodel.terms.TermsCode;
+import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
 
@@ -86,6 +86,7 @@ public class TermsServiceTest {
 			TermsType.REQUIRED,
 			TermsStatus.ACTIVE,
 			1,
+			true,
 			LocalDateTime.of(2025, 3, 25, 0, 0),
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
@@ -133,6 +134,7 @@ public class TermsServiceTest {
 			TermsType.REQUIRED,
 			TermsStatus.ACTIVE,
 			1,
+			true,
 			LocalDateTime.of(2025, 3, 25, 0, 0),
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
@@ -143,12 +145,14 @@ public class TermsServiceTest {
 				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
 			))));
 		when(adminTermsRepository.findMaxVersionByCode(any(TermsCode.class))).thenReturn(Optional.of(1));
+
 		TermsDto termsDto = new TermsDto(2L,
 			TermsCode.TERMS_USE,
 			"서비스 이용약관",
 			TermsType.REQUIRED,
 			TermsStatus.ACTIVE,
 			2,
+			true,
 			LocalDateTime.of(2025, 3, 25, 0, 0),
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
@@ -173,6 +177,7 @@ public class TermsServiceTest {
 			TermsType.REQUIRED,
 			TermsStatus.ACTIVE,
 			1,
+			true,
 			LocalDateTime.of(2025, 3, 25, 0, 0),
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,
@@ -200,6 +205,7 @@ public class TermsServiceTest {
 			TermsType.REQUIRED,
 			TermsStatus.ACTIVE,
 			1,
+			true,
 			LocalDateTime.of(2025, 3, 25, 0, 0),
 			LocalDateTime.of(2026, 3, 25, 0, 0),
 			1,

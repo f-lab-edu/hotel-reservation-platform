@@ -1,11 +1,7 @@
-package com.reservation.commonapi.terms.repository.dto;
+package com.reservation.commonmodel.terms;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.reservation.commonmodel.terms.TermsCode;
-import com.reservation.commonmodel.terms.TermsStatus;
-import com.reservation.commonmodel.terms.TermsType;
 
 public record TermsDto(
 	Long id,
@@ -14,6 +10,7 @@ public record TermsDto(
 	TermsType type,
 	TermsStatus status,
 	Integer version,
+	Boolean isLatest,
 	LocalDateTime exposedFrom,
 	LocalDateTime exposedTo,
 	Integer displayOrder,

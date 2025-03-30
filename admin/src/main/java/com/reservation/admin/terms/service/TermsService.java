@@ -1,17 +1,22 @@
 package com.reservation.admin.terms.service;
 
+import static com.reservation.admin.terms.service.mapper.AdminTermsQueryConditionMapper.*;
 import static com.reservation.admin.terms.service.mapper.TermsDtoMapper.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.response.TermsSearchCondition;
 import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.service.TermsCommandService;
+import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.TermsDto;
+import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.terms.TermsCode;
+import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
 
 import jakarta.transaction.Transactional;
@@ -79,5 +84,11 @@ public class TermsService {
 		} catch (DataIntegrityViolationException dataIntegrityViolationException) {
 			throw ErrorCode.CONFLICT.exception("데이터 무결성 위반으로 인한 작업 실패, 데이터 확인 요청 필요");
 		}
+	}
+
+	public Page<AdminTermsDto> findTerms(TermsSearchCondition condition) {
+		AdminTermsQueryCondition queryCondition = fromSearchConditionToQueryCondition(condition);
+		
+		return this.adminTermsRepository.findTermsByCondition(queryCondition);
 	}
 }

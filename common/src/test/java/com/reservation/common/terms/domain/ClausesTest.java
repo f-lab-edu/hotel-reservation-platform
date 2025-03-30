@@ -25,6 +25,7 @@ public class ClausesTest {
 			.type(TermsType.REQUIRED)
 			.status(TermsStatus.ACTIVE)
 			.version(1)
+			.isLatest(true)
 			.exposedFrom(now)
 			.displayOrder(1)
 			.build();
