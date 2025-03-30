@@ -14,6 +14,4 @@ public interface AdminTermsRepository {
 	Optional<Integer> findMaxVersionByCode(TermsCode code); // 약관 코드 최신 버전을 찾음
 
 	Optional<AdminTermsDto> findById(Long id); // 약관 ID로 단일 조회
-
-	Optional<AdminTermsDto> findByCodeAndStatus(TermsCode code, TermsStatus termsStatus); // 약관 코드와 상태로 단일 조회
 }
