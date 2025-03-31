@@ -17,15 +17,19 @@ public class SortUtils {
 		List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
 		for (Sort.Order order : sort) {
-			Expression expression = pathBuilder.get(order.getProperty());
-			orderSpecifiers.add(
-				new OrderSpecifier<>(
-					order.isAscending() ? Order.ASC : Order.DESC,
-					expression
-				)
-			);
+			OrderSpecifier<?> orderSpecifier = fromPathBuilderAndSortOrderToOrderSpecifier(pathBuilder, order);
+			orderSpecifiers.add(orderSpecifier);
 		}
 
 		return orderSpecifiers;
+	}
+
+	private static <T> OrderSpecifier<?> fromPathBuilderAndSortOrderToOrderSpecifier(PathBuilder<T> pathBuilder,
+		Sort.Order order) {
+		Expression expression = pathBuilder.get(order.getProperty());
+		return new OrderSpecifier<>(
+			order.isAscending() ? Order.ASC : Order.DESC,
+			expression
+		);
 	}
 }
