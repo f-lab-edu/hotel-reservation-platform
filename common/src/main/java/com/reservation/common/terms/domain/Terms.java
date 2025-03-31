@@ -32,43 +32,49 @@ import lombok.ToString;
 		@UniqueConstraint(name = "uk_terms_code_version", columnNames = {"code", "version"})
 	}
 )
-@Getter
-@ToString
 public class Terms extends BaseEntity {
-
+	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsCode code; // ex: TERMS001
 
+	@Getter
 	@Column(nullable = false)
 	private String title; // ex: 이용약관
 
+	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsType type; // 필수 or 선택
 
+	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsStatus status; // 사용 or 미사용
 
+	@Getter
 	@Column(nullable = false)
 	private Integer version; // 버전 역할
 
+	@Getter
 	@Column(nullable = false)
 	private Boolean isLatest; // 최신 버전 여부
 
+	@Getter
 	@Column(nullable = false)
 	private LocalDateTime exposedFrom; // 노출 시작일
 
+	@Getter
 	@Column(nullable = true)
 	private LocalDateTime exposedTo; // 노출 종료일
 
+	@Getter
 	@Column(nullable = false)
 	private Integer displayOrder; // 정렬 순서
 
 	@OneToMany(mappedBy = "terms", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@ToString.Exclude
-	private List<Clause> clauseList = new ArrayList<>();
+	private final List<Clause> clauseList = new ArrayList<>();
 
 	@Transient
 	private Clauses clauses;

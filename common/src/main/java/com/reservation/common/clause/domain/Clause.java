@@ -24,21 +24,21 @@ import lombok.ToString;
 		@UniqueConstraint(name = "uk_clause_terms_order", columnNames = {"terms_id", "clauseOrder"})
 	}
 )
-@Getter
-@ToString
 public class Clause extends BaseEntity {
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "terms_id", nullable = false)
 	@ToString.Exclude
 	private Terms terms;
 
+	@Getter
 	@Column(nullable = false)
 	private int clauseOrder; // 조문 순서
 
+	@Getter
 	@Column(nullable = false)
 	private String title; // 제1조 (목적)
 
+	@Getter
 	@Lob
 	@Column(nullable = false)
 	private String content; // 조문 내용
