@@ -1,5 +1,6 @@
 package com.reservation.admin.terms.service;
 
+import static com.reservation.admin.terms.service.mapper.AdminTermsQueryConditionMapper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -16,17 +17,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
 import com.reservation.admin.terms.controller.dto.request.CreateClauseRequest;
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateClauseRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
+import com.reservation.admin.terms.controller.dto.response.TermsSearchCondition;
 import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
+import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
 import com.reservation.commonapi.terms.repository.AdminTermsRepository;
+import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.terms.ClauseDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
+import com.reservation.commonmodel.terms.TermsSortField;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
 
@@ -222,5 +229,27 @@ public class TermsServiceTest {
 		});
 
 		assertThat(businessException.getMessage()).isEqualTo("과거 버전의 약관은 수정할 수 없습니다.");
+	}
+
+	@Test
+	void 약관_리스트_조회_성공() {
+		TermsSearchCondition condition = new TermsSearchCondition(
+			TermsCode.TERMS_USE,
+			false,
+			0,
+			10,
+			List.of(TermsSortField.CREATED_AT),
+			List.of(Sort.Direction.DESC)
+		);
+
+		AdminTermsQueryCondition queryCondition = fromSearchConditionToQueryCondition(condition);
+		Page<AdminTermsDto> expectedPage = mock(Page.class);
+
+		when(adminTermsRepository.findTermsByCondition(queryCondition)).thenReturn(expectedPage);
+
+		Page<AdminTermsDto> result = termsService.findTerms(condition);
+
+		assertThat(result).isEqualTo(expectedPage);
+		verify(adminTermsRepository).findTermsByCondition(queryCondition);
 	}
 }
