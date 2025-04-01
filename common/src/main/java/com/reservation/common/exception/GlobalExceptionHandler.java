@@ -1,6 +1,7 @@
 package com.reservation.common.exception;
 
 import static com.reservation.common.response.ApiErrorResponse.*;
+import static com.reservation.common.response.ApiErrorResponse.of;
 import static org.springframework.http.ResponseEntity.*;
 
 import java.util.List;
@@ -16,8 +17,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.reservation.common.response.ApiErrorResponse;
 
+import lombok.extern.log4j.Log4j2;
+
 @RestControllerAdvice
+@Log4j2
 public class GlobalExceptionHandler {
+	private static final String DEFAULT_ERROR_MESSAGE = "서버 내부 오류로 인한 작업 실패";
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ResponseEntity<ApiErrorResponse> handleValidationException(
@@ -46,9 +52,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception exception) {
+		log.error(exception);
+
 		String responseCode = ErrorCode.INTERNAL_SERVER_ERROR.name();
 		HttpStatus status = ErrorCode.VALIDATION_ERROR.status();
-		ApiErrorResponse response = of(responseCode, exception.getMessage());
+		ApiErrorResponse response = of(responseCode, DEFAULT_ERROR_MESSAGE);
 
 		return status(status).body(response);
 	}
