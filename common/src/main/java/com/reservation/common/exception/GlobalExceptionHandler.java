@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
 		log.error(exception);
 
 		String responseCode = ErrorCode.INTERNAL_SERVER_ERROR.name();
-		HttpStatus status = ErrorCode.VALIDATION_ERROR.status();
+		HttpStatus status = ErrorCode.INTERNAL_SERVER_ERROR.status();
 		ApiErrorResponse response = of(responseCode, DEFAULT_ERROR_MESSAGE);
 
 		return status(status).body(response);
