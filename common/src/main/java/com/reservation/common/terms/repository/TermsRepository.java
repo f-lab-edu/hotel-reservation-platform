@@ -91,7 +91,7 @@ public class TermsRepository implements AdminTermsRepository {
 				terms.version,
 				terms.isLatest,
 				terms.exposedFrom,
-				terms.exposedTo,
+				terms.exposedToOrNull,
 				terms.displayOrder,
 				terms.createdAt
 			))
@@ -128,7 +128,7 @@ public class TermsRepository implements AdminTermsRepository {
 			terms.getVersion(),
 			terms.getIsLatest(),
 			terms.getExposedFrom(),
-			terms.getExposedTo(),
+			terms.getExposedToOrNull(),
 			terms.getDisplayOrder(),
 			terms.getCreatedAt(),
 			terms.getUpdatedAt(),
@@ -144,7 +144,7 @@ public class TermsRepository implements AdminTermsRepository {
 			.version(termsDto.version())
 			.isLatest(termsDto.isLatest())
 			.exposedFrom(termsDto.exposedFrom())
-			.exposedTo(termsDto.exposedTo())
+			.exposedToOrNull(termsDto.exposedToOrNull())
 			.displayOrder(termsDto.displayOrder())
 			.build();
 

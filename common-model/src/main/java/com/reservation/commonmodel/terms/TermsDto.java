@@ -12,7 +12,7 @@ public record TermsDto(
 	Integer version,
 	Boolean isLatest,
 	LocalDateTime exposedFrom,
-	LocalDateTime exposedTo,
+	LocalDateTime exposedToOrNull,
 	Integer displayOrder,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt,

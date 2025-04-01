@@ -66,7 +66,7 @@ public class Terms extends BaseEntity {
 
 	@Getter
 	@Column(nullable = true)
-	private LocalDateTime exposedTo; // 노출 종료일
+	private LocalDateTime exposedToOrNull; // 노출 종료일
 
 	@Getter
 	@Column(nullable = false)
@@ -84,7 +84,7 @@ public class Terms extends BaseEntity {
 
 	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer version, Boolean isLatest,
 		LocalDateTime exposedFrom,
-		LocalDateTime exposedTo, Integer displayOrder) {
+		LocalDateTime exposedToOrNull, Integer displayOrder) {
 		if (code == null) {
 			throw ErrorCode.CONFLICT.exception("약관 코드는 필수입니다.");
 		}
@@ -109,7 +109,7 @@ public class Terms extends BaseEntity {
 		if (displayOrder == null || displayOrder < 1) {
 			throw ErrorCode.CONFLICT.exception("정렬 순서는 1 이상이어야 합니다.");
 		}
-		if (exposedTo != null && exposedFrom.isAfter(exposedTo)) {
+		if (exposedToOrNull != null && exposedFrom.isAfter(exposedToOrNull)) {
 			throw ErrorCode.CONFLICT.exception("노출 종료일은 노출 시작일보다 늦어야 합니다.");
 		}
 		this.code = code;
@@ -119,7 +119,7 @@ public class Terms extends BaseEntity {
 		this.version = version;
 		this.isLatest = isLatest;
 		this.exposedFrom = exposedFrom;
-		this.exposedTo = exposedTo;
+		this.exposedToOrNull = exposedToOrNull;
 		this.displayOrder = displayOrder;
 	}
 
@@ -131,7 +131,7 @@ public class Terms extends BaseEntity {
 		private Integer version;
 		private Boolean isLatest;
 		private LocalDateTime exposedFrom;
-		private LocalDateTime exposedTo;
+		private LocalDateTime exposedToOrNull;
 		private Integer displayOrder;
 
 		public TermsBuilder code(TermsCode code) {
@@ -169,8 +169,8 @@ public class Terms extends BaseEntity {
 			return this;
 		}
 
-		public TermsBuilder exposedTo(LocalDateTime exposedTo) {
-			this.exposedTo = exposedTo;
+		public TermsBuilder exposedToOrNull(LocalDateTime exposedToOrNull) {
+			this.exposedToOrNull = exposedToOrNull;
 			return this;
 		}
 
@@ -180,7 +180,7 @@ public class Terms extends BaseEntity {
 		}
 
 		public Terms build() {
-			return new Terms(code, title, type, status, version, isLatest, exposedFrom, exposedTo, displayOrder);
+			return new Terms(code, title, type, status, version, isLatest, exposedFrom, exposedToOrNull, displayOrder);
 		}
 	}
 

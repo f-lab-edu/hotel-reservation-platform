@@ -19,7 +19,7 @@ public class AdminTermsDto {
 	Integer version;
 	Boolean isLatest;
 	LocalDateTime exposedFrom;
-	LocalDateTime exposedTo;
+	LocalDateTime exposedToOrNull;
 	Integer displayOrder;
 	LocalDateTime createdAt;
 
@@ -33,7 +33,7 @@ public class AdminTermsDto {
 		Integer version,
 		Boolean isLatest,
 		LocalDateTime exposedFrom,
-		LocalDateTime exposedTo,
+		LocalDateTime exposedToOrNull,
 		Integer displayOrder,
 		LocalDateTime createdAt
 	) {
@@ -45,7 +45,7 @@ public class AdminTermsDto {
 		this.version = version;
 		this.isLatest = isLatest;
 		this.exposedFrom = exposedFrom;
-		this.exposedTo = exposedTo;
+		this.exposedToOrNull = exposedToOrNull;
 		this.displayOrder = displayOrder;
 		this.createdAt = createdAt;
 	}

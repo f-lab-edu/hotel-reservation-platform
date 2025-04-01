@@ -17,7 +17,7 @@ public class TermsDtoMapper {
 			version,
 			true, // isLatest
 			request.exposedFrom(),
-			request.exposedTo(),
+			request.exposedToOrNull(),
 			request.displayOrder(),
 			null, // createdAt
 			null, // updatedAt
@@ -38,7 +38,7 @@ public class TermsDtoMapper {
 			version,
 			true, // isLatest
 			request.exposedFrom(),
-			request.exposedTo(),
+			request.exposedToOrNull(),
 			request.displayOrder(),
 			null, // createdAt
 			null, // updatedAt

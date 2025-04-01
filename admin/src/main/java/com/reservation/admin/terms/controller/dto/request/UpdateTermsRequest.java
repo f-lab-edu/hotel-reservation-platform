@@ -21,7 +21,7 @@ public record UpdateTermsRequest(
 	@NotNull TermsType type,
 	@NotNull TermsStatus status,
 	@NotNull LocalDateTime exposedFrom,
-	@Future LocalDateTime exposedTo,
+	@Future LocalDateTime exposedToOrNull,
 	@Min(1) Integer displayOrder,
 	@NotEmpty List<@Valid UpdateClauseRequest> clauses
 ) {
