@@ -7,14 +7,14 @@ import com.reservation.common.response.ApiSuccessResponse;
 
 public class ApiResponses {
 	public static <T> ResponseEntity<ApiSuccessResponse<T>> ok(T data) {
-		return ResponseEntity.ok(new ApiSuccessResponse<>(true, data));
+		return ResponseEntity.ok(ApiSuccessResponse.of(data));
 	}
 
 	public static <T> ResponseEntity<ApiSuccessResponse<T>> created(T data) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiSuccessResponse<>(true, data));
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccessResponse.of(data));
 	}
 
-	public static ResponseEntity<Void> noContent() {
-		return ResponseEntity.noContent().build();
+	public static <T> ResponseEntity<ApiSuccessResponse<T>> noContent() {
+		return ResponseEntity.ok(ApiSuccessResponse.of(null));
 	}
 }
