@@ -39,7 +39,7 @@ public record TermsSearchCondition(
 	@Schema(description = "정렬 방향 목록", example = "[\"DESC\", \"ASC\"]")
 	@Nullable
 	List<Direction> sortDirections
-) implements PageableRequest {
+) implements PageableRequest<TermsSortField> {
 	private static final int DEFAULT_PAGE_SIZE = 10;
 
 	@Schema(hidden = true)
