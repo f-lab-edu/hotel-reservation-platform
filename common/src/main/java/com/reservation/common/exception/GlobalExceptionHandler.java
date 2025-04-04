@@ -60,9 +60,7 @@ public class GlobalExceptionHandler {
 		String param = methodArgumentTypeMismatchException.getName();
 		Object value = methodArgumentTypeMismatchException.getValue();
 		String invalidValue = value != null ? value.toString() : "null";
-
-		System.out.println(methodArgumentTypeMismatchException.getMessage());
-
+		
 		String responseCode = ErrorCode.VALIDATION_ERROR.name();
 		String message = String.format("'%s' 파라미터에 잘못된 값 '%s'이(가) 전달되었습니다.", param, invalidValue);
 		ApiErrorResponse response = of(responseCode, message);
@@ -73,8 +71,6 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleValidationException(
 		MethodArgumentNotValidException methodArgumentNotValidException) {
-
-		System.out.println(methodArgumentNotValidException.getMessage());
 
 		List<FieldError> fieldErrors = methodArgumentNotValidException.getBindingResult().getFieldErrors();
 		String message = fieldErrors.stream()
