@@ -8,8 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
-import com.reservation.admin.terms.controller.dto.response.TermsSearchCondition;
 import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
@@ -88,7 +88,7 @@ public class TermsService {
 
 	public Page<AdminTermsDto> findTerms(TermsSearchCondition condition) {
 		AdminTermsQueryCondition queryCondition = fromSearchConditionToQueryCondition(condition);
-		
+
 		return this.adminTermsRepository.findTermsByCondition(queryCondition);
 	}
 }
