@@ -2,22 +2,19 @@ package com.reservation.common.request;
 
 import static org.springframework.data.domain.Sort.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import com.reservation.commonmodel.sort.SortField;
+import com.reservation.commonmodel.sort.SortCondition;
 
-public interface PageableRequest<T extends SortField> {
+public interface PageableRequest<T extends SortCondition> {
 	Integer page();
 
 	Integer size();
 
-	List<T> sortFields();
-
-	List<Direction> sortDirections();
+	List<T> sorts();
 
 	default PageRequest toPageRequest() {
 		int page = this.page() != null ? this.page() : 0;
@@ -27,22 +24,16 @@ public interface PageableRequest<T extends SortField> {
 	}
 
 	default Sort toSort() {
-		List<T> sortFields = sortFields();
-		List<Direction> sortDirections = sortDirections();
+		List<T> sorts = sorts();
 
-		if (sortFields == null || sortFields.isEmpty() || sortDirections == null || sortDirections.isEmpty()
-			|| sortFields.size() != sortDirections.size()) {
+		if (sorts == null || sorts.isEmpty()) {
 			return Sort.by(getDefaultSortOrder());
 		}
 
-		List<Order> orders = new ArrayList<>();
-		for (int i = 0; i < sortFields.size(); i++) {
-			if (sortFields.get(i) == null || sortDirections.get(i) == null) {
-				continue;
-			}
-			Order order = new Order(sortDirections.get(i), sortFields.get(i).getFieldName());
-			orders.add(order);
-		}
+		List<Order> orders = sorts.stream()
+			.map(sort -> new Order(sort.direction(), sort.field().getFieldName()))
+			.toList();
+
 		return Sort.by(orders);
 	}
 

@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import com.reservation.common.response.ApiSuccessResponse;
 
 public class ApiResponses {
-	public static <T> ResponseEntity<ApiSuccessResponse<T>> ok(T data) {
-		return ResponseEntity.ok(new ApiSuccessResponse<>(true, data));
+	public static <T> ApiSuccessResponse<T> ok(T data) {
+		return ApiSuccessResponse.of(data);
 	}
 
 	public static <T> ResponseEntity<ApiSuccessResponse<T>> created(T data) {
