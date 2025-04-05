@@ -6,15 +6,15 @@ import org.springframework.http.ResponseEntity;
 import com.reservation.common.response.ApiSuccessResponse;
 
 public class ApiResponses {
-	public static <T> ResponseEntity<ApiSuccessResponse<T>> ok(T data) {
-		return ResponseEntity.ok(ApiSuccessResponse.of(data));
+	public static <T> ApiSuccessResponse<T> ok(T data) {
+		return ApiSuccessResponse.of(data);
 	}
 
 	public static <T> ResponseEntity<ApiSuccessResponse<T>> created(T data) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(ApiSuccessResponse.of(data));
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiSuccessResponse<>(true, data));
 	}
 
-	public static <T> ResponseEntity<ApiSuccessResponse<T>> noContent() {
-		return ResponseEntity.ok(ApiSuccessResponse.of(null));
+	public static ResponseEntity<Void> noContent() {
+		return ResponseEntity.noContent().build();
 	}
 }

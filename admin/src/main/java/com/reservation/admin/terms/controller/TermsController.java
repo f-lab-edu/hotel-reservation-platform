@@ -1,14 +1,9 @@
 package com.reservation.admin.terms.controller;
 
 import static com.reservation.common.support.response.ApiResponses.*;
-import static com.reservation.common.support.validation.ModelAttributeValidator.*;
 
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,19 +45,14 @@ public class TermsController {
 	@ApiResponse(responseCode = "200", description = "수정 성공",
 		content = @Content(schema = @Schema(implementation = ApiSuccessResponse.class)))
 	@PutMapping
-	public ResponseEntity<ApiSuccessResponse<Long>> updateTerms(@Valid @RequestBody UpdateTermsRequest request) {
+	public ApiSuccessResponse<Long> updateTerms(@Valid @RequestBody UpdateTermsRequest request) {
 		Long termsId = termsService.updateTerms(request);
 		return ok(termsId);
 	}
 
 	@Operation(summary = "약관 리스트 조회", description = "관리자가 약관 리스트를 조회합니다.")
-	@GetMapping
-	public ResponseEntity<ApiSuccessResponse<Page<AdminTermsDto>>> findTerms(
-		@ParameterObject @Valid @ModelAttribute TermsSearchCondition condition,
-		BindingResult bindingResult
-	) {
-		validate(bindingResult);
-
+	@PostMapping("/search")
+	public ApiSuccessResponse<Page<AdminTermsDto>> findTerms(@Valid @RequestBody TermsSearchCondition condition) {
 		Page<AdminTermsDto> terms = termsService.findTerms(condition);
 		return ok(terms);
 	}
