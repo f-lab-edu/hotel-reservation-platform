@@ -1,6 +1,6 @@
 package com.reservation.admin.terms.service.mapper;
 
-import com.reservation.admin.terms.controller.dto.response.TermsSearchCondition;
+import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
 
 public class AdminTermsQueryConditionMapper {
