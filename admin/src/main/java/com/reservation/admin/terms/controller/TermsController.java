@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
-import com.reservation.admin.terms.controller.dto.response.TermsSearchCondition;
 import com.reservation.admin.terms.service.TermsService;
 import com.reservation.common.response.ApiSuccessResponse;
 import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;

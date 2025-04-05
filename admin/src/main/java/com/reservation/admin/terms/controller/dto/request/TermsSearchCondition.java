@@ -1,4 +1,4 @@
-package com.reservation.admin.terms.controller.dto.response;
+package com.reservation.admin.terms.controller.dto.request;
 
 import static org.springframework.data.domain.Sort.*;
 
