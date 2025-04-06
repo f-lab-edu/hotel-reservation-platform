@@ -99,7 +99,12 @@ public class TermsService {
 
 	public KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeyset(TermsKeysetSearchCondition condition) {
 		AdminTermsKeysetQueryCondition queryCondition = fromSearchConditionToQueryKeysetCondition(condition);
-		
+
 		return this.adminTermsRepository.findTermsByKeysetCondition(queryCondition);
+	}
+
+	public TermsDto findById(Long id) {
+		return this.adminTermsRepository.findWithClausesById(id)
+			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("존재하지 않는 약관입니다."));
 	}
 }

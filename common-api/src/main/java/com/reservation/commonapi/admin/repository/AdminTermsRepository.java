@@ -26,4 +26,6 @@ public interface AdminTermsRepository {
 
 	KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeysetCondition(
 		AdminTermsKeysetQueryCondition condition); // Query keyset Condition 조회
+
+	Optional<TermsDto> findWithClausesById(Long id);
 }

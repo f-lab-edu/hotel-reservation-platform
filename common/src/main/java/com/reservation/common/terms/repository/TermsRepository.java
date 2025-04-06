@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.reservation.common.clause.domain.QClause;
 import com.reservation.common.terms.domain.QTerms;
 import com.reservation.common.terms.domain.Terms;
 import com.reservation.common.terms.repository.cursorutil.AdminTermsCursorUtils;
@@ -34,6 +35,7 @@ public class TermsRepository implements AdminTermsRepository {
 	private final JPAQueryFactory queryFactory;
 	private final JpaTermsRepository jpaTermsRepository;
 	private final QTerms terms = QTerms.terms;
+	private final QClause clause = QClause.clause;
 
 	public TermsRepository(JPAQueryFactory queryFactory, JpaTermsRepository jpaTermsRepository) {
 		this.queryFactory = queryFactory;
@@ -167,5 +169,16 @@ public class TermsRepository implements AdminTermsRepository {
 			hasNext,
 			hasNext ? nextCursors : null
 		);
+	}
+
+	@Override
+	public Optional<TermsDto> findWithClausesById(Long id) {
+		Terms result = queryFactory
+			.selectFrom(terms)
+			.leftJoin(terms.clauseList, clause).fetchJoin() // fetch join으로 N+1 방지
+			.where(terms.id.eq(id))
+			.fetchOne();
+		Optional<Terms> optionalResult = Optional.ofNullable(result);
+		return optionalResult.map(TermsDtoMapper::fromTerms);
 	}
 }

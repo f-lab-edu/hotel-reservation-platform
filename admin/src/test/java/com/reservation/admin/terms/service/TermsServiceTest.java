@@ -1,6 +1,7 @@
 package com.reservation.admin.terms.service;
 
 import static com.reservation.admin.terms.service.mapper.AdminTermsQueryConditionMapper.*;
+import static com.reservation.admin.terms.service.mapper.AdminTermsQueryKeysetConditionMapper.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,16 +24,20 @@ import org.springframework.data.domain.Sort;
 
 import com.reservation.admin.terms.controller.dto.request.CreateClauseRequest;
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.TermsKeysetSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateClauseRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.common.terms.service.TermsCommandService;
+import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
 import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
 import com.reservation.commonapi.admin.query.sort.AdminTermsSortCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
 import com.reservation.commonapi.admin.query.sort.AdminTermsSortField;
 import com.reservation.commonapi.admin.repository.AdminTermsRepository;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.exception.BusinessException;
+import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.ClauseDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
@@ -251,5 +257,72 @@ public class TermsServiceTest {
 
 		assertThat(result).isEqualTo(expectedPage);
 		verify(adminTermsRepository).findTermsByCondition(queryCondition);
+	}
+
+	@Test
+	@DisplayName("약관 키셋 리스트 조회 성공")
+	void findTermsByKeyset_ReturnsTermsList() {
+		TermsKeysetSearchCondition condition = new TermsKeysetSearchCondition(
+			TermsCode.TERMS_USE,
+			false,
+			10,
+			List.of(new AdminTermsSortCursor(AdminTermsSortField.CREATED_AT, Sort.Direction.DESC, null))
+		);
+
+		AdminTermsKeysetQueryCondition queryCondition = fromSearchConditionToQueryKeysetCondition(condition);
+		KeysetPage<AdminTermsDto, AdminTermsSortCursor> expectedPage = mock(KeysetPage.class);
+
+		when(adminTermsRepository.findTermsByKeysetCondition(queryCondition)).thenReturn(expectedPage);
+
+		KeysetPage<AdminTermsDto, AdminTermsSortCursor> result = termsService.findTermsByKeyset(condition);
+
+		assertThat(result).isEqualTo(expectedPage);
+		verify(adminTermsRepository).findTermsByKeysetCondition(queryCondition);
+	}
+
+	@Test
+	@DisplayName("약관 ID로 조회 성공")
+	void findById_ReturnsTerms() {
+		Long id = 1L;
+		TermsDto expectedTerms = new TermsDto(
+			id,
+			TermsCode.TERMS_USE,
+			"서비스 이용약관",
+			TermsType.REQUIRED,
+			TermsStatus.ACTIVE,
+			1,
+			true,
+			LocalDateTime.of(2025, 3, 25, 0, 0),
+			LocalDateTime.of(2026, 3, 25, 0, 0),
+			1,
+			null,
+			null,
+			List.of(
+				new ClauseDto(1L, 1, "제1조 (목적)", "이 약관은..."),
+				new ClauseDto(2L, 2, "제2조 (이용)", "이 약관은...")
+			)
+		);
+
+		when(adminTermsRepository.findWithClausesById(id)).thenReturn(Optional.of(expectedTerms));
+
+		TermsDto result = termsService.findById(id);
+
+		assertThat(result).isEqualTo(expectedTerms);
+		verify(adminTermsRepository).findWithClausesById(id);
+	}
+
+	@Test
+	@DisplayName("약관 ID로 조회 실패 - 약관이 존재하지 않음")
+	void findById_ThrowsExceptionWhenTermsNotFound() {
+		Long id = 1L;
+
+		when(adminTermsRepository.findWithClausesById(id)).thenReturn(Optional.empty());
+
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
+			termsService.findById(id);
+		});
+
+		assertThat(exception.getMessage()).isEqualTo("존재하지 않는 약관입니다.");
+		verify(adminTermsRepository).findWithClausesById(id);
 	}
 }
