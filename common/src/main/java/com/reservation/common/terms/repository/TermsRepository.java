@@ -24,13 +24,17 @@ import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
 import com.reservation.commonapi.admin.repository.AdminTermsRepository;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonapi.admin.repository.dto.QAdminTermsDto;
+import com.reservation.commonapi.customer.query.CustomerTermsQueryCondition;
+import com.reservation.commonapi.customer.repository.CustomerTermsRepository;
+import com.reservation.commonapi.customer.repository.dto.CustomerTermsDto;
+import com.reservation.commonapi.customer.repository.dto.QCustomerTermsDto;
 import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
 
 @Repository
-public class TermsRepository implements AdminTermsRepository {
+public class TermsRepository implements AdminTermsRepository, CustomerTermsRepository {
 
 	private final JPAQueryFactory queryFactory;
 	private final JpaTermsRepository jpaTermsRepository;
@@ -180,5 +184,46 @@ public class TermsRepository implements AdminTermsRepository {
 			.fetchOne();
 		Optional<Terms> optionalResult = Optional.ofNullable(result);
 		return optionalResult.map(TermsDtoMapper::fromTerms);
+	}
+
+	@Override
+	public Page<CustomerTermsDto> findTermsByCondition(CustomerTermsQueryCondition condition) {
+		// 커서 외 조건을 위한 빌더
+		BooleanBuilder builder = new BooleanBuilder();
+		builder.and(terms.isLatest.isTrue());
+		builder.and(terms.status.eq(TermsStatus.ACTIVE));
+
+		Pageable pageable = condition.pageRequest();
+		// 정렬 조건 생성
+		List<OrderSpecifier<?>> orders = getOrderSpecifiers(condition.pageRequest().getSort(), Terms.class, "terms");
+
+		// 데이터 조회
+		List<CustomerTermsDto> results = queryFactory
+			.select(new QCustomerTermsDto(
+				terms.id,
+				terms.code,
+				terms.title,
+				terms.type,
+				terms.status,
+				terms.version,
+				terms.exposedFrom,
+				terms.displayOrder
+			))
+			.from(terms)
+			.where(builder)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.orderBy(orders.toArray(new OrderSpecifier[0]))
+			.fetch();
+
+		// count 쿼리 (총 개수)
+		Long total = queryFactory
+			.select(terms.count())
+			.from(terms)
+			.where(builder)
+			.fetchOne();
+
+		// Page 객체로 감싸기
+		return new PageImpl<>(results, pageable, total != null ? total : 0);
 	}
 }
