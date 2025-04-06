@@ -1,4 +1,4 @@
-package com.reservation.commonapi.terms.repository.dto;
+package com.reservation.commonapi.admin.repository.dto;
 
 import java.time.LocalDateTime;
 

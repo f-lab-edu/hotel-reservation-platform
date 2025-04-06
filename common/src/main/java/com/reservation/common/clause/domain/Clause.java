@@ -1,8 +1,8 @@
 package com.reservation.common.clause.domain;
 
 import com.reservation.common.domain.BaseEntity;
-import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.domain.Terms;
+import com.reservation.commonmodel.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

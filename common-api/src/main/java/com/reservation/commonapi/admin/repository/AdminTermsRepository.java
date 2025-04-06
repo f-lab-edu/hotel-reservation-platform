@@ -1,11 +1,14 @@
-package com.reservation.commonapi.terms.repository;
+package com.reservation.commonapi.admin.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 
-import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
+import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
+import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
@@ -20,4 +23,7 @@ public interface AdminTermsRepository {
 	Optional<TermsDto> findById(Long id); // 약관 ID로 단일 조회
 
 	Page<AdminTermsDto> findTermsByCondition(AdminTermsQueryCondition condition); // Query Condition 조회
+
+	KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeysetCondition(
+		AdminTermsKeysetQueryCondition condition); // Query keyset Condition 조회
 }

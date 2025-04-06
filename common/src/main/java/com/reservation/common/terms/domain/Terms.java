@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.domain.BaseEntity;
-import com.reservation.common.exception.ErrorCode;
+import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;

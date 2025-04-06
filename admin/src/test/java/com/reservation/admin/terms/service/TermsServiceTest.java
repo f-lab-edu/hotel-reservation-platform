@@ -25,15 +25,16 @@ import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
 import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateClauseRequest;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
-import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.service.TermsCommandService;
-import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
-import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortField;
+import com.reservation.commonapi.admin.repository.AdminTermsRepository;
+import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
+import com.reservation.commonmodel.exception.BusinessException;
 import com.reservation.commonmodel.terms.ClauseDto;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
-import com.reservation.commonmodel.terms.TermsSortField;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
 
@@ -238,8 +239,7 @@ public class TermsServiceTest {
 			false,
 			0,
 			10,
-			List.of(TermsSortField.CREATED_AT),
-			List.of(Sort.Direction.DESC)
+			List.of(new AdminTermsSortCondition(AdminTermsSortField.CREATED_AT, Sort.Direction.DESC))
 		);
 
 		AdminTermsQueryCondition queryCondition = fromSearchConditionToQueryCondition(condition);

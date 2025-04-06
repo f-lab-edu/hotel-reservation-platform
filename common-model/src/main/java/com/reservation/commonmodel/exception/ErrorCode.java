@@ -1,4 +1,4 @@
-package com.reservation.common.exception;
+package com.reservation.commonmodel.exception;
 
 import org.springframework.http.HttpStatus;
 

@@ -1,6 +1,7 @@
 package com.reservation.admin.terms.service;
 
 import static com.reservation.admin.terms.service.mapper.AdminTermsQueryConditionMapper.*;
+import static com.reservation.admin.terms.service.mapper.AdminTermsQueryKeysetConditionMapper.*;
 import static com.reservation.admin.terms.service.mapper.TermsDtoMapper.*;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -8,13 +9,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.reservation.admin.terms.controller.dto.request.CreateTermsRequest;
+import com.reservation.admin.terms.controller.dto.request.TermsKeysetSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
-import com.reservation.common.exception.ErrorCode;
 import com.reservation.common.terms.service.TermsCommandService;
-import com.reservation.commonapi.terms.query.condition.AdminTermsQueryCondition;
-import com.reservation.commonapi.terms.repository.AdminTermsRepository;
-import com.reservation.commonapi.terms.repository.dto.AdminTermsDto;
+import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
+import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.repository.AdminTermsRepository;
+import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
+import com.reservation.commonmodel.exception.ErrorCode;
+import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
@@ -90,5 +95,11 @@ public class TermsService {
 		AdminTermsQueryCondition queryCondition = fromSearchConditionToQueryCondition(condition);
 
 		return this.adminTermsRepository.findTermsByCondition(queryCondition);
+	}
+
+	public KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeyset(TermsKeysetSearchCondition condition) {
+		AdminTermsKeysetQueryCondition queryCondition = fromSearchConditionToQueryKeysetCondition(condition);
+		
+		return this.adminTermsRepository.findTermsByKeysetCondition(queryCondition);
 	}
 }

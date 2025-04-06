@@ -1,4 +1,4 @@
-package com.reservation.commonapi.terms.query.condition;
+package com.reservation.commonapi.admin.query;
 
 import org.springframework.data.domain.PageRequest;
 

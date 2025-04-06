@@ -5,8 +5,9 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 
 import com.reservation.common.request.PageableRequest;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortCondition;
+import com.reservation.commonapi.admin.query.sort.AdminTermsSortField;
 import com.reservation.commonmodel.terms.TermsCode;
-import com.reservation.commonmodel.terms.TermsSortField;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -29,16 +30,16 @@ public record TermsSearchCondition(
 	Integer size,
 
 	@Nullable
-	List<TermsSortCondition> sorts
-) implements PageableRequest<TermsSortCondition> {
+	List<AdminTermsSortCondition> sorts
+) implements PageableRequest<AdminTermsSortCondition> {
 	private static final int DEFAULT_PAGE_SIZE = 10;
 
 	@Schema(hidden = true)
 	@Override
 	public Sort.Order getDefaultSortOrder() {
-		return new Sort.Order(Sort.Direction.DESC, TermsSortField.CREATED_AT.getFieldName());
+		return new Sort.Order(Sort.Direction.DESC, AdminTermsSortField.CREATED_AT.getFieldName());
 	}
-	
+
 	@Schema(hidden = true)
 	@Override
 	public int defaultPageSize() {

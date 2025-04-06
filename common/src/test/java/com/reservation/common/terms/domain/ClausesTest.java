@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.clause.domain.Clause.ClauseBuilder;
-import com.reservation.common.exception.BusinessException;
 import com.reservation.common.terms.domain.Terms.TermsBuilder;
+import com.reservation.commonmodel.exception.BusinessException;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;

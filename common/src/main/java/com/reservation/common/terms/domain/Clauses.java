@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.reservation.common.clause.domain.Clause;
-import com.reservation.common.exception.ErrorCode;
+import com.reservation.commonmodel.exception.ErrorCode;
 
 public record Clauses(List<Clause> values) {
 

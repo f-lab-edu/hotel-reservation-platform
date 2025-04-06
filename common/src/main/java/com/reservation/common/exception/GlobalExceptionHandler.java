@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.reservation.common.response.ApiErrorResponse;
+import com.reservation.commonmodel.exception.BusinessException;
+import com.reservation.commonmodel.exception.ErrorCode;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -52,7 +54,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception exception) {
-		log.error(exception);
+		log.error(exception.getMessage(), exception);
 
 		String responseCode = ErrorCode.INTERNAL_SERVER_ERROR.name();
 		HttpStatus status = ErrorCode.INTERNAL_SERVER_ERROR.status();
