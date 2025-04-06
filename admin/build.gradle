@@ -1,3 +1,24 @@
 dependencies {
     implementation project(':common') // 공통 모듈 참조
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core:5.16.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.16.1'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.12.20'
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    testCompileOnly 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+}
+
+
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs += ['-Xshare:off']
+    jvmArgs += '-javaagent:' + configurations.testRuntimeClasspath.find { it.name.contains("byte-buddy-agent") }
 }
