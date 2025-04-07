@@ -8,3 +8,4 @@ common-api/build
 host/build
 customer/build
 admin/build
+.env
