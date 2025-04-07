@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.common.response.ApiResponse;
-import com.reservation.customer.phoneverification.controller.dto.request.PhoneVerificationRequest;
-import com.reservation.customer.phoneverification.controller.dto.response.PhoneVerificationResponse;
+import com.reservation.customer.phoneverification.controller.dto.request.SendPhoneVerificationRequest;
+import com.reservation.customer.phoneverification.controller.dto.request.VerifyPhoneVerificationRequest;
+import com.reservation.customer.phoneverification.controller.dto.response.SendPhoneVerificationResponse;
+import com.reservation.customer.phoneverification.controller.dto.response.VerifyPhoneVerificationResponse;
 import com.reservation.customer.phoneverification.infra.PhoneVerificationCodeGenerator;
 import com.reservation.customer.phoneverification.infra.PhoneVerificationExpiresTimeGenerator;
 import com.reservation.customer.phoneverification.service.PhoneVerificationService;
@@ -27,11 +29,20 @@ public class PhoneVerificationController {
 
 	@PostMapping("/send")
 	@Operation(summary = "폰 인증 번호 발송")
-	public ApiResponse<PhoneVerificationResponse> sendVerificationNumber(
-		@RequestBody PhoneVerificationRequest request) {
-		PhoneVerificationResponse response = phoneVerificationService.sendVerificationNumber(request,
+	public ApiResponse<SendPhoneVerificationResponse> sendVerificationNumber(
+		@RequestBody SendPhoneVerificationRequest request) {
+		SendPhoneVerificationResponse response = phoneVerificationService.sendVerificationNumber(request,
 			PhoneVerificationCodeGenerator::createCode, PhoneVerificationExpiresTimeGenerator::createExpiresTime);
 
+		return ok(response);
+	}
+
+	@PostMapping("/verify")
+	@Operation(summary = "폰 인증 번호 검증")
+	public ApiResponse<VerifyPhoneVerificationResponse> verifyVerificationNumber(
+		@RequestBody VerifyPhoneVerificationRequest request) {
+		VerifyPhoneVerificationResponse response = phoneVerificationService.verifyVerificationNumber(request);
+		
 		return ok(response);
 	}
 
