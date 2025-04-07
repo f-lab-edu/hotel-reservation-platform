@@ -32,6 +32,7 @@ import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
+import com.reservation.commonmodel.terms.TermsType;
 
 @Repository
 public class TermsRepository implements AdminTermsRepository, CustomerTermsRepository {
@@ -65,6 +66,14 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 	@Override
 	public Optional<TermsDto> findById(Long id) {
 		return this.jpaTermsRepository.findById(id).map(TermsDtoMapper::fromTerms);
+	}
+
+	@Override
+	public List<TermsDto> findRequiredTerms() {
+		return this.jpaTermsRepository.findByTypeAndStatus(TermsType.REQUIRED, TermsStatus.ACTIVE)
+			.stream()
+			.map(TermsDtoMapper::fromTerms)
+			.toList();
 	}
 
 	@Override
