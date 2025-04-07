@@ -11,6 +11,7 @@ import com.reservation.common.response.ApiResponse;
 import com.reservation.customer.phoneverification.controller.dto.request.PhoneVerificationRequest;
 import com.reservation.customer.phoneverification.controller.dto.response.PhoneVerificationResponse;
 import com.reservation.customer.phoneverification.infra.PhoneVerificationCodeGenerator;
+import com.reservation.customer.phoneverification.infra.PhoneVerificationExpiresTimeGenerator;
 import com.reservation.customer.phoneverification.service.PhoneVerificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,8 +30,8 @@ public class PhoneVerificationController {
 	public ApiResponse<PhoneVerificationResponse> sendVerificationNumber(
 		@RequestBody PhoneVerificationRequest request) {
 		PhoneVerificationResponse response = phoneVerificationService.sendVerificationNumber(request,
-			PhoneVerificationCodeGenerator::createCode);
-		
+			PhoneVerificationCodeGenerator::createCode, PhoneVerificationExpiresTimeGenerator::createExpiresTime);
+
 		return ok(response);
 	}
 
