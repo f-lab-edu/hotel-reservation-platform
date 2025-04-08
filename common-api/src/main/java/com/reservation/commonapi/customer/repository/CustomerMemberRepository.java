@@ -9,4 +9,8 @@ public interface CustomerMemberRepository {
 	Boolean existsByEmailAndStatus(String email, MemberStatus status); // 이메일 중복 체크
 
 	MemberDto save(MemberDto memberDto); // 고객 정보 저장
+
+	MemberDto findOneByEmailAndStatusIsNot(String email, MemberStatus status);
+
+	MemberDto findById(Long memberId);
 }

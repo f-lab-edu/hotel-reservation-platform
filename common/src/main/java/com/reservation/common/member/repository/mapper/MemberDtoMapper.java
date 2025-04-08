@@ -14,7 +14,7 @@ public class MemberDtoMapper {
 	public static MemberDto fromMember(Member member) {
 		return new MemberDto(
 			member.getId(),
-			null,
+			member.getPassword(),
 			member.getStatus(),
 			member.getEmail(),
 			member.getPhoneNumber(),

@@ -10,6 +10,10 @@ spring:
       hibernate:
         format_sql: true
 
+jwt:
+  secret-key: 'secretKeysecretKeysecretKeysecretKeysecretKeysecretKeysecretKey'
+  access-token-expiry: 3600
+
 logging:
   level:
     org.hibernate.SQL: debug

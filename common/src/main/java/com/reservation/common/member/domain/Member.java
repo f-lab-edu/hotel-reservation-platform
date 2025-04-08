@@ -16,6 +16,7 @@ import lombok.Getter;
 
 @Entity
 public class Member extends BaseEntity {
+	@Getter
 	@Column(nullable = false)
 	private String password;
 

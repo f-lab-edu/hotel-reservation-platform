@@ -4,6 +4,7 @@ rootProject.name = "hotel-reservation-platform"
 include 'common'
 include 'common-model'
 include 'common-api'
+include 'common-auth'
 include 'customer'
 include 'host'
 include 'admin'

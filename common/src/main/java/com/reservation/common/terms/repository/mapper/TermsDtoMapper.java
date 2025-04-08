@@ -33,7 +33,6 @@ public class TermsDtoMapper {
 	}
 
 	public static Terms ToTerms(TermsDto termsDto) {
-		System.out.println("termsDto = " + termsDto);
 		Terms terms = new Terms.TermsBuilder()
 			.id(termsDto.id())
 			.code(termsDto.code())
