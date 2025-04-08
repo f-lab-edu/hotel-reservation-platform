@@ -20,6 +20,7 @@ import com.reservation.customer.phoneverification.controller.dto.request.VerifyP
 import com.reservation.customer.phoneverification.controller.dto.response.SendPhoneVerificationResponse;
 import com.reservation.customer.phoneverification.controller.dto.response.VerifyPhoneVerificationResponse;
 import com.reservation.customer.phoneverification.service.dto.PhoneVerificationRedisValue;
+import com.reservation.customer.phoneverification.service.dto.PhoneVerifiedRedisValue;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -138,7 +139,7 @@ public class PhoneVerificationService {
 		String key = PHONE_VERIFIED_KEY_PREFIX + phoneNumber;
 		ValueOperations<String, String> ops = redisTemplate.opsForValue();
 		try {
-			String redisJson = objectMapper.writeValueAsString(agreedTermsIds);
+			String redisJson = objectMapper.writeValueAsString(new PhoneVerifiedRedisValue(agreedTermsIds));
 			ops.set(key, redisJson, Duration.ofMinutes(VERIFIED_EXPIRES_TIME_MINUTES));
 		} catch (JsonProcessingException e) {
 			log.error(e.getMessage(), e);

@@ -30,7 +30,7 @@ public record TermsSearchCondition(
 	@Schema(hidden = true)
 	@Override
 	public Sort.Order getDefaultSortOrder() {
-		return new Sort.Order(Sort.Direction.DESC, CustomerTermsSortField.DISPLAY_ORDER.getFieldName());
+		return new Sort.Order(Sort.Direction.ASC, CustomerTermsSortField.DISPLAY_ORDER.getFieldName());
 	}
 
 	@Schema(hidden = true)

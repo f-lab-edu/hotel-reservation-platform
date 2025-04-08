@@ -18,12 +18,10 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
-import lombok.ToString;
 
 @Entity
 @Table(
@@ -73,7 +71,6 @@ public class Terms extends BaseEntity {
 	private Integer displayOrder; // 정렬 순서
 
 	@OneToMany(mappedBy = "terms", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	@ToString.Exclude
 	private final List<Clause> clauseList = new ArrayList<>();
 
 	@Transient
@@ -82,9 +79,8 @@ public class Terms extends BaseEntity {
 	protected Terms() {
 	}
 
-	private Terms(TermsCode code, String title, TermsType type, TermsStatus status, Integer version, Boolean isLatest,
-		LocalDateTime exposedFrom,
-		LocalDateTime exposedToOrNull, Integer displayOrder) {
+	private Terms(Long id, TermsCode code, String title, TermsType type, TermsStatus status, Integer version,
+		Boolean isLatest, LocalDateTime exposedFrom, LocalDateTime exposedToOrNull, Integer displayOrder) {
 		if (code == null) {
 			throw ErrorCode.CONFLICT.exception("약관 코드는 필수입니다.");
 		}
@@ -112,6 +108,7 @@ public class Terms extends BaseEntity {
 		if (exposedToOrNull != null && exposedFrom.isAfter(exposedToOrNull)) {
 			throw ErrorCode.CONFLICT.exception("노출 종료일은 노출 시작일보다 늦어야 합니다.");
 		}
+		this.id = id;
 		this.code = code;
 		this.title = title;
 		this.type = type;
@@ -124,6 +121,7 @@ public class Terms extends BaseEntity {
 	}
 
 	public static class TermsBuilder {
+		private Long id;
 		private TermsCode code;
 		private String title;
 		private TermsType type;
@@ -133,6 +131,11 @@ public class Terms extends BaseEntity {
 		private LocalDateTime exposedFrom;
 		private LocalDateTime exposedToOrNull;
 		private Integer displayOrder;
+
+		public TermsBuilder id(Long id) {
+			this.id = id;
+			return this;
+		}
 
 		public TermsBuilder code(TermsCode code) {
 			this.code = code;
@@ -180,13 +183,9 @@ public class Terms extends BaseEntity {
 		}
 
 		public Terms build() {
-			return new Terms(code, title, type, status, version, isLatest, exposedFrom, exposedToOrNull, displayOrder);
+			return new Terms(id, code, title, type, status, version, isLatest, exposedFrom, exposedToOrNull,
+				displayOrder);
 		}
-	}
-
-	@PostLoad
-	private void onLoad() {
-		this.clauses = new Clauses(this.clauseList);
 	}
 
 	public Clauses getClauses() {

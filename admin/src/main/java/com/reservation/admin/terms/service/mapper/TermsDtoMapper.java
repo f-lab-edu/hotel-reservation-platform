@@ -30,7 +30,7 @@ public class TermsDtoMapper {
 	public static TermsDto fromUpdateTermsRequestAndVersion(UpdateTermsRequest request,
 		Integer version) {
 		return new TermsDto(
-			request.id(), // id
+			null, // id
 			request.code(),
 			request.title(),
 			request.type(),

@@ -1,6 +1,7 @@
 package com.reservation.common.terms.repository;
 
 import static com.reservation.common.support.sort.SortUtils.*;
+import static com.reservation.common.terms.repository.mapper.TermsDtoMapper.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,7 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 	@Override
 	public TermsDto save(TermsDto termsDto) {
 		Terms terms = TermsDtoMapper.ToTerms(termsDto);
-		return TermsDtoMapper.fromTerms(jpaTermsRepository.save(terms));
+		return fromTerms(jpaTermsRepository.save(terms), false);
 	}
 
 	@Override
@@ -65,14 +66,22 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 
 	@Override
 	public Optional<TermsDto> findById(Long id) {
-		return this.jpaTermsRepository.findById(id).map(TermsDtoMapper::fromTerms);
+		return this.jpaTermsRepository.findById(id).map((terms) -> fromTerms(terms, true));
 	}
 
 	@Override
 	public List<TermsDto> findRequiredTerms() {
 		return this.jpaTermsRepository.findByTypeAndStatus(TermsType.REQUIRED, TermsStatus.ACTIVE)
 			.stream()
-			.map(TermsDtoMapper::fromTerms)
+			.map((terms) -> fromTerms(terms, false))
+			.toList();
+	}
+
+	@Override
+	public List<TermsDto> findByStatusAndIsLatest(TermsStatus status, Boolean isLatest) {
+		return this.jpaTermsRepository.findByStatusAndIsLatest(status, isLatest)
+			.stream()
+			.map((terms) -> fromTerms(terms, false))
 			.toList();
 	}
 
@@ -192,7 +201,7 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 			.where(terms.id.eq(id))
 			.fetchOne();
 		Optional<Terms> optionalResult = Optional.ofNullable(result);
-		return optionalResult.map(TermsDtoMapper::fromTerms);
+		return optionalResult.map((terms) -> fromTerms(terms, true));
 	}
 
 	@Override

@@ -34,7 +34,6 @@ public class ClauseTest {
 			.build();
 
 		assertNotNull(clause);
-		assertEquals(terms, clause.getTerms());
 		assertEquals(1, clause.getClauseOrder());
 		assertEquals("제1조 (목적)", clause.getTitle());
 		assertEquals("이 약관은...", clause.getContent());

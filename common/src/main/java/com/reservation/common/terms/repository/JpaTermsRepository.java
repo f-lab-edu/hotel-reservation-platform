@@ -20,4 +20,6 @@ public interface JpaTermsRepository extends JpaRepository<Terms, Long> {
 	Optional<Integer> findMaxVersionByCode(@Param("code") TermsCode code);
 
 	List<Terms> findByTypeAndStatus(TermsType termsType, TermsStatus termsStatus);
+
+	List<Terms> findByStatusAndIsLatest(TermsStatus termsStatus, Boolean isLatest);
 }

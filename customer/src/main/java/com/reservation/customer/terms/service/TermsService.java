@@ -31,7 +31,7 @@ public class TermsService {
 	}
 
 	public TermsDetailResponse findById(Long id) {
-		TermsDto termsDto = this.termsRepository.findById(id)
+		TermsDto termsDto = this.termsRepository.findWithClausesById(id)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("존재하지 않는 약관입니다."));
 
 		if (!termsDto.isLatest()) {

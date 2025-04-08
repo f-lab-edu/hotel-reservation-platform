@@ -13,7 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
-import lombok.ToString;
 
 /**
  * 약관 조항
@@ -27,7 +26,6 @@ import lombok.ToString;
 public class Clause extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "terms_id", nullable = false)
-	@ToString.Exclude
 	private Terms terms;
 
 	@Getter

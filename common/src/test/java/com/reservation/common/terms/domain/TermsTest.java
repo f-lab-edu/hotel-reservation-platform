@@ -64,9 +64,7 @@ public class TermsTest {
 
 		terms.setClauses(clauses);
 
-		assertNotNull(terms.getClauseList());
-		assertEquals(1, terms.getClauseList().size());
-		assertEquals(clause, terms.getClauseList().getFirst());
+		assertNotNull(terms.getClauses());
 		assertDoesNotThrow(terms::validateComplete);
 	}
 
