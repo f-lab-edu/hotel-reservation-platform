@@ -20,7 +20,6 @@ import com.reservation.commonmodel.member.MemberStatus;
 import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
-import com.reservation.customer.member.controller.dto.request.LoginRequest;
 import com.reservation.customer.member.controller.dto.request.SignupRequest;
 import com.reservation.customer.phoneverification.service.dto.PhoneVerifiedRedisValue;
 
@@ -110,23 +109,5 @@ public class MemberService {
 		if (memberRepository.existsByPhoneNumberAndStatus(phoneNumber, MemberStatus.ACTIVE)) {
 			throw ErrorCode.CONFLICT.exception("이미 가입된 핸드폰 번호입니다.");
 		}
-	}
-
-	public Long login(LoginRequest request) {
-		MemberDto memberDto = memberRepository.findOneByEmailAndStatusIsNot(request.email(), MemberStatus.WITHDRAWN);
-		if (memberDto.status() == MemberStatus.INACTIVE) {
-			throw ErrorCode.NOT_FOUND.exception("휴먼 계정 입니다. 휴먼 해제 바랍니다.");
-		}
-		if (memberDto.status() == MemberStatus.SUSPENDED) {
-			throw ErrorCode.NOT_FOUND.exception("정지 계정 입니다. 고객 센터로 연락 바랍니다.");
-		}
-		if (!passwordEncoder.matches(request.password(), memberDto.password())) {
-			throw ErrorCode.NOT_FOUND.exception("로그인 정보가 일치하지 않습니다.");
-		}
-		return memberDto.id();
-	}
-
-	public MemberDto findMe(Long memberId) {
-		return memberRepository.findById(memberId);
 	}
 }

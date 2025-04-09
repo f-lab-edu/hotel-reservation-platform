@@ -13,7 +13,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JwtTokenProvider {
 	private static final long ACCESS_TOKEN_VALIDITY_IN_MILLIS = 60 * 60 * 1000L; // 1시간
-	private static final long REFRESH_TOKEN_VALIDITY_IN_MILLIS = 7 * 24 * 60 * 60 * 1000L; // 7일
+	public static final long REFRESH_TOKEN_VALIDITY_IN_MILLIS = 7 * 24 * 60 * 60 * 1000L; // 7일
 
 	private final String secretKey;
 
