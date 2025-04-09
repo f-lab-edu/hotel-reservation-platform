@@ -13,8 +13,8 @@ import com.reservation.commonauth.auth.JwtTokenProvider;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberStatus;
+import com.reservation.customer.auth.controller.dto.request.LoginRequest;
 import com.reservation.customer.auth.service.dto.LoginDto;
-import com.reservation.customer.member.controller.dto.request.LoginRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

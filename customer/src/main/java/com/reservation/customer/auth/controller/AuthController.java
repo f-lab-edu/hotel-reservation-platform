@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reservation.common.response.ApiResponse;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.customer.auth.annotation.LoginMember;
+import com.reservation.customer.auth.controller.dto.request.LoginRequest;
 import com.reservation.customer.auth.service.AuthService;
 import com.reservation.customer.auth.service.dto.LoginDto;
-import com.reservation.customer.member.controller.dto.request.LoginRequest;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

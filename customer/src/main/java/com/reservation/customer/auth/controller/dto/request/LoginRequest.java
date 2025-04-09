@@ -1,4 +1,4 @@
-package com.reservation.customer.member.controller.dto.request;
+package com.reservation.customer.auth.controller.dto.request;
 
 import org.hibernate.validator.constraints.Length;
 
