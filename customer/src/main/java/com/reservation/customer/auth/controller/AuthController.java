@@ -23,6 +23,7 @@ import com.reservation.customer.auth.controller.dto.request.LoginRequest;
 import com.reservation.customer.auth.service.AuthService;
 import com.reservation.customer.auth.service.dto.LoginDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -60,13 +61,14 @@ public class AuthController {
 
 	@GetMapping("/me")
 	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
-	public ApiResponse<MemberDto> getMe(@LoginMember Long memberId) {
+	public ApiResponse<MemberDto> getMe(@Schema(hidden = true) @LoginMember Long memberId) {
 		return ok(authService.findMe(memberId));
 	}
 
 	@GetMapping("/token/refresh")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
-	public ResponseEntity<Void> tokenReissue(@LoginMember Long memberId) {
+	public ResponseEntity<Void> tokenReissue(@Schema(hidden = true) @LoginMember Long memberId) {
 		String accessToken = authService.tokenReissue(memberId);
 
 		return ResponseEntity.noContent()
