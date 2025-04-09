@@ -235,4 +235,18 @@ class AuthServiceTest {
 		verify(valueOperations).get(key);
 		verify(requestContext).getRefreshToken();
 	}
+
+	@Test
+	@DisplayName("로그아웃 성공 - RefreshToken이 존재하는 경우")
+	void logout_Success_WithRefreshToken() {
+		Long memberId = 1L;
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+		String refreshToken = "validRefreshToken";
+
+		when(redisTemplate.delete(key)).thenReturn(true);
+
+		authService.logout(memberId);
+
+		verify(redisTemplate).delete(key);
+	}
 }
