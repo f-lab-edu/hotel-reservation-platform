@@ -5,6 +5,7 @@ data
 common/build
 common-model/build
 common-api/build
+common-auth/build
 host/build
 customer/build
 admin/build
