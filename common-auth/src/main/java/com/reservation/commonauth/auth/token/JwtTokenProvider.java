@@ -1,4 +1,4 @@
-package com.reservation.commonauth.auth;
+package com.reservation.commonauth.auth.token;
 
 import java.util.Date;
 

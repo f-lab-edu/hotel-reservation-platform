@@ -19,36 +19,43 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.reservation.commonapi.customer.repository.CustomerMemberRepository;
-import com.reservation.commonauth.auth.JwtTokenProvider;
+import com.reservation.commonauth.auth.token.JwtTokenProvider;
 import com.reservation.commonmodel.exception.BusinessException;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberStatus;
 import com.reservation.customer.auth.controller.dto.request.LoginRequest;
 import com.reservation.customer.auth.service.dto.LoginDto;
+import com.reservation.customer.auth.token.RequestContext;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
-
-	@Mock
-	private CustomerMemberRepository memberRepository;
-
-	@Mock
-	private JwtTokenProvider jwtTokenProvider;
+	private static final String REFRESH_TOKEN_PREFIX = "refresh_token:customer:";
+	private static final String ROLE_CUSTOMER = "ROLE_CUSTOMER";
 
 	@Mock
 	private RedisTemplate<String, String> redisTemplate;
 
 	@Mock
-	private PasswordEncoder passwordEncoder;
+	private JwtTokenProvider jwtTokenProvider;
+
+	@Mock
+	private RequestContext requestContext;
 
 	@InjectMocks
 	private AuthService authService;
 
-	private LoginRequest loginRequest;
-	private MemberDto memberDto;
 	@Mock
 	private ValueOperations<String, String> valueOperations;
+
+	@Mock
+	private CustomerMemberRepository memberRepository;
+
+	@Mock
+	private PasswordEncoder passwordEncoder;
+
+	private LoginRequest loginRequest;
+	private MemberDto memberDto;
 
 	@BeforeEach
 	void setUp() {
@@ -158,5 +165,74 @@ class AuthServiceTest {
 		BusinessException exception = assertThrows(BusinessException.class, () -> authService.findMe(1L));
 
 		assertThat(exception.getMessage()).isEqualTo("회원 정보가 존재하지 않습니다.");
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 성공")
+	void tokenReissue_Success() {
+		Long memberId = 1L;
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+		String redisToken = "validRefreshToken";
+		String newAccessToken = "newAccessToken";
+
+		when(valueOperations.get(key)).thenReturn(redisToken);
+		when(requestContext.getRefreshToken()).thenReturn(redisToken);
+		when(jwtTokenProvider.generateToken(memberId, ROLE_CUSTOMER)).thenReturn(newAccessToken);
+
+		String result = authService.tokenReissue(memberId);
+
+		assertThat(result).isEqualTo(newAccessToken);
+		verify(valueOperations).get(key);
+		verify(requestContext).getRefreshToken();
+		verify(jwtTokenProvider).generateToken(memberId, ROLE_CUSTOMER);
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 실패 - Redis에 토큰 없음")
+	void tokenReissue_Fail_TokenNotInRedis() {
+		Long memberId = 1L;
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+
+		when(valueOperations.get(key)).thenReturn(null);
+
+		BusinessException exception = assertThrows(BusinessException.class, () -> authService.tokenReissue(memberId));
+
+		assertThat(exception.getMessage()).isEqualTo("로그인 정보가 만료되었습니다.");
+		verify(valueOperations).get(key);
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 실패 - RequestContext에 토큰 없음")
+	void tokenReissue_Fail_TokenNotInRequestContext() {
+		Long memberId = 1L;
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+		String redisToken = "validRefreshToken";
+
+		when(valueOperations.get(key)).thenReturn(redisToken);
+		when(requestContext.getRefreshToken()).thenReturn(null);
+
+		BusinessException exception = assertThrows(BusinessException.class, () -> authService.tokenReissue(memberId));
+
+		assertThat(exception.getMessage()).isEqualTo("로그인 정보가 만료되었습니다.");
+		verify(valueOperations).get(key);
+		verify(requestContext).getRefreshToken();
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 실패 - Redis 토큰과 RequestContext 토큰 불일치")
+	void tokenReissue_Fail_TokenMismatch() {
+		Long memberId = 1L;
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+		String redisToken = "validRefreshToken";
+		String requestToken = "invalidRefreshToken";
+
+		when(valueOperations.get(key)).thenReturn(redisToken);
+		when(requestContext.getRefreshToken()).thenReturn(requestToken);
+
+		BusinessException exception = assertThrows(BusinessException.class, () -> authService.tokenReissue(memberId));
+
+		assertThat(exception.getMessage()).isEqualTo("인증 정보가 일치하지 않습니다.");
+		verify(valueOperations).get(key);
+		verify(requestContext).getRefreshToken();
 	}
 }

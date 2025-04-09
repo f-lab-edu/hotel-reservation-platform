@@ -1,4 +1,4 @@
-package com.reservation.commonauth.auth;
+package com.reservation.commonauth.auth.filter;
 
 import java.io.IOException;
 import java.util.List;
@@ -8,6 +8,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.reservation.commonauth.auth.token.JwtTokenProvider;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

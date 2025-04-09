@@ -32,6 +32,12 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "인증 API", description = "일반 회원 인증 API입니다.")
 @RequiredArgsConstructor
 public class AuthController {
+	public static final String REFRESH_COOKIE_NAME = "refreshToken";
+	public static final String AUTH_HEADER_NAME = "Authorization";
+	public static final String AUTH_HEADER_PREFIX = "Bearer ";
+	public static final String ROLE_CUSTOMER = "ROLE_CUSTOMER";
+	public static final String PRE_AUTH_ROLE_CUSTOMER = "hasRole('" + ROLE_CUSTOMER + "')";
+
 	private final AuthService authService;
 
 	@PostMapping("/login")
@@ -39,7 +45,7 @@ public class AuthController {
 	public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
 		LoginDto loginDto = authService.login(request);
 
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", loginDto.refreshToken())
+		ResponseCookie refreshTokenCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, loginDto.refreshToken())
 			.httpOnly(true)
 			.secure(true)
 			.path("/")
@@ -47,14 +53,24 @@ public class AuthController {
 			.build();
 
 		return ResponseEntity.noContent()
-			.header("Authorization", "Bearer " + loginDto.accessToken())
+			.header(AUTH_HEADER_NAME, AUTH_HEADER_PREFIX + loginDto.accessToken())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
 			.build();
 	}
 
 	@GetMapping("/me")
-	@PreAuthorize("hasRole('ROLE_CUSTOMER')")
+	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
 	public ApiResponse<MemberDto> getMe(@LoginMember Long memberId) {
 		return ok(authService.findMe(memberId));
+	}
+
+	@GetMapping("/token/refresh")
+	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	public ResponseEntity<Void> tokenReissue(@LoginMember Long memberId) {
+		String accessToken = authService.tokenReissue(memberId);
+
+		return ResponseEntity.noContent()
+			.header(AUTH_HEADER_NAME, AUTH_HEADER_PREFIX + accessToken)
+			.build();
 	}
 }
