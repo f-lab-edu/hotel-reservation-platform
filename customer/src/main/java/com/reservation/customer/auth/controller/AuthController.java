@@ -75,4 +75,22 @@ public class AuthController {
 			.header(AUTH_HEADER_NAME, AUTH_HEADER_PREFIX + accessToken)
 			.build();
 	}
+
+	@PostMapping("/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	public ResponseEntity<Void> logout(@Schema(hidden = true) @LoginMember Long memberId) {
+		authService.logout(memberId);
+
+		ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0)
+			.build();
+
+		return ResponseEntity.noContent()
+			.header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+			.build();
+	}
 }

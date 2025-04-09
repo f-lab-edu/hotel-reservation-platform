@@ -79,4 +79,13 @@ public class AuthService {
 
 		return jwtTokenProvider.generateToken(memberId, ROLE_CUSTOMER);
 	}
+
+	public void logout(Long memberId) {
+		String key = REFRESH_TOKEN_PREFIX + memberId;
+		redisTemplate.delete(key);
+		String refreshToken = requestContext.getRefreshToken();
+		if (refreshToken != null && !refreshToken.isBlank()) {
+			redisTemplate.delete(key + ":" + refreshToken);
+		}
+	}
 }
