@@ -15,13 +15,13 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.reservation.common.clause.domain.QClause;
+import com.reservation.common.support.cursor.CursorUtils;
 import com.reservation.common.terms.domain.QTerms;
 import com.reservation.common.terms.domain.Terms;
-import com.reservation.common.terms.repository.cursorutil.AdminTermsCursorUtils;
 import com.reservation.common.terms.repository.mapper.TermsDtoMapper;
 import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
 import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
-import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
 import com.reservation.commonapi.admin.repository.AdminTermsRepository;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonapi.admin.repository.dto.QAdminTermsDto;
@@ -136,10 +136,10 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 	}
 
 	@Override
-	public KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeysetCondition(
+	public KeysetPage<AdminTermsDto, AdminTermsCursor> findTermsByKeysetCondition(
 		AdminTermsKeysetQueryCondition condition) {
 		// 커서 조건을 위한 빌더
-		BooleanBuilder cursorPredicate = AdminTermsCursorUtils.getCursorPredicate(condition);
+		BooleanBuilder cursorPredicate = CursorUtils.getCursorPredicate(condition.cursors(), QTerms.class, "terms");
 
 		// 커서 외 조건을 위한 빌더
 		BooleanBuilder builder = new BooleanBuilder();
@@ -154,8 +154,8 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 		}
 
 		builder.and(cursorPredicate);
-
-		List<OrderSpecifier<?>> orderSpecifiers = AdminTermsCursorUtils.getOrderSpecifiers(condition);
+		List<OrderSpecifier> orderSpecifiers = CursorUtils.getOrderSpecifiers(condition.cursors(), QTerms.class,
+			"terms");
 
 		int size = condition.size();
 		// 데이터 조회
@@ -184,7 +184,9 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 			? results.remove(results.size() - 1)
 			: null;
 
-		List<AdminTermsSortCursor> nextCursors = AdminTermsCursorUtils.getNextCursors(condition, lastRow);
+		List<AdminTermsCursor> nextCursors = lastRow != null ? condition.cursors().stream()
+			.map(cursor -> new AdminTermsCursor(cursor.cursorField(), cursor.direction(),
+				cursor.cursorField().resolveNextCursorValue(lastRow))).toList() : null;
 
 		return new KeysetPage<>(
 			results,

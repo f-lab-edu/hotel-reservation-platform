@@ -15,7 +15,7 @@ import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.common.terms.service.TermsCommandService;
 import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
 import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
-import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
 import com.reservation.commonapi.admin.repository.AdminTermsRepository;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.exception.ErrorCode;
@@ -97,7 +97,7 @@ public class TermsService {
 		return this.adminTermsRepository.findTermsByCondition(queryCondition);
 	}
 
-	public KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeyset(TermsKeysetSearchCondition condition) {
+	public KeysetPage<AdminTermsDto, AdminTermsCursor> findTermsByKeyset(TermsKeysetSearchCondition condition) {
 		AdminTermsKeysetQueryCondition queryCondition = fromSearchConditionToQueryKeysetCondition(condition);
 
 		return this.adminTermsRepository.findTermsByKeysetCondition(queryCondition);

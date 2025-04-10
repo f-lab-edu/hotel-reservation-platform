@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 
 import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
 import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
-import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsCode;
@@ -24,7 +24,7 @@ public interface AdminTermsRepository {
 
 	Page<AdminTermsDto> findTermsByCondition(AdminTermsQueryCondition condition); // Query Condition 조회
 
-	KeysetPage<AdminTermsDto, AdminTermsSortCursor> findTermsByKeysetCondition(
+	KeysetPage<AdminTermsDto, AdminTermsCursor> findTermsByKeysetCondition(
 		AdminTermsKeysetQueryCondition condition); // Query keyset Condition 조회
 
 	Optional<TermsDto> findWithClausesById(Long id);

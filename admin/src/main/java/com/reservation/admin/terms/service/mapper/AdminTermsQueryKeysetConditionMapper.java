@@ -10,7 +10,7 @@ public class AdminTermsQueryKeysetConditionMapper {
 			condition.code(),
 			Boolean.TRUE.equals(condition.includeAllVersions()),
 			condition.size(),
-			condition.sortCursors()
+			condition.cursors()
 		);
 	}
 }

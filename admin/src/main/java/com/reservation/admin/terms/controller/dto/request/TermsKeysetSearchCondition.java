@@ -1,8 +1,12 @@
 package com.reservation.admin.terms.controller.dto.request;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import org.springframework.data.domain.Sort;
+
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursorField;
 import com.reservation.commonmodel.terms.TermsCode;
 
 import jakarta.annotation.Nullable;
@@ -21,9 +25,20 @@ public record TermsKeysetSearchCondition(
 	Integer size,
 
 	@Nullable
-	List<AdminTermsSortCursor> sortCursors
+	List<AdminTermsCursor> cursors
 ) {
 	public int defaultSize() {
 		return 10;
+	}
+
+	public List<AdminTermsCursor> cursors() {
+		List<AdminTermsCursor> cursors =
+			this.cursors == null || this.cursors.isEmpty() ? new ArrayList<>() : this.cursors;
+		List<AdminTermsCursorField> fields = cursors.stream().map(AdminTermsCursor::cursorField).toList();
+		// 기본 보조 커서 추가
+		if (!fields.contains(AdminTermsCursorField.ID)) {
+			cursors.add(new AdminTermsCursor(AdminTermsCursorField.ID, Sort.Direction.DESC, null));
+		}
+		return cursors;
 	}
 }

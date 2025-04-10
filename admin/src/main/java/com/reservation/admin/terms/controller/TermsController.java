@@ -19,7 +19,7 @@ import com.reservation.admin.terms.controller.dto.request.TermsSearchCondition;
 import com.reservation.admin.terms.controller.dto.request.UpdateTermsRequest;
 import com.reservation.admin.terms.service.TermsService;
 import com.reservation.common.response.ApiResponse;
-import com.reservation.commonapi.admin.query.sort.AdminTermsSortCursor;
+import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
 import com.reservation.commonapi.admin.repository.dto.AdminTermsDto;
 import com.reservation.commonmodel.keyset.KeysetPage;
 import com.reservation.commonmodel.terms.TermsDto;
@@ -61,9 +61,9 @@ public class TermsController {
 
 	@PostMapping("/search-keyset")
 	@Operation(summary = "약관 리스트 조회 [커서 방식]", description = "관리자가 약관 리스트를 조회합니다.")
-	public ApiResponse<KeysetPage<AdminTermsDto, AdminTermsSortCursor>> findTermsByKeyset(
+	public ApiResponse<KeysetPage<AdminTermsDto, AdminTermsCursor>> findTermsByKeyset(
 		@Valid @RequestBody TermsKeysetSearchCondition condition) {
-		KeysetPage<AdminTermsDto, AdminTermsSortCursor> terms = termsService.findTermsByKeyset(condition);
+		KeysetPage<AdminTermsDto, AdminTermsCursor> terms = termsService.findTermsByKeyset(condition);
 		return ok(terms);
 	}
 
