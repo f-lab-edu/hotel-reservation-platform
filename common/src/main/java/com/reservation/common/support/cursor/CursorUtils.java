@@ -6,13 +6,10 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
-import com.reservation.common.terms.domain.QTerms;
 import com.reservation.commonmodel.cursor.Cursor;
 import com.reservation.commonmodel.cursor.CursorPathType;
 
 public class CursorUtils {
-	private static final QTerms terms = QTerms.terms;
-
 	public static <T> BooleanBuilder getCursorPredicate(List<? extends Cursor> cursors, Class<T> domainClass,
 		String alias) {
 		BooleanBuilder cursorPredicate = new BooleanBuilder();

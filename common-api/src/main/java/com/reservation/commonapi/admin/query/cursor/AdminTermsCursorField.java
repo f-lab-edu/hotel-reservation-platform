@@ -57,7 +57,7 @@ public enum AdminTermsCursorField implements CursorField<AdminTermsDto> {
 
 	public String resolveNextCursorValue(AdminTermsDto lastRow) {
 		switch (this) {
-			case CREATED_AT, EXPOSED_FROM, EXPOSED_TO -> {
+			case EXPOSED_FROM -> {
 				return lastRow.getExposedFrom().toString();
 			}
 			case TITLE -> {
@@ -65,6 +65,12 @@ public enum AdminTermsCursorField implements CursorField<AdminTermsDto> {
 			}
 			case ID -> {
 				return String.valueOf(lastRow.getId());
+			}
+			case CREATED_AT -> {
+				return lastRow.getCreatedAt().toString();
+			}
+			case EXPOSED_TO -> {
+				return lastRow.getExposedToOrNull() != null ? lastRow.getExposedToOrNull().toString() : null;
 			}
 		}
 		throw ErrorCode.CONFLICT.exception("지원하지 않는 커서 타입입니다.");
