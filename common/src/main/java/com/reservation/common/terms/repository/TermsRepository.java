@@ -181,7 +181,7 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 
 		boolean hasNext = results.size() > size;
 		AdminTermsDto lastRow = hasNext
-			? results.remove(results.size() - 1)
+			? results.removeLast()
 			: null;
 
 		List<AdminTermsCursor> nextCursors = lastRow != null ? condition.cursors().stream()

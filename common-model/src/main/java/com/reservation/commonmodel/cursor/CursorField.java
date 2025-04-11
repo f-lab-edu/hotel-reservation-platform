@@ -1,6 +1,6 @@
 package com.reservation.commonmodel.cursor;
 
-public interface CursorField {
+public interface CursorField<T> {
 	String fieldName();
 
 	Class<? extends Comparable> fieldType();
@@ -8,4 +8,6 @@ public interface CursorField {
 	CursorPathType pathType();
 
 	Comparable parseCursor(String stringValue);
+
+	String resolveNextCursorValue(T lastValue);
 }

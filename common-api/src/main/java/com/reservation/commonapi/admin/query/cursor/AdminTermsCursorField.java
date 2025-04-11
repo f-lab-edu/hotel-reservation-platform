@@ -7,7 +7,7 @@ import com.reservation.commonmodel.cursor.CursorField;
 import com.reservation.commonmodel.cursor.CursorPathType;
 import com.reservation.commonmodel.exception.ErrorCode;
 
-public enum AdminTermsCursorField implements CursorField {
+public enum AdminTermsCursorField implements CursorField<AdminTermsDto> {
 	EXPOSED_FROM("exposedFrom", LocalDateTime.class, CursorPathType.DATE_TIME), // 노출 시작일
 	EXPOSED_TO("exposedToOrNull", LocalDateTime.class, CursorPathType.DATE_TIME), // 노출 종료일
 	CREATED_AT("createdAt", LocalDateTime.class, CursorPathType.DATE_TIME), // 생성일
