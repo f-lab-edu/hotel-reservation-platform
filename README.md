@@ -31,7 +31,14 @@
 └── customer # 고객용 API
 ```
 
-- 사용자 유형별 API 분리 & 공통 모듈 의존
+![img.png](config/img/architecture.png)
+
+- 사용자 유형별 API 분리 & 공통 모듈 의존성 최소화
+
+![img.png](config/img/architecture2.png)
+
+- 공통 인증 모듈 의존
+
 - 하나의 DB를 공유하면서도 **모듈 간 의존성을 최소화**하는 구조 설계
 
 <br />
