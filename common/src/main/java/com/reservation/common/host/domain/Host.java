@@ -1,5 +1,6 @@
 package com.reservation.common.host.domain;
 
+import com.reservation.common.accommodation.domain.Accommodation;
 import com.reservation.common.domain.BaseEntity;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.host.HostStatus;
@@ -8,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 
 @Getter
@@ -22,6 +24,9 @@ public class Host extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private HostStatus status;
+
+	@OneToOne(mappedBy = "host")
+	Accommodation accommodation;
 
 	protected Host() {
 	}
