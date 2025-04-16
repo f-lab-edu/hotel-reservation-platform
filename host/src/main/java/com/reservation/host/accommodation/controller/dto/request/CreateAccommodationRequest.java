@@ -16,7 +16,13 @@ public record CreateAccommodationRequest(
 	String descriptionOrNull,
 
 	@Nonnull
-	String location,
+	String address,
+
+	@Nonnull @Min(-90) @Max(90)
+	Double latitude,
+
+	@Nonnull @Min(-180) @Max(180)
+	Double longitude,
 
 	@Nonnull
 	Boolean isVisible,

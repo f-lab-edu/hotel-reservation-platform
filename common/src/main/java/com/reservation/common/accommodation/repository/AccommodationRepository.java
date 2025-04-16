@@ -7,9 +7,11 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import com.reservation.common.accommodation.domain.Accommodation;
+import com.reservation.common.accommodation.domain.Location;
 import com.reservation.common.accommodation.repository.mapper.AccommodationDtoMapper;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
 import com.reservation.commonmodel.accommodation.AccommodationDto;
+import com.reservation.commonmodel.accommodation.LocationDto;
 
 @Repository
 public class AccommodationRepository implements HostAccommodationRepository {
@@ -20,7 +22,8 @@ public class AccommodationRepository implements HostAccommodationRepository {
 	}
 
 	@Override
-	public Optional<AccommodationDto> findOneByNameAndLocation(String name, String location) {
+	public Optional<AccommodationDto> findOneByNameAndLocation(String name, LocationDto locationDto) {
+		Location location = new Location(locationDto.address(), locationDto.latitude(), locationDto.longitude());
 		return jpaAccommodationRepository.findOneByNameAndLocation(name, location)
 			.map(AccommodationDtoMapper::fromAccommodation);
 	}
@@ -31,7 +34,8 @@ public class AccommodationRepository implements HostAccommodationRepository {
 	}
 
 	@Override
-	public Boolean existsByNameAndLocation(String name, String location) {
+	public Boolean existsByNameAndLocation(String name, LocationDto locationDto) {
+		Location location = new Location(locationDto.address(), locationDto.latitude(), locationDto.longitude());
 		return jpaAccommodationRepository.existsByNameAndLocation(name, location);
 	}
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
 import com.reservation.commonapi.host.repository.HostModuleRepository;
 import com.reservation.commonmodel.accommodation.AccommodationDto;
+import com.reservation.commonmodel.accommodation.LocationDto;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.host.HostDto;
 import com.reservation.host.accommodation.controller.dto.request.CreateAccommodationRequest;
@@ -32,7 +33,7 @@ public class AccommodationService {
 		checkHostAccommodation(request.hostId());
 
 		// 숙소명 & 숙소 위치 중복 확인
-		checkAccommodationNameAndLocation(request.name(), request.location());
+		checkAccommodationNameAndLocation(request);
 
 		HostDto host = hostRepository.findById(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("호스트를 찾을 수 없습니다."));
@@ -47,7 +48,9 @@ public class AccommodationService {
 		}
 	}
 
-	private void checkAccommodationNameAndLocation(String name, String location) {
+	private void checkAccommodationNameAndLocation(CreateAccommodationRequest request) {
+		String name = request.name();
+		LocationDto location = new LocationDto(request.address(), request.latitude(), request.longitude());
 		if (accommodationRepository.existsByNameAndLocation(name, location)) {
 			throw ErrorCode.BAD_REQUEST.exception("숙소명과 숙소 위치는 중복될 수 없습니다.");
 		}
@@ -61,7 +64,7 @@ public class AccommodationService {
 		checkAccommodationIdAndHostId(request.id(), request.hostId());
 
 		// 숙소명 & 숙소 위치 중복 확인
-		selfAccommodationNameAndLocation(request.name(), request.location(), request.id());
+		selfAccommodationNameAndLocation(request);
 
 		HostDto host = hostRepository.findById(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("호스트를 찾을 수 없습니다."));
@@ -76,7 +79,11 @@ public class AccommodationService {
 		}
 	}
 
-	private void selfAccommodationNameAndLocation(String name, String location, Long id) {
+	private void selfAccommodationNameAndLocation(UpdateAccommodationRequest request) {
+		String name = request.name();
+		Long id = request.id();
+		LocationDto location = new LocationDto(request.address(), request.latitude(), request.longitude());
+
 		Optional<AccommodationDto> accommodationDto = accommodationRepository.findOneByNameAndLocation(name, location);
 		if (accommodationDto.isPresent() && !Objects.equals(accommodationDto.get().id(), id)) {
 			throw ErrorCode.BAD_REQUEST.exception("숙소명과 숙소 위치는 중복될 수 없습니다.");

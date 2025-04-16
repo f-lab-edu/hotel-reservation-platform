@@ -7,7 +7,7 @@ public record AccommodationDto(
 	HostDto host,
 	String name,
 	String descriptionOrNull,
-	String location,
+	LocationDto location,
 	Boolean isVisible,
 	String mainImageUrlOrNull,
 	String contactNumber

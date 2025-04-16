@@ -5,6 +5,7 @@ import com.reservation.common.host.domain.Host;
 import com.reservation.commonmodel.exception.ErrorCode;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -23,8 +24,8 @@ public class Accommodation extends BaseEntity {
 	@Column(nullable = true)
 	private String descriptionOrNull; // 숙소 설명은 생략 가능
 
-	@Column(nullable = false)
-	private String location; // 숙소 위치
+	@Embedded
+	private Location location; // 숙소 위치
 
 	@Column(nullable = false)
 	private Boolean isVisible; // 노출 여부 (기본 false)
@@ -38,7 +39,7 @@ public class Accommodation extends BaseEntity {
 	protected Accommodation() {
 	}
 
-	public Accommodation(Long id, Host host, String name, String descriptionOrNull, String location,
+	public Accommodation(Long id, Host host, String name, String descriptionOrNull, Location location,
 		Boolean isVisible, String mainImageUrlOrNull, String contactNumber) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("숙소 ID는 0보다 커야 합니다.");
@@ -49,7 +50,7 @@ public class Accommodation extends BaseEntity {
 		if (name == null || name.isBlank()) {
 			throw ErrorCode.CONFLICT.exception("숙소 이름은 필수 입니다.");
 		}
-		if (location == null || location.isBlank()) {
+		if (location == null) {
 			throw ErrorCode.CONFLICT.exception("숙소 위치는 필수 입니다.");
 		}
 		if (contactNumber == null || contactNumber.isBlank()) {
@@ -80,7 +81,7 @@ public class Accommodation extends BaseEntity {
 		private Host host;
 		private String name;
 		private String descriptionOrNull;
-		private String location;
+		private Location location;
 		private Boolean isVisible;
 		private String mainImageUrlOrNull;
 		private String contactNumber;
@@ -105,7 +106,7 @@ public class Accommodation extends BaseEntity {
 			return this;
 		}
 
-		public AccommodationBuilder location(String location) {
+		public AccommodationBuilder location(Location location) {
 			this.location = location;
 			return this;
 		}
