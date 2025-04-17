@@ -2,8 +2,8 @@ package com.reservation.common.terms.repository.mapper;
 
 import java.util.List;
 
-import com.reservation.common.clause.domain.Clause;
-import com.reservation.common.clause.domain.Clause.ClauseBuilder;
+import com.reservation.common.terms.domain.Clause;
+import com.reservation.common.terms.domain.Clause.ClauseBuilder;
 import com.reservation.common.terms.domain.Clauses;
 import com.reservation.common.terms.domain.Terms;
 import com.reservation.commonmodel.terms.ClauseDto;

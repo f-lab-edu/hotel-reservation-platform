@@ -1,4 +1,4 @@
-package com.reservation.common.clause.domain;
+package com.reservation.common.terms.domain;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
-import com.reservation.common.terms.domain.Terms;
 import com.reservation.commonmodel.exception.BusinessException;
 import com.reservation.commonmodel.terms.TermsCode;
 import com.reservation.commonmodel.terms.TermsStatus;
