@@ -43,7 +43,7 @@ class AccommodationServiceTest {
 		MockitoAnnotations.openMocks(this);
 
 		createRequest = new CreateAccommodationRequest(
-			1L, "Test Accommodation", null, "Test Address", 37.7749, 127.4194, true, null, "010-1234-5678"
+			"Test Accommodation", null, "Test Address", 37.7749, 127.4194, true, null, "010-1234-5678"
 		);
 
 		updateRequest = new UpdateAccommodationRequest(
@@ -75,7 +75,7 @@ class AccommodationServiceTest {
 			accommodationService.createAccommodation(createRequest, 2L);
 		});
 
-		assertThat(exception.getMessage()).isEqualTo("등록 권한이 없는 호스트입니다.");
+		assertThat(exception.getMessage()).isEqualTo("호스트를 찾을 수 없습니다.");
 	}
 
 	@Test

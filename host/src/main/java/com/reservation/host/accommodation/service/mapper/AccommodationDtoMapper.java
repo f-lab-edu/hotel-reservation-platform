@@ -1,4 +1,4 @@
-package com.reservation.host.accommodation.service.dto;
+package com.reservation.host.accommodation.service.mapper;
 
 import com.reservation.commonmodel.accommodation.AccommodationDto;
 import com.reservation.commonmodel.accommodation.LocationDto;
@@ -7,7 +7,7 @@ import com.reservation.host.accommodation.controller.dto.request.CreateAccommoda
 import com.reservation.host.accommodation.controller.dto.request.UpdateAccommodationRequest;
 
 public class AccommodationDtoMapper {
-	public static AccommodationDto fromCreateAccommodationRequest(CreateAccommodationRequest request, HostDto host) {
+	public static AccommodationDto fromCreateRequest(CreateAccommodationRequest request, HostDto host) {
 		LocationDto locationDto = new LocationDto(request.address(), request.latitude(), request.longitude());
 		return new AccommodationDto(
 			null,
@@ -21,7 +21,7 @@ public class AccommodationDtoMapper {
 		);
 	}
 
-	public static AccommodationDto fromUpdateAccommodationRequest(UpdateAccommodationRequest request, HostDto host) {
+	public static AccommodationDto fromUpdateRequest(UpdateAccommodationRequest request, HostDto host) {
 		LocationDto locationDto = new LocationDto(request.address(), request.latitude(), request.longitude());
 
 		return new AccommodationDto(

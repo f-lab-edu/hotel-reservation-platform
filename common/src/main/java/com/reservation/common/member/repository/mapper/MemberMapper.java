@@ -6,12 +6,12 @@ import com.reservation.common.member.domain.Member;
 import com.reservation.common.member.domain.Member.MemberBuilder;
 import com.reservation.common.member.domain.MemberTerms;
 import com.reservation.common.member.domain.MemberTerms.MemberTermsBuilder;
-import com.reservation.common.terms.repository.mapper.TermsDtoMapper;
+import com.reservation.common.terms.repository.mapper.TermsMapper;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberTermsDto;
 
-public class MemberDtoMapper {
-	public static MemberDto fromMember(Member member) {
+public class MemberMapper {
+	public static MemberDto fromEntityToDto(Member member) {
 		return new MemberDto(
 			member.getId(),
 			member.getPassword(),
@@ -28,7 +28,7 @@ public class MemberDtoMapper {
 		);
 	}
 
-	public static Member toMember(MemberDto memberDto) {
+	public static Member fromDtoToEntity(MemberDto memberDto) {
 		Member member = new MemberBuilder()
 			.email(memberDto.email())
 			.phoneNumber(memberDto.phoneNumber())
@@ -40,7 +40,7 @@ public class MemberDtoMapper {
 			.stream()
 			.map((memberTermsDto) ->
 				new MemberTermsBuilder()
-					.terms(TermsDtoMapper.ToTerms(memberTermsDto.termsDto()))
+					.terms(TermsMapper.fromDtoToEntity(memberTermsDto.termsDto()))
 					.member(member)
 					.agreedAt(memberTermsDto.agreedAt())
 					.isAgreed(memberTermsDto.isAgreed())

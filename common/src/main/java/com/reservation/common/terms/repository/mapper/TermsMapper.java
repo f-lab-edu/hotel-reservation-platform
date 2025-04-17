@@ -9,8 +9,8 @@ import com.reservation.common.terms.domain.Terms;
 import com.reservation.commonmodel.terms.ClauseDto;
 import com.reservation.commonmodel.terms.TermsDto;
 
-public class TermsDtoMapper {
-	public static TermsDto fromTerms(Terms terms, boolean isClauses) {
+public class TermsMapper {
+	public static TermsDto fromEntityToDto(Terms terms, boolean isClauses) {
 		List<ClauseDto> adminClauses = isClauses ? terms.getClauses()
 			.stream()
 			.map(c -> new ClauseDto(c.getId(), c.getClauseOrder(), c.getTitle(), c.getContent()))
@@ -32,7 +32,7 @@ public class TermsDtoMapper {
 			adminClauses);
 	}
 
-	public static Terms ToTerms(TermsDto termsDto) {
+	public static Terms fromDtoToEntity(TermsDto termsDto) {
 		Terms terms = new Terms.TermsBuilder()
 			.id(termsDto.id())
 			.code(termsDto.code())
