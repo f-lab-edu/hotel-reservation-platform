@@ -1,6 +1,6 @@
 package com.reservation.host.accommodation.service;
 
-import static com.reservation.host.accommodation.service.dto.AccommodationDtoMapper.*;
+import static com.reservation.host.accommodation.service.mapper.AccommodationDtoMapper.*;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +16,7 @@ import com.reservation.commonmodel.host.HostDto;
 import com.reservation.host.accommodation.controller.dto.request.CreateAccommodationRequest;
 import com.reservation.host.accommodation.controller.dto.request.UpdateAccommodationRequest;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,13 +25,10 @@ public class AccommodationService {
 	private final HostAccommodationRepository accommodationRepository;
 	private final HostModuleRepository hostRepository;
 
+	@Transactional
 	public Long createAccommodation(CreateAccommodationRequest request, Long hostId) {
-		if (!request.hostId().equals(hostId)) {
-			throw ErrorCode.BAD_REQUEST.exception("등록 권한이 없는 호스트입니다.");
-		}
-
 		// 이미 숙소가 등록된 호스트인지 확인 (호스트:숙소 = 1:1)
-		checkHostAccommodation(request.hostId());
+		checkHostAccommodation(hostId);
 
 		// 숙소명 & 숙소 위치 중복 확인
 		checkAccommodationNameAndLocation(request);
@@ -38,7 +36,7 @@ public class AccommodationService {
 		HostDto host = hostRepository.findById(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("호스트를 찾을 수 없습니다."));
 
-		AccommodationDto accommodationDto = fromCreateAccommodationRequest(request, host);
+		AccommodationDto accommodationDto = fromCreateRequest(request, host);
 		return accommodationRepository.save(accommodationDto).id();
 	}
 
@@ -56,6 +54,7 @@ public class AccommodationService {
 		}
 	}
 
+	@Transactional
 	public Long updateAccommodation(UpdateAccommodationRequest request, Long hostId) {
 		if (!request.hostId().equals(hostId)) {
 			throw ErrorCode.BAD_REQUEST.exception("수정 권한이 없는 호스트입니다.");
@@ -69,7 +68,7 @@ public class AccommodationService {
 		HostDto host = hostRepository.findById(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("호스트를 찾을 수 없습니다."));
 
-		AccommodationDto accommodationDto = fromUpdateAccommodationRequest(request, host);
+		AccommodationDto accommodationDto = fromUpdateRequest(request, host);
 		return accommodationRepository.save(accommodationDto).id();
 	}
 

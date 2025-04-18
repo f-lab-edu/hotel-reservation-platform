@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reservation.common.clause.domain.Clause;
 import com.reservation.common.domain.BaseEntity;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.terms.TermsCode;

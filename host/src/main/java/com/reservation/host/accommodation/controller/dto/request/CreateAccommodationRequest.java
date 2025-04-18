@@ -6,9 +6,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
 public record CreateAccommodationRequest(
-	@Nonnull @Min(1L)
-	Long hostId,
-
 	@Nonnull
 	String name,
 
