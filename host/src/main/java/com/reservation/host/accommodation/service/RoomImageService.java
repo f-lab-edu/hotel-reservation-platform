@@ -1,11 +1,15 @@
 package com.reservation.host.accommodation.service;
 
+import static com.reservation.host.accommodation.service.mapper.RoomImageDtoMapper.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.reservation.common.support.imageuploader.ImageUploader;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
-import com.reservation.commonapi.host.repository.HostModuleRepository;
 import com.reservation.commonapi.host.repository.HostRoomImageRepository;
 import com.reservation.commonapi.host.repository.HostRoomTypeRepository;
 import com.reservation.commonmodel.accommodation.AccommodationDto;
@@ -13,8 +17,8 @@ import com.reservation.commonmodel.accommodation.RoomImageDto;
 import com.reservation.commonmodel.accommodation.RoomTypeDto;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.host.accommodation.controller.dto.request.UpdateRoomImagesRequest;
-import com.reservation.host.accommodation.service.mapper.RoomImageDtoMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,10 +26,11 @@ import lombok.RequiredArgsConstructor;
 public class RoomImageService {
 	private final HostRoomImageRepository roomImageRepository;
 	private final HostRoomTypeRepository roomTypeRepository;
-	private final HostModuleRepository hostRepository;
 	private final HostAccommodationRepository accommodationRepository;
+	private final ImageUploader imageUploader;
 
-	public void updateRoomImagesRequest(UpdateRoomImagesRequest request, Long hostId) {
+	@Transactional
+	public void updateRoomImagesRequest(UpdateRoomImagesRequest request, List<MultipartFile> files, Long hostId) {
 		AccommodationDto accommodation = accommodationRepository.findByHostId(hostId).orElseThrow(() ->
 			ErrorCode.NOT_FOUND.exception("숙소를 정보가 존재하지 않습니다.")
 		);
@@ -33,25 +38,72 @@ public class RoomImageService {
 		RoomTypeDto roomType = roomTypeRepository.findOneByIdAndAccommodationId(request.roomTypeId(),
 			accommodation.id()).orElseThrow(() -> ErrorCode.NOT_FOUND.exception("해당하는 객실타입을 찾을 수 없습니다."));
 
-		List<RoomImageDto> existingRoomImages = roomImageRepository.findByRoomTypeId(roomType.id());
+		// 기존 객실타입 이미지
+		List<RoomImageDto> existingRoomImages = roomImageRepository.findByRoomTypeId(request.roomTypeId());
 
-		List<RoomImageDto> requestRoomImages = request.roomImages()
-			.stream()
-			.map(requestRoomImage -> RoomImageDtoMapper.fromUpdateRoomImage(requestRoomImage, roomType.id()))
+		// 객실타입 이미지 업데이트
+		List<RoomImageDto> newRoomImages = updateRoomImages(request, files, existingRoomImages);
+
+		List<Long> newRoomImageIds = newRoomImages.stream()
+			.map(RoomImageDto::id)
 			.toList();
 
-		List<Long> deletedRoomImageIds = existingRoomImages.stream()
-			.filter(existingRoomImage -> !requestRoomImages.contains(existingRoomImage))
+		// 불필요해진 기존 객실 이미지 삭제
+		deleteRoomImages(existingRoomImages, newRoomImageIds);
+	}
+
+	private List<RoomImageDto> updateRoomImages(UpdateRoomImagesRequest request, List<MultipartFile> files,
+		List<RoomImageDto> existingRoomImages) {
+		Long roomTypeId = request.roomTypeId();
+		List<Long> existingRoomImageIds = existingRoomImages.stream()
 			.map(RoomImageDto::id)
+			.toList();
+
+		// 업데이트할 객실타입 이미지
+		List<RoomImageDto> updateRoomImages = new ArrayList<>();
+		for (UpdateRoomImagesRequest.UpdateRoomImage updateRoomImage : request.roomImages()) {
+			if (updateRoomImage.id() != null && !existingRoomImageIds.contains(updateRoomImage.id())) {
+				throw ErrorCode.NOT_FOUND.exception("해당하는 객실타입 이미지를 찾을 수 없습니다.");
+			}
+			// 기존 이미지를 순서 변경 또는 메인 이미지로 업데이트하는 경우
+			if (updateRoomImage.id() != null && existingRoomImageIds.contains(updateRoomImage.id())) {
+				updateRoomImages.add(new RoomImageDto(
+					updateRoomImage.id(),
+					roomTypeId,
+					existingRoomImages.stream().findFirst()
+						.filter(existingRoomImage -> existingRoomImage.id().equals(updateRoomImage.id()))
+						.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("해당하는 객실타입 이미지를 찾을 수 없습니다."))
+						.imageUrl(),
+					updateRoomImage.displayOrder(),
+					updateRoomImage.isMainImage()));
+				continue;
+			}
+			// 새로 이미지를 업로드하는 경우
+			if (updateRoomImage.id() == null && updateRoomImage.fileIndex() != null) {
+				String uploadUrl = imageUploader.upload(files.get(updateRoomImage.fileIndex()));
+				updateRoomImages.add(fromUpdateRoomImage(updateRoomImage, roomTypeId, uploadUrl));
+			}
+		}
+		// 요청 이미지 업데이트
+		return roomImageRepository.saveAll(updateRoomImages);
+	}
+
+	private void deleteRoomImages(List<RoomImageDto> existingRoomImages, List<Long> newRoomImageIds) {
+		List<Long> existingRoomImageIds = existingRoomImages.stream()
+			.map(RoomImageDto::id)
+			.toList();
+
+		List<Long> deletedRoomImageIds = existingRoomImageIds.stream()
+			.filter(existingRoomImageId -> !newRoomImageIds.contains(existingRoomImageId))
 			.toList();
 
 		roomImageRepository.deleteAllById(deletedRoomImageIds);
 
-		List<RoomImageDto> newRoomImages = requestRoomImages.stream()
-			.filter(requestRoomImage -> !existingRoomImages.contains(requestRoomImage))
-			.toList();
-
-		roomImageRepository.saveAll(newRoomImages);
+		for (RoomImageDto existingRoomImage : existingRoomImages) {
+			if (deletedRoomImageIds.contains(existingRoomImage.id())) {
+				imageUploader.delete(existingRoomImage.imageUrl());
+			}
+		}
 	}
 
 	public List<RoomImageDto> readRoomImagesRequest(Long roomTypeId, Long hostId) {

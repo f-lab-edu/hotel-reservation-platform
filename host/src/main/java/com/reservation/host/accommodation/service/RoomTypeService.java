@@ -22,6 +22,7 @@ import com.reservation.host.accommodation.controller.dto.request.RoomTypeSearchC
 import com.reservation.host.accommodation.controller.dto.request.UpdateRoomTypeRequest;
 import com.reservation.host.accommodation.controller.dto.response.FindOneRoomTypeResponse;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +33,7 @@ public class RoomTypeService {
 	private final HostAccommodationRepository accommodationRepository;
 	private final RoomImageRepository roomImageRepository;
 
+	@Transactional
 	public Long createRoomType(@Valid CreateRoomTypeRequest request, Long hostId) {
 		checkAccommodation(request.accommodationId(), hostId);
 		if (roomTypeRepository.existsByNameAndAccommodationId(request.name(), request.accommodationId())) {
@@ -48,6 +50,7 @@ public class RoomTypeService {
 		}
 	}
 
+	@Transactional
 	public Long updateRoomType(@Valid UpdateRoomTypeRequest request, Long hostId) {
 		checkAccommodation(request.accommodationId(), hostId);
 

@@ -9,5 +9,5 @@ public interface HostRoomImageRepository {
 
 	void deleteAllById(List<Long> deletedRoomImageIds);
 
-	void saveAll(List<RoomImageDto> newRoomImages);
+	List<RoomImageDto> saveAll(List<RoomImageDto> newRoomImages);
 }

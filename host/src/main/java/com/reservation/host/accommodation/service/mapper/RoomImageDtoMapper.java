@@ -5,11 +5,11 @@ import com.reservation.host.accommodation.controller.dto.request.UpdateRoomImage
 
 public class RoomImageDtoMapper {
 	public static RoomImageDto fromUpdateRoomImage(UpdateRoomImagesRequest.UpdateRoomImage roomImageDto,
-		Long roomTypeId) {
+		Long roomTypeId, String uploadUrl) {
 		return new RoomImageDto(
 			roomImageDto.id(),
 			roomTypeId,
-			roomImageDto.imageUrl(),
+			uploadUrl,
 			roomImageDto.displayOrder(),
 			roomImageDto.isMainImage()
 		);

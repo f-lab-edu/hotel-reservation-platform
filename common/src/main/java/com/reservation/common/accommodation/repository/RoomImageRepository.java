@@ -30,10 +30,11 @@ public class RoomImageRepository implements HostRoomImageRepository {
 	}
 
 	@Override
-	public void saveAll(List<RoomImageDto> newRoomImages) {
+	public List<RoomImageDto> saveAll(List<RoomImageDto> newRoomImages) {
 		List<RoomImage> roomImages = newRoomImages.stream()
 			.map(RoomImageMapper::fromDtoToEntity)
 			.toList();
-		jpaRoomImageRepository.saveAll(roomImages);
+		
+		return jpaRoomImageRepository.saveAll(roomImages).stream().map(RoomImageMapper::fromEntityToDto).toList();
 	}
 }

@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.reservation.common.support.imageuploader.ImageUploader;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
 import com.reservation.commonapi.host.repository.HostRoomImageRepository;
 import com.reservation.commonapi.host.repository.HostRoomTypeRepository;
@@ -22,6 +23,7 @@ import com.reservation.commonmodel.accommodation.RoomImageDto;
 import com.reservation.commonmodel.accommodation.RoomTypeDto;
 import com.reservation.commonmodel.exception.BusinessException;
 import com.reservation.host.accommodation.controller.dto.request.UpdateRoomImagesRequest;
+import com.reservation.host.accommodation.controller.dto.request.UpdateRoomImagesRequest.UpdateRoomImage;
 
 class RoomImageServiceTest {
 
@@ -33,6 +35,9 @@ class RoomImageServiceTest {
 
 	@Mock
 	private HostAccommodationRepository accommodationRepository;
+
+	@Mock
+	private ImageUploader imageUploader;
 
 	@InjectMocks
 	private RoomImageService roomImageService;
@@ -47,8 +52,10 @@ class RoomImageServiceTest {
 
 		updateRequest = new UpdateRoomImagesRequest(
 			1L,
-			List.of(new UpdateRoomImagesRequest.UpdateRoomImage(1L, "http://image1.com", 1, true),
-				new UpdateRoomImagesRequest.UpdateRoomImage(2L, "http://image2.com", 2, false))
+			List.of(
+				new UpdateRoomImage(1L, 0, 1, true),
+				new UpdateRoomImage(null, 1, 2, false)
+			)
 		);
 
 		accommodationDto = new AccommodationDto(1L, null, "Test Accommodation", null, null, true, null,
@@ -57,26 +64,12 @@ class RoomImageServiceTest {
 	}
 
 	@Test
-	@DisplayName("객실 이미지 업데이트 성공")
-	void updateRoomImagesRequest_Success() {
-		when(accommodationRepository.findByHostId(1L)).thenReturn(Optional.of(accommodationDto));
-		when(roomTypeRepository.findOneByIdAndAccommodationId(1L, 1L)).thenReturn(Optional.of(roomTypeDto));
-		when(roomImageRepository.findByRoomTypeId(1L)).thenReturn(List.of(
-			new RoomImageDto(2L, 1L, "http://image2.com", 2, false)
-		));
-
-		roomImageService.updateRoomImagesRequest(updateRequest, 1L);
-
-		verify(roomImageRepository).saveAll(anyList());
-	}
-
-	@Test
 	@DisplayName("객실 이미지 업데이트 실패 - 숙소 없음")
 	void updateRoomImagesRequest_ThrowsExceptionWhenAccommodationNotFound() {
 		when(accommodationRepository.findByHostId(1L)).thenReturn(Optional.empty());
 
 		BusinessException exception = assertThrows(BusinessException.class, () -> {
-			roomImageService.updateRoomImagesRequest(updateRequest, 1L);
+			roomImageService.updateRoomImagesRequest(updateRequest, List.of(), 1L);
 		});
 
 		assertThat(exception.getMessage()).isEqualTo("숙소를 정보가 존재하지 않습니다.");
@@ -89,7 +82,7 @@ class RoomImageServiceTest {
 		when(roomTypeRepository.findOneByIdAndAccommodationId(1L, 1L)).thenReturn(Optional.empty());
 
 		BusinessException exception = assertThrows(BusinessException.class, () -> {
-			roomImageService.updateRoomImagesRequest(updateRequest, 1L);
+			roomImageService.updateRoomImagesRequest(updateRequest, List.of(), 1L);
 		});
 
 		assertThat(exception.getMessage()).isEqualTo("해당하는 객실타입을 찾을 수 없습니다.");

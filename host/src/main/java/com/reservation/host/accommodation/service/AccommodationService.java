@@ -16,6 +16,7 @@ import com.reservation.commonmodel.host.HostDto;
 import com.reservation.host.accommodation.controller.dto.request.CreateAccommodationRequest;
 import com.reservation.host.accommodation.controller.dto.request.UpdateAccommodationRequest;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,6 +25,7 @@ public class AccommodationService {
 	private final HostAccommodationRepository accommodationRepository;
 	private final HostModuleRepository hostRepository;
 
+	@Transactional
 	public Long createAccommodation(CreateAccommodationRequest request, Long hostId) {
 		// 이미 숙소가 등록된 호스트인지 확인 (호스트:숙소 = 1:1)
 		checkHostAccommodation(hostId);
@@ -52,6 +54,7 @@ public class AccommodationService {
 		}
 	}
 
+	@Transactional
 	public Long updateAccommodation(UpdateAccommodationRequest request, Long hostId) {
 		if (!request.hostId().equals(hostId)) {
 			throw ErrorCode.BAD_REQUEST.exception("수정 권한이 없는 호스트입니다.");
