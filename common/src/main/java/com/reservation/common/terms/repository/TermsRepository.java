@@ -1,7 +1,7 @@
 package com.reservation.common.terms.repository;
 
 import static com.reservation.common.support.sort.SortUtils.*;
-import static com.reservation.common.terms.repository.mapper.TermsDtoMapper.*;
+import static com.reservation.common.terms.repository.mapper.TermsMapper.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,11 +14,10 @@ import org.springframework.stereotype.Repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.reservation.common.clause.domain.QClause;
 import com.reservation.common.support.cursor.CursorUtils;
+import com.reservation.common.terms.domain.QClause;
 import com.reservation.common.terms.domain.QTerms;
 import com.reservation.common.terms.domain.Terms;
-import com.reservation.common.terms.repository.mapper.TermsDtoMapper;
 import com.reservation.commonapi.admin.query.AdminTermsKeysetQueryCondition;
 import com.reservation.commonapi.admin.query.AdminTermsQueryCondition;
 import com.reservation.commonapi.admin.query.cursor.AdminTermsCursor;
@@ -35,23 +34,18 @@ import com.reservation.commonmodel.terms.TermsDto;
 import com.reservation.commonmodel.terms.TermsStatus;
 import com.reservation.commonmodel.terms.TermsType;
 
-@Repository
-public class TermsRepository implements AdminTermsRepository, CustomerTermsRepository {
+import lombok.RequiredArgsConstructor;
 
+@Repository
+@RequiredArgsConstructor
+public class TermsRepository implements AdminTermsRepository, CustomerTermsRepository {
 	private final JPAQueryFactory queryFactory;
 	private final JpaTermsRepository jpaTermsRepository;
-	private final QTerms terms = QTerms.terms;
-	private final QClause clause = QClause.clause;
-
-	public TermsRepository(JPAQueryFactory queryFactory, JpaTermsRepository jpaTermsRepository) {
-		this.queryFactory = queryFactory;
-		this.jpaTermsRepository = jpaTermsRepository;
-	}
 
 	@Override
 	public TermsDto save(TermsDto termsDto) {
-		Terms terms = TermsDtoMapper.ToTerms(termsDto);
-		return fromTerms(jpaTermsRepository.save(terms), false);
+		Terms terms = fromDtoToEntity(termsDto);
+		return fromEntityToDto(jpaTermsRepository.save(terms), false);
 	}
 
 	@Override
@@ -66,14 +60,14 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 
 	@Override
 	public Optional<TermsDto> findById(Long id) {
-		return this.jpaTermsRepository.findById(id).map((terms) -> fromTerms(terms, true));
+		return this.jpaTermsRepository.findById(id).map((terms) -> fromEntityToDto(terms, true));
 	}
 
 	@Override
 	public List<TermsDto> findRequiredTerms() {
 		return this.jpaTermsRepository.findByTypeAndStatus(TermsType.REQUIRED, TermsStatus.ACTIVE)
 			.stream()
-			.map((terms) -> fromTerms(terms, false))
+			.map((terms) -> fromEntityToDto(terms, false))
 			.toList();
 	}
 
@@ -81,12 +75,13 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 	public List<TermsDto> findByStatusAndIsLatest(TermsStatus status, Boolean isLatest) {
 		return this.jpaTermsRepository.findByStatusAndIsLatest(status, isLatest)
 			.stream()
-			.map((terms) -> fromTerms(terms, false))
+			.map((terms) -> fromEntityToDto(terms, false))
 			.toList();
 	}
 
 	@Override
 	public Page<AdminTermsDto> findTermsByCondition(AdminTermsQueryCondition condition) {
+		QTerms terms = QTerms.terms;
 		BooleanBuilder builder = new BooleanBuilder();
 
 		// 약관 코드로 필터링
@@ -138,6 +133,7 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 	@Override
 	public KeysetPage<AdminTermsDto, AdminTermsCursor> findTermsByKeysetCondition(
 		AdminTermsKeysetQueryCondition condition) {
+		QTerms terms = QTerms.terms;
 		// 커서 조건을 위한 빌더
 		BooleanBuilder cursorPredicate = CursorUtils.getCursorPredicate(condition.cursors(), QTerms.class, "terms");
 
@@ -197,17 +193,23 @@ public class TermsRepository implements AdminTermsRepository, CustomerTermsRepos
 
 	@Override
 	public Optional<TermsDto> findWithClausesById(Long id) {
+		QTerms terms = QTerms.terms;
+		QClause clause = QClause.clause;
+
 		Terms result = queryFactory
 			.selectFrom(terms)
 			.leftJoin(terms.clauseList, clause).fetchJoin() // fetch join으로 N+1 방지
 			.where(terms.id.eq(id))
 			.fetchOne();
 		Optional<Terms> optionalResult = Optional.ofNullable(result);
-		return optionalResult.map((terms) -> fromTerms(terms, true));
+		return optionalResult.map((terms1) -> fromEntityToDto(terms1, true));
 	}
 
 	@Override
 	public Page<CustomerTermsDto> findTermsByCondition(CustomerTermsQueryCondition condition) {
+		QTerms terms = QTerms.terms;
+		QClause clause = QClause.clause;
+
 		// 커서 외 조건을 위한 빌더
 		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(terms.isLatest.isTrue());

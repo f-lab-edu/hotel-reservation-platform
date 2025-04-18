@@ -1,6 +1,6 @@
 package com.reservation.common.member.repository;
 
-import static com.reservation.common.member.repository.mapper.MemberDtoMapper.*;
+import static com.reservation.common.member.repository.mapper.MemberMapper.*;
 
 import org.springframework.stereotype.Repository;
 
@@ -10,13 +10,12 @@ import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberStatus;
 
+import lombok.RequiredArgsConstructor;
+
 @Repository
+@RequiredArgsConstructor
 public class MemberRepository implements CustomerMemberRepository {
 	private final JpaMemberRepository jpaMemberRepository;
-
-	public MemberRepository(JpaMemberRepository jpaMemberRepository) {
-		this.jpaMemberRepository = jpaMemberRepository;
-	}
 
 	@Override
 	public Boolean existsByPhoneNumberAndStatus(String phoneNumber, MemberStatus status) {
@@ -30,7 +29,7 @@ public class MemberRepository implements CustomerMemberRepository {
 
 	@Override
 	public MemberDto save(MemberDto memberDto) {
-		return fromMember(jpaMemberRepository.save(toMember(memberDto)));
+		return fromEntityToDto(jpaMemberRepository.save(fromDtoToEntity(memberDto)));
 	}
 
 	@Override
@@ -38,12 +37,12 @@ public class MemberRepository implements CustomerMemberRepository {
 		Member member = jpaMemberRepository.findOneByEmailAndStatusIsNot(email, status)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("로그인 정보가 일치하지 않습니다."));
 
-		return fromMember(member);
+		return fromEntityToDto(member);
 	}
 
 	@Override
 	public MemberDto findById(Long memberId) {
-		return fromMember(jpaMemberRepository.findById(memberId)
+		return fromEntityToDto(jpaMemberRepository.findById(memberId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("회원 정보가 존재하지 않습니다.")));
 	}
 }
