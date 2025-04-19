@@ -37,7 +37,7 @@ public class AuthController {
 	public static final String AUTH_HEADER_NAME = "Authorization";
 	public static final String AUTH_HEADER_PREFIX = "Bearer ";
 	public static final String ROLE_HOST = "ROLE_HOST";
-	public static final String PRE_AUTH_ROLE_CUSTOMER = "hasRole('" + ROLE_HOST + "')";
+	public static final String PRE_AUTH_ROLE_HOST = "hasRole('" + ROLE_HOST + "')";
 
 	private final AuthService authService;
 
@@ -60,14 +60,14 @@ public class AuthController {
 	}
 
 	@GetMapping("/me")
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@PreAuthorize(PRE_AUTH_ROLE_HOST)
 	public ApiResponse<HostDto> getMe(@Schema(hidden = true) @LoginHost Long hostId) {
 		return ok(authService.findMe(hostId));
 	}
 
 	@GetMapping("/token/refresh")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@PreAuthorize(PRE_AUTH_ROLE_HOST)
 	public ResponseEntity<Void> tokenReissue(@Schema(hidden = true) @LoginHost Long hostId) {
 		String accessToken = authService.tokenReissue(hostId);
 
@@ -78,7 +78,7 @@ public class AuthController {
 
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@PreAuthorize(PRE_AUTH_ROLE_HOST)
 	public ResponseEntity<Void> logout(@Schema(hidden = true) @LoginHost Long hostId) {
 		authService.logout(hostId);
 

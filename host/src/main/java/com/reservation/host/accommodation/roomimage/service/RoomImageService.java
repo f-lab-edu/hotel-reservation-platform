@@ -1,7 +1,5 @@
 package com.reservation.host.accommodation.roomimage.service;
 
-import static com.reservation.host.accommodation.roomimage.service.mapper.RoomImageDtoMapper.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,11 +75,6 @@ public class RoomImageService {
 					updateRoomImage.displayOrder(),
 					updateRoomImage.isMainImage()));
 				continue;
-			}
-			// 새로 이미지를 업로드하는 경우
-			if (updateRoomImage.id() == null && updateRoomImage.fileIndex() != null) {
-				String uploadUrl = imageUploader.upload(files.get(updateRoomImage.fileIndex()));
-				updateRoomImages.add(fromUpdateRoomImage(updateRoomImage, roomTypeId, uploadUrl));
 			}
 		}
 		// 요청 이미지 업데이트

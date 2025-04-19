@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/room-types")
 @Tag(name = "숙소 관리 API", description = "호스트용 숙소 관리 API입니다.")
-@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+@PreAuthorize(PRE_AUTH_ROLE_HOST)
 @RequiredArgsConstructor
 public class RoomTypeController {
 	private final RoomTypeService roomTypeService;

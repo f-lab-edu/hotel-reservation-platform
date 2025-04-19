@@ -6,6 +6,7 @@ common/build
 common-model/build
 common-api/build
 common-auth/build
+common-upload/build
 host/build
 customer/build
 admin/build

@@ -1,4 +1,4 @@
-package com.reservation.common.config.web;
+package com.reservation.fileupload.config.web;
 
 import java.lang.reflect.Type;
 
