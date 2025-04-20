@@ -16,7 +16,7 @@ public record UpdateRoomImagesRequest(
 		@Nullable @Min(1)
 		Long id,
 		@Nullable @Min(1)
-		Integer fileIndex,
+		String imageUrl,
 		@Nonnull @Min(1)
 		Integer displayOrder,
 		@Nonnull

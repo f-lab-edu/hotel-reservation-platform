@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reservation.common.response.ApiResponse;
@@ -37,12 +36,10 @@ public class RoomImageController {
 
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "룸 이미지(복수) 업데이트", description = "호스트가 룸 이미지(복수)를 업데이트합니다.")
-	public ApiResponse<Void> updateRoomImagesRequest(
-		@RequestPart("body") UpdateRoomImagesRequest request,
-		@RequestPart(required = false) List<MultipartFile> files,
+	public ApiResponse<Void> updateRoomImagesRequest(@RequestPart("body") UpdateRoomImagesRequest request,
 		@Schema(hidden = true) @LoginHost Long hostId) {
 
-		roomImageService.updateRoomImagesRequest(request, files, hostId);
+		roomImageService.updateRoomImagesRequest(request, hostId);
 
 		return ApiResponse.noContent();
 	}

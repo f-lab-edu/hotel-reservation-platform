@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.reservation.common.support.imageuploader.ImageUploader;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
 import com.reservation.commonapi.host.repository.HostRoomImageRepository;
 import com.reservation.commonapi.host.repository.HostRoomTypeRepository;
@@ -36,9 +35,6 @@ class RoomImageServiceTest {
 	@Mock
 	private HostAccommodationRepository accommodationRepository;
 
-	@Mock
-	private ImageUploader imageUploader;
-
 	@InjectMocks
 	private RoomImageService roomImageService;
 
@@ -53,8 +49,8 @@ class RoomImageServiceTest {
 		updateRequest = new UpdateRoomImagesRequest(
 			1L,
 			List.of(
-				new UpdateRoomImage(1L, 0, 1, true),
-				new UpdateRoomImage(null, 1, 2, false)
+				new UpdateRoomImage(1L, "https://mock-bucket.s3.fake/2025-04-20/uuid1", 1, true),
+				new UpdateRoomImage(null, "https://mock-bucket.s3.fake/2025-04-20/uuid2", 2, false)
 			)
 		);
 
@@ -69,7 +65,7 @@ class RoomImageServiceTest {
 		when(accommodationRepository.findByHostId(1L)).thenReturn(Optional.empty());
 
 		BusinessException exception = assertThrows(BusinessException.class, () -> {
-			roomImageService.updateRoomImagesRequest(updateRequest, List.of(), 1L);
+			roomImageService.updateRoomImagesRequest(updateRequest, 1L);
 		});
 
 		assertThat(exception.getMessage()).isEqualTo("숙소를 정보가 존재하지 않습니다.");
@@ -82,7 +78,7 @@ class RoomImageServiceTest {
 		when(roomTypeRepository.findOneByIdAndAccommodationId(1L, 1L)).thenReturn(Optional.empty());
 
 		BusinessException exception = assertThrows(BusinessException.class, () -> {
-			roomImageService.updateRoomImagesRequest(updateRequest, List.of(), 1L);
+			roomImageService.updateRoomImagesRequest(updateRequest, 1L);
 		});
 
 		assertThat(exception.getMessage()).isEqualTo("해당하는 객실타입을 찾을 수 없습니다.");

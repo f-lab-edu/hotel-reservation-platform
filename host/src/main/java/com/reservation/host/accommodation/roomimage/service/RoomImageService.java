@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.reservation.common.support.imageuploader.ImageUploader;
 import com.reservation.commonapi.host.repository.HostAccommodationRepository;
 import com.reservation.commonapi.host.repository.HostRoomImageRepository;
 import com.reservation.commonapi.host.repository.HostRoomTypeRepository;
@@ -25,10 +23,9 @@ public class RoomImageService {
 	private final HostRoomImageRepository roomImageRepository;
 	private final HostRoomTypeRepository roomTypeRepository;
 	private final HostAccommodationRepository accommodationRepository;
-	private final ImageUploader imageUploader;
 
 	@Transactional
-	public void updateRoomImagesRequest(UpdateRoomImagesRequest request, List<MultipartFile> files, Long hostId) {
+	public void updateRoomImagesRequest(UpdateRoomImagesRequest request, Long hostId) {
 		AccommodationDto accommodation = accommodationRepository.findByHostId(hostId).orElseThrow(() ->
 			ErrorCode.NOT_FOUND.exception("숙소를 정보가 존재하지 않습니다.")
 		);
@@ -40,7 +37,7 @@ public class RoomImageService {
 		List<RoomImageDto> existingRoomImages = roomImageRepository.findByRoomTypeId(request.roomTypeId());
 
 		// 객실타입 이미지 업데이트
-		List<RoomImageDto> newRoomImages = updateRoomImages(request, files, existingRoomImages);
+		List<RoomImageDto> newRoomImages = updateRoomImages(request, existingRoomImages);
 
 		List<Long> newRoomImageIds = newRoomImages.stream()
 			.map(RoomImageDto::id)
@@ -50,7 +47,7 @@ public class RoomImageService {
 		deleteRoomImages(existingRoomImages, newRoomImageIds);
 	}
 
-	private List<RoomImageDto> updateRoomImages(UpdateRoomImagesRequest request, List<MultipartFile> files,
+	private List<RoomImageDto> updateRoomImages(UpdateRoomImagesRequest request,
 		List<RoomImageDto> existingRoomImages) {
 		Long roomTypeId = request.roomTypeId();
 		List<Long> existingRoomImageIds = existingRoomImages.stream()
@@ -91,12 +88,6 @@ public class RoomImageService {
 			.toList();
 
 		roomImageRepository.deleteAllById(deletedRoomImageIds);
-
-		for (RoomImageDto existingRoomImage : existingRoomImages) {
-			if (deletedRoomImageIds.contains(existingRoomImage.id())) {
-				imageUploader.delete(existingRoomImage.imageUrl());
-			}
-		}
 	}
 
 	public List<RoomImageDto> readRoomImagesRequest(Long roomTypeId, Long hostId) {
