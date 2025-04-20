@@ -1,4 +1,4 @@
-package com.reservation.host.config;
+package com.reservation.customer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +32,7 @@ public class SecurityConfig {
 		http
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authz -> authz
-				.requestMatchers("/login", "/swagger-ui/**", "/v3/api-docs/**", "/terms/**", "phone-verification/**")
+				.requestMatchers("/login", "/swagger-ui/**", "/v3/api-docs/**")
 				.permitAll()
 				.anyRequest()
 				.authenticated()
@@ -44,6 +44,7 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.logout().disable();
+		
 		return http.build();
 	}
 
