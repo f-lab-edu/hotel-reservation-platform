@@ -14,26 +14,22 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 
+@Getter
 @Entity
 public class Member extends BaseEntity {
-	@Getter
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String password;
 
-	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MemberStatus status;
 
-	@Getter
 	@Column(nullable = false)
 	private String email;
 
-	@Getter
 	@Column(nullable = false)
 	private String phoneNumber;
 
-	@Getter
 	@Transient
 	private final List<MemberTerms> memberTermsList = new ArrayList<>();
 
@@ -41,9 +37,6 @@ public class Member extends BaseEntity {
 	}
 
 	public Member(String password, MemberStatus status, String email, String phoneNumber) {
-		if (password == null || password.isEmpty()) {
-			throw ErrorCode.CONFLICT.exception("비빌 번호는 필수입니다.");
-		}
 		if (status == null) {
 			throw ErrorCode.CONFLICT.exception("상태는 필수입니다.");
 		}

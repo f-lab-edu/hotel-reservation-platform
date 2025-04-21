@@ -1,6 +1,8 @@
 spring:
   profiles:
     active: local # 기본 실행 프로파일
+  config:
+    import: optional:file:.env[.properties]
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,8 +13,21 @@ spring:
         format_sql: true
 
 jwt:
-  secret-key: 'secretKeysecretKeysecretKeysecretKeysecretKeysecretKeysecretKey'
-  access-token-expiry: 3600
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-expiry: ${JWT_EXPIRATION_TIME}
+  refresh-token-expiry: ${JWT_REFRESH_EXPIRATION_TIME}
+
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect_uri: ${GOOGLE_REDIRECT_URI}
+    grant_type: "authorization_code"
+  github:
+    client-id: ${GITHUB_CLIENT_ID}
+    client-secret: ${GITHUB_CLIENT_SECRET}
+    redirect_uri: ${GITHUB_REDIRECT_URI}
+    grant_type: "authorization_code"
 
 logging:
   level:

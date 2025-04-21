@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.common.response.ApiResponse;
+import com.reservation.commonauth.auth.annotation.LoginUserId;
 import com.reservation.commonmodel.accommodation.RoomAvailabilityDto;
 import com.reservation.host.accommodation.availability.controller.dto.request.CreateRoomAvailabilityRequest;
 import com.reservation.host.accommodation.availability.controller.dto.request.RoomAvailabilitySearchCondition;
 import com.reservation.host.accommodation.availability.controller.dto.request.UpdateRoomAvailabilityRequest;
 import com.reservation.host.accommodation.availability.service.RoomAvailabilityService;
-import com.reservation.host.auth.annotation.LoginHost;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,7 +40,7 @@ public class RoomAvailabilityController {
 	@Operation(summary = "룸 가용 정보 생성", description = "호스트가 룸 가용 정보를 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> createRoomAvailability(@Valid @RequestBody CreateRoomAvailabilityRequest request,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long RoomAvailabilityId = availabilityService.createRoomAvailability(request, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);
@@ -49,7 +49,7 @@ public class RoomAvailabilityController {
 	@PutMapping
 	@Operation(summary = "룸 가용 정보 수정", description = "호스트가 룸 가용 정보를 수정합니다.")
 	public ApiResponse<Long> updateRoomAvailability(@Valid @RequestBody UpdateRoomAvailabilityRequest request,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long RoomAvailabilityId = availabilityService.updateRoomAvailability(request, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);
@@ -59,7 +59,7 @@ public class RoomAvailabilityController {
 	@Operation(summary = "룸 가용 정보 조회", description = "호스트가 룸 가용 조회합니다.")
 	public ApiResponse<List<RoomAvailabilityDto>> findRoomAvailability(
 		@Valid @RequestBody RoomAvailabilitySearchCondition condition,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 		List<RoomAvailabilityDto> RoomAvailabilityId = availabilityService.findRoomAvailability(condition, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);

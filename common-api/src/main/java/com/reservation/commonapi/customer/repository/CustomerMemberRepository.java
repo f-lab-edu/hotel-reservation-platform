@@ -1,5 +1,7 @@
 package com.reservation.commonapi.customer.repository;
 
+import java.util.Optional;
+
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberStatus;
 
@@ -10,7 +12,7 @@ public interface CustomerMemberRepository {
 
 	MemberDto save(MemberDto memberDto); // 고객 정보 저장
 
-	MemberDto findOneByEmailAndStatusIsNot(String email, MemberStatus status);
+	Optional<MemberDto> findOneByEmailAndStatusIsNot(String email, MemberStatus status);
 
-	MemberDto findById(Long memberId);
+	Optional<MemberDto> findById(Long memberId);
 }

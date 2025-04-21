@@ -1,6 +1,5 @@
-package com.reservation.customer.auth.token;
+package com.reservation.commonauth.auth.token;
 
-import static com.reservation.customer.auth.controller.AuthController.*;
 import static org.springframework.context.annotation.ScopedProxyMode.*;
 
 import java.util.Arrays;
@@ -16,6 +15,10 @@ import lombok.RequiredArgsConstructor;
 @RequestScope(proxyMode = TARGET_CLASS)
 @RequiredArgsConstructor
 public class RequestContext {
+	public static final String REFRESH_COOKIE_NAME = "refreshToken";
+	public static final String AUTH_HEADER_NAME = "Authorization";
+	public static final String AUTH_HEADER_PREFIX = "Bearer ";
+
 	private final HttpServletRequest request;
 
 	public String getRefreshToken() {
@@ -32,5 +35,13 @@ public class RequestContext {
 			.map(Cookie::getValue)
 			.findFirst()
 			.orElse(null);
+	}
+
+	public String getAccessToken() {
+		String authHeader = request.getHeader(AUTH_HEADER_NAME);
+		if (authHeader == null || !authHeader.startsWith(AUTH_HEADER_PREFIX)) {
+			return null;
+		}
+		return authHeader.substring(AUTH_HEADER_PREFIX.length());
 	}
 }

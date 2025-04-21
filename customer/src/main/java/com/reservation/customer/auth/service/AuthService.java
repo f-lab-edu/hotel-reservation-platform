@@ -1,22 +1,25 @@
 package com.reservation.customer.auth.service;
 
-import static com.reservation.commonauth.auth.token.JwtTokenProvider.*;
-import static com.reservation.customer.auth.controller.AuthController.*;
+import java.util.Optional;
 
-import java.time.Duration;
-
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.reservation.common.member.socialaccount.domain.SocialAccount;
+import com.reservation.common.member.socialaccount.repository.JpaSocialAccountRepository;
 import com.reservation.commonapi.customer.repository.CustomerMemberRepository;
-import com.reservation.commonauth.auth.token.JwtTokenProvider;
+import com.reservation.commonauth.auth.login.LoginService;
+import com.reservation.commonauth.auth.login.social.OAuthUserInfo;
+import com.reservation.commonauth.auth.login.social.SocialLoginService;
+import com.reservation.commonmodel.auth.Role;
+import com.reservation.commonmodel.auth.login.SocialLoginProvider;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.member.MemberDto;
 import com.reservation.commonmodel.member.MemberStatus;
 import com.reservation.customer.auth.controller.dto.request.LoginRequest;
-import com.reservation.customer.auth.service.dto.LoginDto;
-import com.reservation.customer.auth.token.RequestContext;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,63 +28,64 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class AuthService {
-	private static final String REFRESH_TOKEN_PREFIX = "refresh_token:customer:";
+	private static final String REDIRECT_URL = "https://hotel-reservation-frontend.com/login/success";
+	private static final String SOCIAL_SIGNUP_URL = "https://hotel-reservation-frontend.com/signup?email=";
+
 	private final CustomerMemberRepository memberRepository;
-	private final JwtTokenProvider jwtTokenProvider;
-	private final RedisTemplate<String, String> redisTemplate;
 	private final PasswordEncoder passwordEncoder;
-	private final RequestContext requestContext;
+	private final LoginService loginService;
+	private final SocialLoginService socialLoginService;
+	private final JpaSocialAccountRepository socialAccountRepository;
 
-	public LoginDto login(LoginRequest request) {
-		MemberDto memberDto = memberRepository.findOneByEmailAndStatusIsNot(request.email(), MemberStatus.WITHDRAWN);
-		if (memberDto.status() == MemberStatus.INACTIVE) {
-			throw ErrorCode.NOT_FOUND.exception("휴먼 계정 입니다. 휴먼 해제 바랍니다.");
-		}
-		if (memberDto.status() == MemberStatus.SUSPENDED) {
-			throw ErrorCode.NOT_FOUND.exception("정지 계정 입니다. 고객 센터로 연락 바랍니다.");
-		}
-		if (!passwordEncoder.matches(request.password(), memberDto.password())) {
-			throw ErrorCode.NOT_FOUND.exception("로그인 정보가 일치하지 않습니다.");
-		}
+	public ResponseEntity<Void> login(LoginRequest request) {
+		MemberDto memberDto = checkMemberInfo(request.email(), request.password());
 
-		String accessToken = jwtTokenProvider.generateToken(memberDto.id(), ROLE_CUSTOMER);
-		String refreshToken = storeRefreshToken(memberDto.id());
-
-		return new LoginDto(memberDto.id(), accessToken, refreshToken);
+		return loginService.login(memberDto.id(), Role.CUSTOMER,
+			"https://hotel-reservation-frontend.com/login/success");
 	}
 
-	private String storeRefreshToken(Long memberId) {
-		String refreshToken = jwtTokenProvider.generateRefreshToken(memberId, ROLE_CUSTOMER);
-		String key = REFRESH_TOKEN_PREFIX + memberId;
-		redisTemplate.opsForValue().set(key, refreshToken, Duration.ofMinutes(REFRESH_TOKEN_VALIDITY_IN_MILLIS));
-		return refreshToken;
+	private MemberDto checkMemberInfo(String email, String password) {
+		MemberDto memberDto = memberRepository.findOneByEmailAndStatusIsNot(email, MemberStatus.WITHDRAWN)
+			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("일치하는 로그인 정보가 없습니다."));
+
+		checkMemberStatus(memberDto.status());
+
+		if (!passwordEncoder.matches(password, memberDto.password())) {
+			throw ErrorCode.NOT_FOUND.exception("일치하는 로그인 정보가 없습니다.");
+		}
+		return memberDto;
+	}
+
+	private void checkMemberStatus(MemberStatus status) {
+		if (status == MemberStatus.INACTIVE) {
+			throw ErrorCode.NOT_FOUND.exception("휴먼 계정 입니다. 휴먼 해제 바랍니다.");
+		}
+		if (status == MemberStatus.SUSPENDED) {
+			throw ErrorCode.NOT_FOUND.exception("정지 계정 입니다. 고객 센터로 연락 바랍니다.");
+		}
 	}
 
 	public MemberDto findMe(Long memberId) {
-		return memberRepository.findById(memberId);
+		return memberRepository.findById(memberId)
+			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("회원 정보가 존재하지 않습니다."));
 	}
 
-	public String tokenReissue(Long memberId) {
-		String key = REFRESH_TOKEN_PREFIX + memberId;
-		String redisToken = redisTemplate.opsForValue().get(key);
-		if (redisToken == null || redisToken.isBlank()) {
-			throw ErrorCode.UNAUTHORIZED.exception("로그인 정보가 만료되었습니다.");
+	public ResponseEntity<Void> login(SocialLoginProvider provider, String code) {
+		OAuthUserInfo oAuthUserInfo = socialLoginService.authenticate(provider, code);
+		Optional<SocialAccount> optionalSocialAccount = socialAccountRepository.findOneByProviderAndEmail(provider,
+			oAuthUserInfo.email());
+
+		// 신규 회원 가입
+		if (optionalSocialAccount.isEmpty()) {
+			return ResponseEntity
+				.status(HttpStatus.FOUND)
+				.header(HttpHeaders.LOCATION, SOCIAL_SIGNUP_URL + oAuthUserInfo.email())
+				.build();
 		}
 
-		String refreshToken = requestContext.getRefreshToken();
-		if (refreshToken == null || refreshToken.isBlank()) {
-			throw ErrorCode.UNAUTHORIZED.exception("로그인 정보가 만료되었습니다.");
-		}
+		MemberDto memberDto = findMe(optionalSocialAccount.get().getMemberId());
+		checkMemberStatus(memberDto.status());
 
-		if (!redisToken.equals(refreshToken)) {
-			throw ErrorCode.UNAUTHORIZED.exception("인증 정보가 일치하지 않습니다.");
-		}
-
-		return jwtTokenProvider.generateToken(memberId, ROLE_CUSTOMER);
-	}
-
-	public void logout(Long memberId) {
-		String key = REFRESH_TOKEN_PREFIX + memberId;
-		redisTemplate.delete(key);
+		return loginService.login(memberDto.id(), Role.CUSTOMER, REDIRECT_URL);
 	}
 }

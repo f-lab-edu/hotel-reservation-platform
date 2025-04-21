@@ -6,27 +6,29 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.Getter;
 
 @Component
 public class JwtTokenProvider {
-	private static final long ACCESS_TOKEN_VALIDITY_IN_MILLIS = 60 * 60 * 1000L; // 1시간
-	public static final long REFRESH_TOKEN_VALIDITY_IN_MILLIS = 7 * 24 * 60 * 60 * 1000L; // 7일
+	@Value("${jwt.secret-key}")
+	private String secretKey;
 
-	private final String secretKey;
+	@Value("${jwt.access-token-expiry}")
+	private long accessTokenValidityInMilliSeconds;
 
-	public JwtTokenProvider(@Value("${jwt.secret-key}") String secretKey) {
-		this.secretKey = secretKey;
-	}
+	@Getter
+	@Value("${jwt.refresh-token-expiry}")
+	private long refreshTokenValidityInMilliSeconds;
 
 	public String generateToken(Long userId, String role) {
-		return createToken(userId, role, ACCESS_TOKEN_VALIDITY_IN_MILLIS);
+		return createToken(userId, role, accessTokenValidityInMilliSeconds);
 	}
 
 	public String generateRefreshToken(Long userId, String role) {
-		return createToken(userId, role, REFRESH_TOKEN_VALIDITY_IN_MILLIS);
+		return createToken(userId, role, refreshTokenValidityInMilliSeconds);
 	}
 
 	private String createToken(Long userId, String role, long validityMillis) {
@@ -50,19 +52,27 @@ public class JwtTokenProvider {
 				.setSigningKey(secretKey)
 				.parseClaimsJws(token);
 			return true;
-		} catch (JwtException | IllegalArgumentException e) {
+		} catch (ExpiredJwtException e) {
+			throw e;
+		} catch (Exception e) {
 			return false;
 		}
 	}
 
 	public Long extractUserId(String token) {
-		return Long.valueOf(
-			Jwts.parser()
-				.setSigningKey(secretKey)
-				.parseClaimsJws(token)
-				.getBody()
-				.getSubject()
-		);
+		try {
+			return Long.parseLong(
+				Jwts.parser()
+					.setSigningKey(secretKey)
+					.parseClaimsJws(token)
+					.getBody()
+					.getSubject()
+			);
+		} catch (ExpiredJwtException e) {
+			return Long.parseLong(e.getClaims().getSubject());
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public String extractRole(String token) {
@@ -71,5 +81,18 @@ public class JwtTokenProvider {
 			.parseClaimsJws(token)
 			.getBody()
 			.get("role", String.class);
+	}
+
+	public Date extractExpiration(String token) {
+		try {
+			return Jwts.parserBuilder()
+				.setSigningKey(secretKey)
+				.build()
+				.parseClaimsJws(token)
+				.getBody()
+				.getExpiration();
+		} catch (ExpiredJwtException e) {
+			return null;
+		}
 	}
 }

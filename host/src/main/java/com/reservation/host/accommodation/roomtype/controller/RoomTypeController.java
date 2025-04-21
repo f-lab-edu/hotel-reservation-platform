@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.common.response.ApiResponse;
 import com.reservation.commonapi.host.repository.dto.HostRoomTypeDto;
+import com.reservation.commonauth.auth.annotation.LoginUserId;
 import com.reservation.host.accommodation.roomtype.controller.dto.request.CreateRoomTypeRequest;
 import com.reservation.host.accommodation.roomtype.controller.dto.request.RoomTypeSearchCondition;
 import com.reservation.host.accommodation.roomtype.controller.dto.request.UpdateRoomTypeRequest;
 import com.reservation.host.accommodation.roomtype.controller.dto.response.FindOneRoomTypeResponse;
 import com.reservation.host.accommodation.roomtype.service.RoomTypeService;
-import com.reservation.host.auth.annotation.LoginHost;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,7 +41,7 @@ public class RoomTypeController {
 	@Operation(summary = "룸 타입 등록", description = "호스트가 룸 타입을 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> createRoomType(@Valid @RequestBody CreateRoomTypeRequest request,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.createRoomType(request, hostId);
 		return ApiResponse.ok(roomTypeId);
 	}
@@ -49,14 +49,14 @@ public class RoomTypeController {
 	@PutMapping
 	@Operation(summary = "룸 타입 수정", description = "호스트가 룸 타입을 수정합니다.")
 	public ApiResponse<Long> updateRoomType(@Valid @RequestBody UpdateRoomTypeRequest request,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.updateRoomType(request, hostId);
 		return ApiResponse.ok(roomTypeId);
 	}
 
 	@PostMapping("search")
 	@Operation(summary = "룸 타입 조회", description = "호스트가 룸 타입을 조회합니다.")
-	public ApiResponse<Page<HostRoomTypeDto>> findRoomTypes(@Schema(hidden = true) @LoginHost Long hostId,
+	public ApiResponse<Page<HostRoomTypeDto>> findRoomTypes(@Schema(hidden = true) @LoginUserId Long hostId,
 		RoomTypeSearchCondition condition) {
 		Page<HostRoomTypeDto> roomTypes = roomTypeService.findRoomTypes(hostId, condition);
 		return ApiResponse.ok(roomTypes);
@@ -64,7 +64,7 @@ public class RoomTypeController {
 
 	@GetMapping("{id}")
 	@Operation(summary = "룸 타입 단일 조회", description = "호스트가 룸 타입을 단일 조회합니다.")
-	public ApiResponse<FindOneRoomTypeResponse> findOneRoomType(@Schema(hidden = true) @LoginHost Long hostId,
+	public ApiResponse<FindOneRoomTypeResponse> findOneRoomType(@Schema(hidden = true) @LoginUserId Long hostId,
 		@PathVariable Long id) {
 		FindOneRoomTypeResponse roomType = roomTypeService.findOneRoomType(hostId, id);
 		return ApiResponse.ok(roomType);

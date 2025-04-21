@@ -3,7 +3,7 @@ package com.reservation.common.uploadedimage.domain;
 import java.time.LocalDate;
 
 import com.reservation.common.domain.BaseEntity;
-import com.reservation.commonauth.auth.domain.Role;
+import com.reservation.commonmodel.auth.Role;
 import com.reservation.commonmodel.exception.ErrorCode;
 
 import jakarta.persistence.Column;

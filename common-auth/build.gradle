@@ -1,6 +1,12 @@
 dependencies {
+    implementation project(':common') // 공통 모듈 참조
+    implementation project(':common-model') // 공통 model 모듈 참조
+    implementation project(':common-api') // 공통 api 모듈 참조
+
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'

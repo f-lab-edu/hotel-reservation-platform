@@ -1,4 +1,4 @@
-package com.reservation.customer.config;
+package com.reservation.commonauth.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.reservation.commonauth.auth.filter.JwtAuthenticationFilter;
-import com.reservation.commonauth.auth.token.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,15 +23,15 @@ import lombok.RequiredArgsConstructor;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authz -> authz
-				.requestMatchers("/login", "/swagger-ui/**", "/v3/api-docs/**")
+				.requestMatchers("/login", "/oauth2/callback/**", "/token/refresh", "/swagger-ui/**", "/v3/api-docs/**",
+					"/swagger-resources/**", "/terms/**", "/phone-verification/**")
 				.permitAll()
 				.anyRequest()
 				.authenticated()
@@ -44,7 +43,7 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.logout().disable();
-		
+
 		return http.build();
 	}
 

@@ -19,7 +19,7 @@ import com.reservation.common.uploadedimage.domain.UploadedImage;
 import com.reservation.common.uploadedimage.domain.UploadedImage.UploadedImageBuilder;
 import com.reservation.common.uploadedimage.service.UploadedImageService;
 import com.reservation.fileupload.auth.annotation.LoginUser;
-import com.reservation.fileupload.auth.domain.UserAuth;
+import com.reservation.fileupload.auth.dto.UserAuth;
 import com.reservation.fileupload.imageupload.controller.dto.response.UploadImageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,8 +44,8 @@ public class ImageUploadController {
 
 		UploadedImage uploadedImage = new UploadedImageBuilder()
 			.domain(domain)
-			.uploaderId(userAuth.getUserId())
-			.uploaderRole(userAuth.getRole())
+			.uploaderId(userAuth.userId())
+			.uploaderRole(userAuth.role())
 			.uploadDate(LocalDate.now())
 			.uuid(UUID.randomUUID().toString())
 			.build();

@@ -11,9 +11,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.reservation.commonauth.auth.domain.Role;
+import com.reservation.commonmodel.auth.Role;
 import com.reservation.commonmodel.exception.ErrorCode;
-import com.reservation.fileupload.auth.domain.UserAuth;
+import com.reservation.fileupload.auth.dto.UserAuth;
 
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
 

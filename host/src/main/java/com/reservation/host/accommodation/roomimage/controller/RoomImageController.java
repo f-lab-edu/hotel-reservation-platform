@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reservation.common.response.ApiResponse;
+import com.reservation.commonauth.auth.annotation.LoginUserId;
 import com.reservation.commonmodel.accommodation.RoomImageDto;
 import com.reservation.host.accommodation.roomimage.controller.dto.request.UpdateRoomImagesRequest;
 import com.reservation.host.accommodation.roomimage.service.RoomImageService;
-import com.reservation.host.auth.annotation.LoginHost;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,7 +37,7 @@ public class RoomImageController {
 	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "룸 이미지(복수) 업데이트", description = "호스트가 룸 이미지(복수)를 업데이트합니다.")
 	public ApiResponse<Void> updateRoomImagesRequest(@RequestPart("body") UpdateRoomImagesRequest request,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 
 		roomImageService.updateRoomImagesRequest(request, hostId);
 
@@ -48,7 +48,7 @@ public class RoomImageController {
 	@Operation(summary = "룸 이미지 조회", description = "호스트가 룸 이미지를 조회합니다.")
 	public ApiResponse<List<RoomImageDto>> readRoomImagesRequest(
 		@PathVariable Long roomTypeId,
-		@Schema(hidden = true) @LoginHost Long hostId) {
+		@Schema(hidden = true) @LoginUserId Long hostId) {
 
 		List<RoomImageDto> roomImages = roomImageService.readRoomImagesRequest(roomTypeId, hostId);
 
