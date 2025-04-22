@@ -21,14 +21,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/phone-verification")
+@RequestMapping("/no-auth/phone-verification")
 @Tag(name = "폰 인증 API", description = "고객용 폰 인증 API입니다.")
 @RequiredArgsConstructor
 public class PhoneVerificationController {
 	private final PhoneVerificationService phoneVerificationService;
 
 	@PostMapping("/send")
-	@Operation(summary = "폰 인증 번호 발송")
+	@Operation(summary = "폰 인증 번호 전송", description = "랜덤한 인증 번호를 생성하여 고객의 폰으로 전송합니다.")
 	public ApiResponse<SendPhoneVerificationResponse> sendVerificationNumber(
 		@RequestBody SendPhoneVerificationRequest request) {
 		SendPhoneVerificationResponse response = phoneVerificationService.sendVerificationNumber(request,
@@ -38,11 +38,11 @@ public class PhoneVerificationController {
 	}
 
 	@PostMapping("/verify")
-	@Operation(summary = "폰 인증 번호 검증")
+	@Operation(summary = "폰 인증 번호 검증", description = "전송한 인증 번호를 검증합니다.")
 	public ApiResponse<VerifyPhoneVerificationResponse> verifyVerificationNumber(
 		@RequestBody VerifyPhoneVerificationRequest request) {
 		VerifyPhoneVerificationResponse response = phoneVerificationService.verifyVerificationNumber(request);
-		
+
 		return ok(response);
 	}
 

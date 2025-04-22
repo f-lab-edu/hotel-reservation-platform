@@ -1,4 +1,9 @@
 spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
   profiles:
     active: local # 기본 실행 프로파일
   config:
@@ -16,6 +21,10 @@ jwt:
   secret-key: ${JWT_SECRET_KEY}
   access-token-expiry: ${JWT_EXPIRATION_TIME}
   refresh-token-expiry: ${JWT_REFRESH_EXPIRATION_TIME}
+  skip-urls:
+    - /no-auth/**
+    - /swagger-ui/**
+    - /v3/api-docs/**
 
 oauth2:
   google:
@@ -31,5 +40,6 @@ oauth2:
 
 logging:
   level:
+    org.springframework.security: DEBUG
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace

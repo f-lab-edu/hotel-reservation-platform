@@ -1,5 +1,6 @@
 package com.reservation.host.accommodation.roomtype.controller;
 
+import static com.reservation.common.response.ApiResponse.*;
 import static com.reservation.host.auth.controller.AuthController.*;
 
 import org.springframework.data.domain.Page;
@@ -43,7 +44,7 @@ public class RoomTypeController {
 	public ApiResponse<Long> createRoomType(@Valid @RequestBody CreateRoomTypeRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.createRoomType(request, hostId);
-		return ApiResponse.ok(roomTypeId);
+		return ok(roomTypeId);
 	}
 
 	@PutMapping
@@ -51,7 +52,7 @@ public class RoomTypeController {
 	public ApiResponse<Long> updateRoomType(@Valid @RequestBody UpdateRoomTypeRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.updateRoomType(request, hostId);
-		return ApiResponse.ok(roomTypeId);
+		return ok(roomTypeId);
 	}
 
 	@PostMapping("search")
@@ -59,7 +60,7 @@ public class RoomTypeController {
 	public ApiResponse<Page<HostRoomTypeDto>> findRoomTypes(@Schema(hidden = true) @LoginUserId Long hostId,
 		RoomTypeSearchCondition condition) {
 		Page<HostRoomTypeDto> roomTypes = roomTypeService.findRoomTypes(hostId, condition);
-		return ApiResponse.ok(roomTypes);
+		return ok(roomTypes);
 	}
 
 	@GetMapping("{id}")
@@ -67,6 +68,6 @@ public class RoomTypeController {
 	public ApiResponse<FindOneRoomTypeResponse> findOneRoomType(@Schema(hidden = true) @LoginUserId Long hostId,
 		@PathVariable Long id) {
 		FindOneRoomTypeResponse roomType = roomTypeService.findOneRoomType(hostId, id);
-		return ApiResponse.ok(roomType);
+		return ok(roomType);
 	}
 }

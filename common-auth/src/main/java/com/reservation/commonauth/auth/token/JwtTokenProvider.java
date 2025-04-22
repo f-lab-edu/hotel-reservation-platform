@@ -2,33 +2,27 @@ package com.reservation.commonauth.auth.token;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.reservation.commonauth.auth.config.JwtProperties;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
-	@Value("${jwt.secret-key}")
-	private String secretKey;
-
-	@Value("${jwt.access-token-expiry}")
-	private long accessTokenValidityInMilliSeconds;
-
-	@Getter
-	@Value("${jwt.refresh-token-expiry}")
-	private long refreshTokenValidityInMilliSeconds;
+	private final JwtProperties jwtProperties;
 
 	public String generateToken(Long userId, String role) {
-		return createToken(userId, role, accessTokenValidityInMilliSeconds);
+		return createToken(userId, role, jwtProperties.getAccessTokenExpiry());
 	}
 
 	public String generateRefreshToken(Long userId, String role) {
-		return createToken(userId, role, refreshTokenValidityInMilliSeconds);
+		return createToken(userId, role, jwtProperties.getRefreshTokenExpiry());
 	}
 
 	private String createToken(Long userId, String role, long validityMillis) {
@@ -42,14 +36,14 @@ public class JwtTokenProvider {
 			.setClaims(claims)
 			.setIssuedAt(now)
 			.setExpiration(expiry)
-			.signWith(SignatureAlgorithm.HS256, secretKey)
+			.signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
 			.compact();
 	}
 
 	public boolean isTokenValid(String token) {
 		try {
 			Jwts.parser()
-				.setSigningKey(secretKey)
+				.setSigningKey(jwtProperties.getSecretKey())
 				.parseClaimsJws(token);
 			return true;
 		} catch (ExpiredJwtException e) {
@@ -63,7 +57,7 @@ public class JwtTokenProvider {
 		try {
 			return Long.parseLong(
 				Jwts.parser()
-					.setSigningKey(secretKey)
+					.setSigningKey(jwtProperties.getSecretKey())
 					.parseClaimsJws(token)
 					.getBody()
 					.getSubject()
@@ -77,7 +71,7 @@ public class JwtTokenProvider {
 
 	public String extractRole(String token) {
 		return Jwts.parser()
-			.setSigningKey(secretKey)
+			.setSigningKey(jwtProperties.getSecretKey())
 			.parseClaimsJws(token)
 			.getBody()
 			.get("role", String.class);
@@ -86,7 +80,7 @@ public class JwtTokenProvider {
 	public Date extractExpiration(String token) {
 		try {
 			return Jwts.parserBuilder()
-				.setSigningKey(secretKey)
+				.setSigningKey(jwtProperties.getSecretKey())
 				.build()
 				.parseClaimsJws(token)
 				.getBody()

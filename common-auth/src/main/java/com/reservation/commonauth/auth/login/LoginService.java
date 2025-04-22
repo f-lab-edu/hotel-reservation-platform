@@ -11,6 +11,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.reservation.commonauth.auth.config.JwtProperties;
 import com.reservation.commonauth.auth.token.JwtTokenProvider;
 import com.reservation.commonmodel.auth.Role;
 
@@ -23,6 +24,7 @@ import lombok.extern.log4j.Log4j2;
 public class LoginService {
 	private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
 
+	private final JwtProperties jwtProperties;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisTemplate<String, String> redisTemplate;
 	private final BlacklistService blacklistService;
@@ -42,13 +44,13 @@ public class LoginService {
 		String refreshToken = jwtTokenProvider.generateRefreshToken(userId, role.authority());
 		String key = REFRESH_TOKEN_PREFIX + role.name().toLowerCase() + ":" + userId;
 		redisTemplate.opsForValue()
-			.set(key, refreshToken, Duration.ofMillis(jwtTokenProvider.getRefreshTokenValidityInMilliSeconds()));
-		
+			.set(key, refreshToken, Duration.ofMillis(jwtProperties.getRefreshTokenExpiry()));
+
 		return ResponseCookie.from(REFRESH_COOKIE_NAME, refreshToken)
 			.httpOnly(true)
 			.secure(true)
 			.path("/")
-			.maxAge(Duration.ofMillis(jwtTokenProvider.getRefreshTokenValidityInMilliSeconds()))
+			.maxAge(Duration.ofMillis(jwtProperties.getRefreshTokenExpiry()))
 			.build();
 	}
 

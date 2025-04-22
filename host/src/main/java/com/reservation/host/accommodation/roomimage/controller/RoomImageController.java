@@ -1,10 +1,10 @@
 package com.reservation.host.accommodation.roomimage.controller;
 
+import static com.reservation.common.response.ApiResponse.*;
 import static com.reservation.host.auth.controller.AuthController.*;
 
 import java.util.List;
 
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reservation.common.response.ApiResponse;
 import com.reservation.commonauth.auth.annotation.LoginUserId;
 import com.reservation.commonmodel.accommodation.RoomImageDto;
@@ -32,26 +31,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoomImageController {
 	private final RoomImageService roomImageService;
-	private final ObjectMapper objectMapper;
 
-	@PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PutMapping()
 	@Operation(summary = "룸 이미지(복수) 업데이트", description = "호스트가 룸 이미지(복수)를 업데이트합니다.")
 	public ApiResponse<Void> updateRoomImagesRequest(@RequestPart("body") UpdateRoomImagesRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
-
 		roomImageService.updateRoomImagesRequest(request, hostId);
-
-		return ApiResponse.noContent();
+		return noContent();
 	}
 
 	@GetMapping("{roomTypeId}")
 	@Operation(summary = "룸 이미지 조회", description = "호스트가 룸 이미지를 조회합니다.")
-	public ApiResponse<List<RoomImageDto>> readRoomImagesRequest(
-		@PathVariable Long roomTypeId,
+	public ApiResponse<List<RoomImageDto>> readRoomImagesRequest(@PathVariable Long roomTypeId,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
-
 		List<RoomImageDto> roomImages = roomImageService.readRoomImagesRequest(roomTypeId, hostId);
-
-		return ApiResponse.ok(roomImages);
+		return ok(roomImages);
 	}
 }

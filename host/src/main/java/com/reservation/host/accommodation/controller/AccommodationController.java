@@ -1,5 +1,6 @@
 package com.reservation.host.accommodation.controller;
 
+import static com.reservation.common.response.ApiResponse.*;
 import static com.reservation.host.auth.controller.AuthController.*;
 
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class AccommodationController {
 	public ApiResponse<Long> createAccommodation(@Valid @RequestBody CreateAccommodationRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long accommodationId = accommodationService.createAccommodation(request, hostId);
-		return ApiResponse.ok(accommodationId);
+		return ok(accommodationId);
 	}
 
 	@PutMapping
@@ -47,13 +48,13 @@ public class AccommodationController {
 	public ApiResponse<Long> updateAccommodation(@Valid @RequestBody UpdateAccommodationRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long accommodationId = accommodationService.updateAccommodation(request, hostId);
-		return ApiResponse.ok(accommodationId);
+		return ok(accommodationId);
 	}
 
 	@GetMapping
 	@Operation(summary = "호스트 숙소 조회", description = "호스트가 숙소를 조회합니다.")
 	public ApiResponse<AccommodationDto> findHostAccommodation(@Schema(hidden = true) @LoginUserId Long hostId) {
 		AccommodationDto accommodation = accommodationService.findHostAccommodation(hostId);
-		return ApiResponse.ok(accommodation);
+		return ok(accommodation);
 	}
 }

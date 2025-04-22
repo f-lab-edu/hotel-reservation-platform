@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reservation.common.response.ApiErrorResponse;
+import com.reservation.commonauth.auth.config.JwtProperties;
 import com.reservation.commonauth.auth.token.JwtTokenProvider;
 import com.reservation.commonmodel.exception.ErrorCode;
 
@@ -29,12 +32,11 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
+@EnableConfigurationProperties(JwtProperties.class)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-	private static final Set<String> SKIP_PATHS = Set.of(
-		"/login", "/oauth2/callback", "/token/refresh", "/swagger-ui/", "/v3/api-docs/", "/terms/",
-		"/phone-verification/"
-	);
-	
+	@Value("${jwt.skip-urls}")
+	private Set<String> SKIP_PATHS;
+
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisTemplate<String, String> redisTemplate;
 

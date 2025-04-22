@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/terms")
+@RequestMapping("/no-auth/terms")
 @Tag(name = "약관 API", description = "고객용 약관 관리 API입니다.")
 @RequiredArgsConstructor
 public class TermsController {
@@ -36,7 +36,7 @@ public class TermsController {
 	}
 
 	@GetMapping("/{id}")
-	@Operation(summary = "약관 상세 조회")
+	@Operation(summary = "약관 상세 조회", description = "특정 약관의 조문 내용을 확인합니다.")
 	public ApiResponse<TermsDetailResponse> findTermsById(@PathVariable Long id) {
 		TermsDetailResponse termsDetail = termsService.findById(id);
 		return ok(termsDetail);

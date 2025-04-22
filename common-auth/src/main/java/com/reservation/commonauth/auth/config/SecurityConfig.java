@@ -1,5 +1,6 @@
 package com.reservation.commonauth.auth.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,10 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity()
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableConfigurationProperties(JwtProperties.class)
 @RequiredArgsConstructor
 public class SecurityConfig {
+	private final JwtProperties jwtProperties;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
@@ -30,8 +33,7 @@ public class SecurityConfig {
 		http
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authz -> authz
-				.requestMatchers("/login", "/oauth2/callback/**", "/token/refresh", "/swagger-ui/**", "/v3/api-docs/**",
-					"/swagger-resources/**", "/terms/**", "/phone-verification/**")
+				.requestMatchers(jwtProperties.getSkipUrls().toArray(new String[0]))
 				.permitAll()
 				.anyRequest()
 				.authenticated()

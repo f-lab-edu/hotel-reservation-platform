@@ -1,5 +1,6 @@
 package com.reservation.host.accommodation.availability.controller;
 
+import static com.reservation.common.response.ApiResponse.*;
 import static com.reservation.host.auth.controller.AuthController.*;
 
 import java.util.List;
@@ -42,8 +43,7 @@ public class RoomAvailabilityController {
 	public ApiResponse<Long> createRoomAvailability(@Valid @RequestBody CreateRoomAvailabilityRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long RoomAvailabilityId = availabilityService.createRoomAvailability(request, hostId);
-
-		return ApiResponse.ok(RoomAvailabilityId);
+		return ok(RoomAvailabilityId);
 	}
 
 	@PutMapping
@@ -51,8 +51,7 @@ public class RoomAvailabilityController {
 	public ApiResponse<Long> updateRoomAvailability(@Valid @RequestBody UpdateRoomAvailabilityRequest request,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		Long RoomAvailabilityId = availabilityService.updateRoomAvailability(request, hostId);
-
-		return ApiResponse.ok(RoomAvailabilityId);
+		return ok(RoomAvailabilityId);
 	}
 
 	@GetMapping
@@ -61,7 +60,6 @@ public class RoomAvailabilityController {
 		@Valid @RequestBody RoomAvailabilitySearchCondition condition,
 		@Schema(hidden = true) @LoginUserId Long hostId) {
 		List<RoomAvailabilityDto> RoomAvailabilityId = availabilityService.findRoomAvailability(condition, hostId);
-
-		return ApiResponse.ok(RoomAvailabilityId);
+		return ok(RoomAvailabilityId);
 	}
 }

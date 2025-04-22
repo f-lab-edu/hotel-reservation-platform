@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.reservation.common.response.ApiErrorResponse;
 import com.reservation.commonmodel.exception.BusinessException;
@@ -24,10 +24,16 @@ import lombok.extern.log4j.Log4j2;
 @RestControllerAdvice
 @Log4j2
 public class GlobalExceptionHandler {
+	private static final String NOT_FOUND_ERROR_MESSAGE = "존재하지 않는 URL입니다";
 	private static final String DEFAULT_ERROR_MESSAGE = "서버 내부 오류로 인한 작업 실패";
 
+	@ExceptionHandler(NoHandlerFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handle404(NoHandlerFoundException e) {
+		ApiErrorResponse response = of(ErrorCode.NOT_FOUND.name(), NOT_FOUND_ERROR_MESSAGE);
+		return status(HttpStatus.NOT_FOUND).body(response);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ResponseEntity<ApiErrorResponse> handleValidationException(
 		MethodArgumentNotValidException methodArgumentNotValidException) {
 
@@ -52,14 +58,9 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(Exception.class)
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception exception) {
 		log.error(exception.getMessage(), exception);
-
-		String responseCode = ErrorCode.INTERNAL_SERVER_ERROR.name();
-		HttpStatus status = ErrorCode.INTERNAL_SERVER_ERROR.status();
-		ApiErrorResponse response = of(responseCode, DEFAULT_ERROR_MESSAGE);
-
-		return status(status).body(response);
+		ApiErrorResponse response = of(ErrorCode.INTERNAL_SERVER_ERROR.name(), DEFAULT_ERROR_MESSAGE);
+		return status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 	}
 }

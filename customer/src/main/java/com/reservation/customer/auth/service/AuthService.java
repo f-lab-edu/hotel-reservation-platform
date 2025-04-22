@@ -40,8 +40,7 @@ public class AuthService {
 	public ResponseEntity<Void> login(LoginRequest request) {
 		MemberDto memberDto = checkMemberInfo(request.email(), request.password());
 
-		return loginService.login(memberDto.id(), Role.CUSTOMER,
-			"https://hotel-reservation-frontend.com/login/success");
+		return loginService.login(memberDto.id(), Role.CUSTOMER);
 	}
 
 	private MemberDto checkMemberInfo(String email, String password) {
