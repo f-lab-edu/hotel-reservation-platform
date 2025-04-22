@@ -25,47 +25,46 @@ import com.reservation.host.accommodation.roomtype.controller.dto.response.FindO
 import com.reservation.host.accommodation.roomtype.service.RoomTypeService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/room-types")
-@Tag(name = "숙소 관리 API", description = "호스트용 숙소 관리 API입니다.")
-@PreAuthorize(PRE_AUTH_ROLE_HOST)
+@Tag(name = "숙소 관리 API", description = "숙박 업체 숙소 관리 API입니다.")
+@PreAuthorize(PRE_AUTH_ROLE_HOST)//✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 public class RoomTypeController {
 	private final RoomTypeService roomTypeService;
 
 	@PostMapping
-	@Operation(summary = "룸 타입 등록", description = "호스트가 룸 타입을 등록합니다.")
+	@Operation(summary = "룸 타입 등록", description = "숙박 업체가 룸 타입을 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> createRoomType(@Valid @RequestBody CreateRoomTypeRequest request,
-		@Schema(hidden = true) @LoginUserId Long hostId) {
+		@LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.createRoomType(request, hostId);
 		return ok(roomTypeId);
 	}
 
 	@PutMapping
-	@Operation(summary = "룸 타입 수정", description = "호스트가 룸 타입을 수정합니다.")
+	@Operation(summary = "룸 타입 수정", description = "숙박 업체가 룸 타입을 수정합니다.")
 	public ApiResponse<Long> updateRoomType(@Valid @RequestBody UpdateRoomTypeRequest request,
-		@Schema(hidden = true) @LoginUserId Long hostId) {
+		@LoginUserId Long hostId) {
 		Long roomTypeId = roomTypeService.updateRoomType(request, hostId);
 		return ok(roomTypeId);
 	}
 
 	@PostMapping("search")
-	@Operation(summary = "룸 타입 조회", description = "호스트가 룸 타입을 조회합니다.")
-	public ApiResponse<Page<HostRoomTypeDto>> findRoomTypes(@Schema(hidden = true) @LoginUserId Long hostId,
+	@Operation(summary = "룸 타입 조회", description = "숙박 업체가 룸 타입을 조회합니다.")
+	public ApiResponse<Page<HostRoomTypeDto>> findRoomTypes(@LoginUserId Long hostId,
 		RoomTypeSearchCondition condition) {
 		Page<HostRoomTypeDto> roomTypes = roomTypeService.findRoomTypes(hostId, condition);
 		return ok(roomTypes);
 	}
 
 	@GetMapping("{id}")
-	@Operation(summary = "룸 타입 단일 조회", description = "호스트가 룸 타입을 단일 조회합니다.")
-	public ApiResponse<FindOneRoomTypeResponse> findOneRoomType(@Schema(hidden = true) @LoginUserId Long hostId,
+	@Operation(summary = "룸 타입 단일 조회", description = "숙박 업체가 룸 타입을 단일 조회합니다.")
+	public ApiResponse<FindOneRoomTypeResponse> findOneRoomType(@LoginUserId Long hostId,
 		@PathVariable Long id) {
 		FindOneRoomTypeResponse roomType = roomTypeService.findOneRoomType(hostId, id);
 		return ok(roomType);

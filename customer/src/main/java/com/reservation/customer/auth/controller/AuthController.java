@@ -24,7 +24,6 @@ import com.reservation.customer.auth.controller.dto.request.LoginRequest;
 import com.reservation.customer.auth.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +47,7 @@ public class AuthController {
 
 	@GetMapping("no-auth/oauth2/callback/google") //❗JWT auth 제외
 	@Operation(summary = "구글 소셜 로그인", description = "일반 고객 구글 로그인 연동 API 입니다, code 값은 구글에서 발급받은 코드입니다")
-	public ResponseEntity<Void> socialLoginByGoogle(@RequestParam String code) {
+	public ResponseEntity<Void> socialLoginByGoogle(@RequestParam("code") String code) {
 		SocialLoginProvider provider = SocialLoginProvider.GOOGLE;
 		try {
 			return authService.login(provider, code);
@@ -65,7 +64,7 @@ public class AuthController {
 
 	@GetMapping("no-auth/oauth2/callback/github") //❗JWT auth 제외
 	@Operation(summary = "깃헙 소셜 로그인", description = "일반 고객 깃헙 로그인 연동 API 입니다, code 값은 깃헙에서 발급받은 코드입니다")
-	public ResponseEntity<Void> socialLoginByGithub(@RequestParam String code) {
+	public ResponseEntity<Void> socialLoginByGithub(@RequestParam("code") String code) {
 		SocialLoginProvider provider = SocialLoginProvider.GITHUB;
 		try {
 			return authService.login(provider, code);
@@ -80,24 +79,24 @@ public class AuthController {
 		}
 	}
 
-	@GetMapping("/auth/refresh")
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@GetMapping("/no-auth/refresh") //❗JWT auth 제외
 	@Operation(summary = "토큰 재발급", description = "일반 고객 AT 재발급 API 입니다, 기존 토큰은 만료됩니다")
-	public ResponseEntity<Void> tokenReissue(@Schema(hidden = true) @LoginUserId Long memberId) {
+	public ResponseEntity<Void> tokenReissue(
+		@LoginUserId(includeExpired = true) Long memberId) { // AccessToken 만료되어도 재발급 가능
 		return refreshService.tokenReissue(memberId, Role.CUSTOMER);
 	}
 
 	@PostMapping("/auth/logout")
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)//✅일반 고객만 접근 가능
 	@Operation(summary = "로그아웃", description = "일반 고객 로그아웃 API 입니다")
-	public ResponseEntity<Void> logout(@Schema(hidden = true) @LoginUserId Long memberId) {
+	public ResponseEntity<Void> logout(@LoginUserId Long memberId) {
 		return logoutService.logout(memberId, Role.CUSTOMER);
 	}
 
 	@GetMapping("/auth/me")
-	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER)
+	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER) //✅일반 고객만 접근 가능
 	@Operation(summary = "ME", description = "일반 고객 정보 확인 API 입니다")
-	public ApiResponse<MemberDto> getMe(@Schema(hidden = true) @LoginUserId Long memberId) {
+	public ApiResponse<MemberDto> getMe(@LoginUserId Long memberId) {
 		MemberDto member = authService.findMe(memberId);
 		return ok(member);
 	}

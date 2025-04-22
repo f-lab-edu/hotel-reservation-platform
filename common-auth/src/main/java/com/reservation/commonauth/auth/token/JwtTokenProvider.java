@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.reservation.commonauth.auth.config.JwtProperties;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
@@ -41,52 +40,28 @@ public class JwtTokenProvider {
 	}
 
 	public boolean isTokenValid(String token) {
-		try {
-			Jwts.parser()
-				.setSigningKey(jwtProperties.getSecretKey())
-				.parseClaimsJws(token);
-			return true;
-		} catch (ExpiredJwtException e) {
-			throw e;
-		} catch (Exception e) {
-			return false;
-		}
+		Jwts.parser()
+			.setSigningKey(jwtProperties.getSecretKey())
+			.parseClaimsJws(token);
+		return true;
 	}
 
-	public Long extractUserId(String token) {
-		try {
-			return Long.parseLong(
-				Jwts.parser()
-					.setSigningKey(jwtProperties.getSecretKey())
-					.parseClaimsJws(token)
-					.getBody()
-					.getSubject()
-			);
-		} catch (ExpiredJwtException e) {
-			return Long.parseLong(e.getClaims().getSubject());
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	public String extractRole(String token) {
+	private Claims getClaim(String token) {
 		return Jwts.parser()
 			.setSigningKey(jwtProperties.getSecretKey())
 			.parseClaimsJws(token)
-			.getBody()
-			.get("role", String.class);
+			.getBody();
+	}
+
+	public Long extractUserId(String token) {
+		return Long.parseLong(getClaim(token).getSubject());
+	}
+
+	public String extractRole(String token) {
+		return getClaim(token).get("role", String.class);
 	}
 
 	public Date extractExpiration(String token) {
-		try {
-			return Jwts.parserBuilder()
-				.setSigningKey(jwtProperties.getSecretKey())
-				.build()
-				.parseClaimsJws(token)
-				.getBody()
-				.getExpiration();
-		} catch (ExpiredJwtException e) {
-			return null;
-		}
+		return getClaim(token).getExpiration();
 	}
 }

@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/no-auth/phone-verification")
+@RequestMapping("/no-auth/phone-verification")  //❗JWT auth 제외
 @Tag(name = "폰 인증 API", description = "고객용 폰 인증 API입니다.")
 @RequiredArgsConstructor
 public class PhoneVerificationController {

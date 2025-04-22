@@ -20,7 +20,7 @@ import com.reservation.commonmodel.host.HostDto;
 import com.reservation.host.auth.controller.dto.request.LoginRequest;
 import com.reservation.host.auth.service.AuthService;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,29 +35,33 @@ public class AuthController {
 	private final RefreshService refreshService;
 	private final LogoutService logoutService;
 
-	@PostMapping("/login")
+	@PostMapping("/no-auth/login") //❗JWT auth 제외
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "일반 로그인", description = "숙박 업체 로그인 API 입니다, 로그인 성공 시 JWT 토큰을 발급합니다")
 	public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
 		return authService.login(request);
 	}
 
-	@GetMapping("/token/refresh")
+	@GetMapping("/no-auth/refresh") //❗JWT auth 제외
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(summary = "토큰 재발급", description = "숙박 업체 AT 재발급 API 입니다, 기존 토큰은 만료됩니다")
 	public ResponseEntity<Void> tokenReissue(
-		@Schema(hidden = true) @LoginUserId Long hostId) {
+		@LoginUserId(includeExpired = true) Long hostId) { // AccessToken 만료되어도 재발급 가능
 		return refreshService.tokenReissue(hostId, Role.HOST);
 	}
 
-	@PostMapping("/logout")
+	@PostMapping("/auth/logout")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize(PRE_AUTH_ROLE_HOST)
-	public ResponseEntity<Void> logout(@Schema(hidden = true) @LoginUserId Long hostId) {
+	@PreAuthorize(PRE_AUTH_ROLE_HOST)//✅숙박 업체만 접근 가능
+	@Operation(summary = "로그아웃", description = "숙박 업체 로그아웃 API 입니다")
+	public ResponseEntity<Void> logout(@LoginUserId Long hostId) {
 		return logoutService.logout(hostId, Role.HOST);
 	}
 
-	@GetMapping("/me")
-	@PreAuthorize(PRE_AUTH_ROLE_HOST)
-	public ApiResponse<HostDto> getMe(@Schema(hidden = true) @LoginUserId Long hostId) {
+	@GetMapping("/auth/me")
+	@PreAuthorize(PRE_AUTH_ROLE_HOST)//✅숙박 업체만 접근 가능
+	@Operation(summary = "ME", description = "숙박 업체 정보 확인 API 입니다")
+	public ApiResponse<HostDto> getMe(@LoginUserId Long hostId) {
 		return ok(authService.findMe(hostId));
 	}
 }

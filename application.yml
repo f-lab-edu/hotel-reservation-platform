@@ -40,6 +40,5 @@ oauth2:
 
 logging:
   level:
-    org.springframework.security: DEBUG
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace

@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/no-auth/terms")
+@RequestMapping("/no-auth/terms")  //❗JWT auth 제외
 @Tag(name = "약관 API", description = "고객용 약관 관리 API입니다.")
 @RequiredArgsConstructor
 public class TermsController {

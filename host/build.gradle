@@ -11,6 +11,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'io.github.cdimascio:dotenv-java:3.2.0'
 
+    annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

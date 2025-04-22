@@ -21,39 +21,38 @@ import com.reservation.host.accommodation.controller.dto.request.UpdateAccommoda
 import com.reservation.host.accommodation.service.AccommodationService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/accommodation")
-@Tag(name = "숙소 관리 API", description = "호스트용 숙소 관리 API입니다.")
-@PreAuthorize(PRE_AUTH_ROLE_HOST)
+@Tag(name = "숙소 관리 API", description = "숙박 업체 숙소 관리 API입니다.")
+@PreAuthorize(PRE_AUTH_ROLE_HOST)//✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 public class AccommodationController {
 	private final AccommodationService accommodationService;
 
 	@PostMapping
-	@Operation(summary = "호스트 숙소 등록", description = "호스트가 숙소를 등록합니다.")
+	@Operation(summary = "숙소 등록", description = "숙박 업체가 숙소를 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> createAccommodation(@Valid @RequestBody CreateAccommodationRequest request,
-		@Schema(hidden = true) @LoginUserId Long hostId) {
+		@LoginUserId Long hostId) {
 		Long accommodationId = accommodationService.createAccommodation(request, hostId);
 		return ok(accommodationId);
 	}
 
 	@PutMapping
-	@Operation(summary = "호스트 숙소 수정", description = "호스트가 숙소를 수정합니다.")
+	@Operation(summary = "숙소 수정", description = "숙박 업체가 숙소를 수정합니다.")
 	public ApiResponse<Long> updateAccommodation(@Valid @RequestBody UpdateAccommodationRequest request,
-		@Schema(hidden = true) @LoginUserId Long hostId) {
+		@LoginUserId Long hostId) {
 		Long accommodationId = accommodationService.updateAccommodation(request, hostId);
 		return ok(accommodationId);
 	}
 
 	@GetMapping
-	@Operation(summary = "호스트 숙소 조회", description = "호스트가 숙소를 조회합니다.")
-	public ApiResponse<AccommodationDto> findHostAccommodation(@Schema(hidden = true) @LoginUserId Long hostId) {
+	@Operation(summary = "숙소 조회", description = "숙박 업체가 숙소를 조회합니다.")
+	public ApiResponse<AccommodationDto> findHostAccommodation(@LoginUserId Long hostId) {
 		AccommodationDto accommodation = accommodationService.findHostAccommodation(hostId);
 		return ok(accommodation);
 	}

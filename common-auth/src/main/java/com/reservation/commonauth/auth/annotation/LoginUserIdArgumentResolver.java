@@ -11,6 +11,7 @@ import com.reservation.commonauth.auth.token.JwtTokenProvider;
 import com.reservation.commonauth.auth.token.RequestContext;
 import com.reservation.commonmodel.exception.ErrorCode;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -32,11 +33,17 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
 		if (accessToken == null || accessToken.isBlank()) {
 			throw ErrorCode.UNAUTHORIZED.exception("인증 정보가 존재하지 않습니다.");
 		}
-		Long userId = jwtTokenProvider.extractUserId(accessToken);
-		if (userId == null) {
+		try {
+			return jwtTokenProvider.extractUserId(accessToken);
+		} catch (ExpiredJwtException e) {
+			LoginUserId annotation = parameter.getParameterAnnotation(LoginUserId.class);
+			// includeExpired = true 경우만 만료된 토큰 허용
+			if (annotation != null && annotation.includeExpired()) {
+				return Long.parseLong(e.getClaims().getSubject());
+			}
+			throw ErrorCode.UNAUTHORIZED.exception("인증 토큰이 만료되었습니다.");
+		} catch (Exception e) {
 			throw ErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.");
 		}
-
-		return userId;
 	}
 }

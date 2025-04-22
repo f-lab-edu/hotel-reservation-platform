@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 	private final MemberService memberService;
 
-	@PostMapping("/no-auth/member/signup")
+	@PostMapping("/no-auth/member/signup")  //❗JWT auth 제외
 	@Operation(summary = "회원 가입", description = "일반 고객 회원가입 API 입니다.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ApiResponse<Void> signup(@Valid @RequestBody SignupRequest request) {

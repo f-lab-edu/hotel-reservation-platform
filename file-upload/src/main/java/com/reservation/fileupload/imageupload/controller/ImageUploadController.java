@@ -23,7 +23,6 @@ import com.reservation.fileupload.auth.dto.UserAuth;
 import com.reservation.fileupload.imageupload.controller.dto.response.UploadImageResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -38,9 +37,7 @@ public class ImageUploadController {
 	@Operation(summary = "이미지 업로드", description = "이미지를 스토리지 서버에 업로드 합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<UploadImageResponse> uploadImage(
-		@RequestParam ImageDomain domain,
-		@RequestPart MultipartFile file,
-		@Schema(hidden = true) @LoginUser UserAuth userAuth) {
+		@RequestParam ImageDomain domain, @RequestPart MultipartFile file, @LoginUser UserAuth userAuth) {
 
 		UploadedImage uploadedImage = new UploadedImageBuilder()
 			.domain(domain)

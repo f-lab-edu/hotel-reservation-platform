@@ -69,8 +69,7 @@ public class TermsController {
 
 	@GetMapping("/{id}")
 	@Operation(summary = "약관 상세 조회", description = "약관 상세 조회합니다.")
-	public ApiResponse<TermsDto> findById(
-		@Nonnull @PathVariable Long id) {
+	public ApiResponse<TermsDto> findById(@Nonnull @PathVariable Long id) {
 		TermsDto findTerms = termsService.findById(id);
 		return ok(findTerms);
 	}
