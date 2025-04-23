@@ -16,10 +16,14 @@ import com.reservation.commonauth.auth.login.social.OAuthClient;
 import com.reservation.commonauth.auth.login.social.OAuthUserInfo;
 import com.reservation.commonmodel.exception.ErrorCode;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Component("GITHUB")
 @Qualifier("GITHUB")
+@Log4j2
 @RequiredArgsConstructor
 public class GithubOAuthClient implements OAuthClient {
 	@Value("${oauth2.github.client-id}")
@@ -40,6 +44,8 @@ public class GithubOAuthClient implements OAuthClient {
 	private final RestTemplate restTemplate;
 
 	@Override
+	@Retry(name = "githubOAuth", fallbackMethod = "githubFallback")
+	@CircuitBreaker(name = "githubOAuth", fallbackMethod = "githubFallback")
 	public OAuthUserInfo getUserInfo(String authCode) {
 		GithubTokenResponse token = githubTokenResponse(authCode);
 		if (token == null) {
@@ -82,5 +88,10 @@ public class GithubOAuthClient implements OAuthClient {
 		);
 
 		return response.getBody();
+	}
+
+	public OAuthUserInfo githubFallback(String code, Throwable t) {
+		log.warn("Github 로그인 실패 fallback 진입: {}", t.getMessage());
+		throw ErrorCode.UNAUTHORIZED.exception("github-login-fallback");
 	}
 }

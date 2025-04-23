@@ -16,10 +16,14 @@ import com.reservation.commonauth.auth.login.social.OAuthClient;
 import com.reservation.commonauth.auth.login.social.OAuthUserInfo;
 import com.reservation.commonmodel.exception.ErrorCode;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Component("GOOGLE")
 @Qualifier("GOOGLE")
+@Log4j2
 @RequiredArgsConstructor
 public class GoogleOAuthClient implements OAuthClient {
 	@Value("${oauth2.google.client-id}")
@@ -40,6 +44,8 @@ public class GoogleOAuthClient implements OAuthClient {
 	private final RestTemplate restTemplate;
 
 	@Override
+	@Retry(name = "googleOAuth", fallbackMethod = "googleFallback")
+	@CircuitBreaker(name = "googleOAuth", fallbackMethod = "googleFallback")
 	public OAuthUserInfo getUserInfo(String authCode) {
 		GoogleTokenResponse token = googleTokenResponse(authCode);
 		if (token == null) {
@@ -82,5 +88,10 @@ public class GoogleOAuthClient implements OAuthClient {
 		);
 
 		return response.getBody();
+	}
+
+	public OAuthUserInfo googleFallback(String code, Throwable t) {
+		log.warn("Google 로그인 실패 fallback 진입: {}", t.getMessage());
+		throw ErrorCode.UNAUTHORIZED.exception("google-login-fallback");
 	}
 }

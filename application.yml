@@ -38,6 +38,36 @@ oauth2:
     redirect_uri: ${GITHUB_REDIRECT_URI}
     grant_type: "authorization_code"
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      googleOAuth:
+        slidingWindowSize: 10               # 최근 10개의 호출 기준
+        minimumNumberOfCalls: 5             # 최소 5번 호출돼야 판단
+        failureRateThreshold: 50            # 실패율 50% 이상이면 OPEN
+        waitDurationInOpenState: 10s        # 10초 후 HALF_OPEN으로 전환
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      githubOAuth:
+        slidingWindowSize: 10               # 최근 10개의 호출 기준
+        minimumNumberOfCalls: 5             # 최소 5번 호출돼야 판단
+        failureRateThreshold: 50            # 실패율 50% 이상이면 OPEN
+        waitDurationInOpenState: 10s        # 10초 후 HALF_OPEN으로 전환
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  retry:
+    instances:
+      googleOAuth:
+        maxAttempts: 3        # 총 3번 시도 (최초 + 2회)
+        waitDuration: 500ms   # 각 재시도 간 지연
+        retryExceptions:
+          - com.reservation.commonmodel.exception.BusinessException
+      githubOAuth:
+        maxAttempts: 3        # 총 3번 시도 (최초 + 2회)
+        waitDuration: 500ms   # 각 재시도 간 지연
+        retryExceptions:
+          - com.reservation.commonmodel.exception.BusinessException
+
 logging:
   level:
     org.hibernate.SQL: debug

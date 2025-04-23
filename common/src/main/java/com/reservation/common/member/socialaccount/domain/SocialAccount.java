@@ -28,13 +28,13 @@ public class SocialAccount extends BaseEntity {
 
 	public SocialAccount(SocialLoginProvider provider, String email, Long memberId) {
 		if (provider == null) {
-			throw ErrorCode.UNAUTHORIZED.exception("Provider cannot be null");
+			throw ErrorCode.UNAUTHORIZED.exception("소셜 로그인 제공자는 필수 값입니다.");
 		}
 		if (email == null || email.isBlank()) {
-			throw ErrorCode.UNAUTHORIZED.exception("Email cannot be null or blank");
+			throw ErrorCode.UNAUTHORIZED.exception("이메일은 필수 값입니다.");
 		}
 		if (memberId == null || memberId <= 0) {
-			throw ErrorCode.UNAUTHORIZED.exception("Member ID must be a positive number");
+			throw ErrorCode.UNAUTHORIZED.exception("Member ID는 필수 값입니다.");
 		}
 		this.provider = provider;
 		this.email = email;
