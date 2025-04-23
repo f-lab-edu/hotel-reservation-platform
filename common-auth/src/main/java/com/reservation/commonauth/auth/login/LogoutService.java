@@ -3,9 +3,6 @@ package com.reservation.commonauth.auth.login;
 import static com.reservation.commonauth.auth.token.RequestContext.*;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.reservation.commonmodel.auth.Role;
@@ -22,21 +19,12 @@ public class LogoutService {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final BlacklistService blacklistService;
 
-	public ResponseEntity<Void> logout(Long userId, Role role) {
+	public String logout(Long userId, Role role) {
 		deleteRefreshToken(userId, role);
 
 		blacklistService.setBlacklistToken(userId, role);
 
-		ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0)
-			.build();
-
-		return ResponseEntity.noContent()
-			.header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-			.build();
+		return REFRESH_COOKIE_NAME;
 	}
 
 	private void deleteRefreshToken(Long userId, Role role) {

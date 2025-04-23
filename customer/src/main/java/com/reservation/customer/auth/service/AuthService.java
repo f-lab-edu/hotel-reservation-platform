@@ -2,19 +2,18 @@ package com.reservation.customer.auth.service;
 
 import java.util.Optional;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reservation.common.member.socialaccount.domain.SocialAccount;
 import com.reservation.common.member.socialaccount.repository.JpaSocialAccountRepository;
+import com.reservation.commonapi.auth.oauth.OAuthUserInfo;
+import com.reservation.commonapi.auth.oauth.SocialLoginService;
 import com.reservation.commonapi.customer.repository.CustomerMemberRepository;
 import com.reservation.commonauth.auth.login.LoginService;
-import com.reservation.commonauth.auth.login.social.OAuthUserInfo;
-import com.reservation.commonauth.auth.login.social.SocialLoginService;
 import com.reservation.commonmodel.auth.Role;
+import com.reservation.commonmodel.auth.login.LoginSettingToken;
+import com.reservation.commonmodel.auth.login.OauthSettingToken;
 import com.reservation.commonmodel.auth.login.SocialLoginProvider;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.member.MemberDto;
@@ -28,18 +27,14 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class AuthService {
-	private static final String REDIRECT_URL = "https://hotel-reservation-frontend.com/login/success";
-	private static final String SOCIAL_SIGNUP_URL = "https://hotel-reservation-frontend.com/signup?email=";
-
 	private final CustomerMemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final LoginService loginService;
 	private final SocialLoginService socialLoginService;
 	private final JpaSocialAccountRepository socialAccountRepository;
 
-	public ResponseEntity<Void> login(LoginRequest request) {
+	public LoginSettingToken login(LoginRequest request) {
 		MemberDto memberDto = checkMemberInfo(request.email(), request.password());
-
 		return loginService.login(memberDto.id(), Role.CUSTOMER);
 	}
 
@@ -69,22 +64,21 @@ public class AuthService {
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("회원 정보가 존재하지 않습니다."));
 	}
 
-	public ResponseEntity<Void> login(SocialLoginProvider provider, String code) {
+	public OauthSettingToken login(SocialLoginProvider provider, String code) {
 		OAuthUserInfo oAuthUserInfo = socialLoginService.authenticate(provider, code);
+
 		Optional<SocialAccount> optionalSocialAccount = socialAccountRepository.findOneByProviderAndEmail(provider,
 			oAuthUserInfo.email());
-
-		// 신규 회원 가입
+		// 회원 가입이 되어 있지 않은 경우
 		if (optionalSocialAccount.isEmpty()) {
-			return ResponseEntity
-				.status(HttpStatus.FOUND)
-				.header(HttpHeaders.LOCATION, SOCIAL_SIGNUP_URL + oAuthUserInfo.email())
-				.build();
+			return new OauthSettingToken(null, false, oAuthUserInfo.email());
 		}
 
 		MemberDto memberDto = findMe(optionalSocialAccount.get().getMemberId());
 		checkMemberStatus(memberDto.status());
 
-		return loginService.login(memberDto.id(), Role.CUSTOMER, REDIRECT_URL);
+		LoginSettingToken loginSettingToken = loginService.login(memberDto.id(), Role.CUSTOMER);
+
+		return new OauthSettingToken(loginSettingToken, true, oAuthUserInfo.email());
 	}
 }
