@@ -1,9 +1,12 @@
-package com.reservation.commonauth.auth.login.social;
+package com.reservation.commonauth.auth.oauth;
 
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import com.reservation.commonapi.auth.oauth.OAuthClient;
+import com.reservation.commonapi.auth.oauth.OAuthUserInfo;
+import com.reservation.commonapi.auth.oauth.SocialLoginService;
 import com.reservation.commonmodel.auth.login.SocialLoginProvider;
 import com.reservation.commonmodel.exception.ErrorCode;
 
@@ -11,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class SocialLoginService {
+public class SocialLoginServiceImpl implements SocialLoginService {
 
 	private final Map<String, OAuthClient> clientMap;
 

@@ -1,29 +1,26 @@
 package com.reservation.commonmodel.auth.login;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 public enum SocialLoginProvider {
-	GOOGLE("https://hotel-reservation-frontend.com/social-fail"),
-	GITHUB("https://hotel-reservation-frontend.com/social-fail");
+	GOOGLE, GITHUB;
 
-	private final String fallbackBaseUrl;
+	private static final String FALLBACK_BASE_URL = "https://hotel-reservation-frontend.com/social-fail";
+	private static final String REDIRECT_URL = "https://hotel-reservation-frontend.com/login/success";
+	private static final String SOCIAL_SIGNUP_URL = "https://hotel-reservation-frontend.com/signup?email=";
 
-	SocialLoginProvider(String fallbackBaseUrl) {
-		this.fallbackBaseUrl = fallbackBaseUrl;
+	public String getRedirectUrl() {
+		return REDIRECT_URL;
 	}
 
-	public ResponseEntity<Void> fallbackRedirect(String reason) {
+	public String getSocialSignupUrl(String email) {
+		return SOCIAL_SIGNUP_URL + email;
+	}
+
+	public String fallbackRedirectUrl(String reason) {
 		String queryString = reason != null ? "?reason=" + reason : "";
-		String fallbackRedirectUrl = fallbackBaseUrl + queryString;
-		return ResponseEntity
-			.status(HttpStatus.FOUND)
-			.header(HttpHeaders.LOCATION, fallbackRedirectUrl)
-			.build();
+		return FALLBACK_BASE_URL + queryString;
 	}
 
-	public ResponseEntity<Void> fallbackUnknown() {
-		return fallbackRedirect("UNKNOWN");
+	public String fallbackUnknown() {
+		return fallbackRedirectUrl("UNKNOWN");
 	}
 }

@@ -3,12 +3,12 @@ package com.reservation.commonauth.auth.login;
 import static com.reservation.commonauth.auth.token.RequestContext.*;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.reservation.commonauth.auth.token.JwtTokenProvider;
 import com.reservation.commonauth.auth.token.RequestContext;
 import com.reservation.commonmodel.auth.Role;
+import com.reservation.commonmodel.auth.login.AccessTokenHeader;
 import com.reservation.commonmodel.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class RefreshService {
 	private final RequestContext requestContext;
 	private final BlacklistService blacklistService;
 
-	public ResponseEntity<Void> tokenReissue(Long userId, Role role) {
+	public AccessTokenHeader tokenReissue(Long userId, Role role) {
 		String key = REFRESH_TOKEN_PREFIX + role.name().toLowerCase() + ":" + userId;
 		String redisToken = redisTemplate.opsForValue().get(key);
 		if (redisToken == null || redisToken.isBlank()) {
@@ -44,9 +44,6 @@ public class RefreshService {
 		blacklistService.setBlacklistToken(userId, role);
 
 		String accessToken = jwtTokenProvider.generateToken(userId, role.authority());
-
-		return ResponseEntity.noContent()
-			.header(AUTH_HEADER_NAME, AUTH_HEADER_PREFIX + accessToken)
-			.build();
+		return new AccessTokenHeader(AUTH_HEADER_NAME, AUTH_HEADER_PREFIX + accessToken);
 	}
 }

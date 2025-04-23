@@ -1,18 +1,17 @@
 package com.reservation.host.auth.service;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reservation.commonapi.host.repository.HostModuleRepository;
 import com.reservation.commonauth.auth.login.LoginService;
 import com.reservation.commonmodel.auth.Role;
+import com.reservation.commonmodel.auth.login.LoginSettingToken;
 import com.reservation.commonmodel.exception.ErrorCode;
 import com.reservation.commonmodel.host.HostDto;
 import com.reservation.commonmodel.host.HostStatus;
 import com.reservation.host.auth.controller.dto.request.LoginRequest;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -24,7 +23,7 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final LoginService loginService;
 
-	public ResponseEntity<Void> login(@Valid LoginRequest request) {
+	public LoginSettingToken login(LoginRequest request) {
 		HostDto hostDto = hostRepository.findOneByEmailAndStatusIsNot(request.email(), HostStatus.WITHDRAWN)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("이메일 정보가 존재하지 않습니다."));
 		if (hostDto.status() == HostStatus.SUSPENDED) {
@@ -33,8 +32,7 @@ public class AuthService {
 		if (!passwordEncoder.matches(request.password(), hostDto.password())) {
 			throw ErrorCode.NOT_FOUND.exception("로그인 정보가 일치하지 않습니다.");
 		}
-
-		return loginService.login(hostDto.id(), Role.HOST, "https://hotel-reservation-frontend.com/login/success");
+		return loginService.login(hostDto.id(), Role.HOST);
 	}
 
 	public HostDto findMe(Long hostId) {

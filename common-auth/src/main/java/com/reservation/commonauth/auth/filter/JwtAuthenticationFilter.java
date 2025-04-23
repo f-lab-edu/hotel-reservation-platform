@@ -1,12 +1,10 @@
 package com.reservation.commonauth.auth.filter;
 
-import static com.reservation.commonauth.auth.login.BlacklistService.*;
 import static com.reservation.commonauth.auth.token.RequestContext.*;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.reservation.commonauth.auth.login.BlacklistService;
 import com.reservation.commonauth.auth.security.AuthErrorType;
 import com.reservation.commonauth.auth.token.JwtTokenProvider;
 
@@ -28,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtTokenProvider jwtTokenProvider;
-	private final RedisTemplate<String, String> redisTemplate;
+	private final BlacklistService blacklistService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -43,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		//❌블랙리스트로 등록된 토큰인지 확인
-		if (redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + token)) {
+		if (blacklistService.checkBlacklistToken(token)) {
 			request.setAttribute("authError", AuthErrorType.BLACKLIST_TOKEN);
 			filterChain.doFilter(request, response);
 			return;

@@ -1,4 +1,4 @@
-package com.reservation.commonauth.auth.login.social.google;
+package com.reservation.commonauth.auth.oauth.google;
 
 import lombok.Data;
 

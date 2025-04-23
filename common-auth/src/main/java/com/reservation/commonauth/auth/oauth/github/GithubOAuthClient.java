@@ -1,4 +1,4 @@
-package com.reservation.commonauth.auth.login.social.google;
+package com.reservation.commonauth.auth.oauth.github;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,43 +12,43 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import com.reservation.commonauth.auth.login.social.OAuthClient;
-import com.reservation.commonauth.auth.login.social.OAuthUserInfo;
+import com.reservation.commonapi.auth.oauth.OAuthClient;
+import com.reservation.commonapi.auth.oauth.OAuthUserInfo;
 import com.reservation.commonmodel.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
-@Component("GOOGLE")
-@Qualifier("GOOGLE")
+@Component("GITHUB")
+@Qualifier("GITHUB")
 @RequiredArgsConstructor
-public class GoogleOAuthClient implements OAuthClient {
-	@Value("${oauth2.google.client-id}")
+public class GithubOAuthClient implements OAuthClient {
+	@Value("${oauth2.github.client-id}")
 	private String clientId;
 
-	@Value("${oauth2.google.client-secret}")
+	@Value("${oauth2.github.client-secret}")
 	private String clientSecret;
 
-	@Value("${oauth2.google.redirect_uri}")
+	@Value("${oauth2.github.redirect_uri}")
 	private String redirectUri;
 
-	@Value("${oauth2.google.grant_type}")
+	@Value("${oauth2.github.grant_type}")
 	private String grantType;
 
-	private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
-	private static final String USER_INFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+	private static final String TOKEN_URL = "https://github.com/login/oauth/access_token";
+	private static final String USER_INFO_URL = "https://api.github.com/user";
 
 	private final RestTemplate restTemplate;
 
 	@Override
 	public OAuthUserInfo getUserInfo(String authCode) {
-		GoogleTokenResponse token = googleTokenResponse(authCode);
+		GithubTokenResponse token = githubTokenResponse(authCode);
 		if (token == null) {
 			throw ErrorCode.UNAUTHORIZED.exception("Failed to get access token");
 		}
-		return googleUserInfo(token.getAccess_token());
+		return githubUserInfo(token.getAccess_token());
 	}
 
-	private GoogleTokenResponse googleTokenResponse(String authCode) {
+	private GithubTokenResponse githubTokenResponse(String authCode) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -61,24 +61,24 @@ public class GoogleOAuthClient implements OAuthClient {
 
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-		ResponseEntity<GoogleTokenResponse> response = restTemplate.postForEntity(
+		ResponseEntity<GithubTokenResponse> response = restTemplate.postForEntity(
 			TOKEN_URL,
 			request,
-			GoogleTokenResponse.class
+			GithubTokenResponse.class
 		);
 
 		return response.getBody();
 	}
 
-	private GoogleUserInfo googleUserInfo(String accessToken) {
+	private GithubUserInfo githubUserInfo(String accessToken) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(accessToken);
 		HttpEntity<?> request = new HttpEntity<>(headers);
-		ResponseEntity<GoogleUserInfo> response = restTemplate.exchange(
+		ResponseEntity<GithubUserInfo> response = restTemplate.exchange(
 			USER_INFO_URL,
 			HttpMethod.GET,
 			request,
-			GoogleUserInfo.class
+			GithubUserInfo.class
 		);
 
 		return response.getBody();

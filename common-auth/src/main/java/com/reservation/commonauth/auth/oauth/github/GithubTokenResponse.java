@@ -1,4 +1,4 @@
-package com.reservation.commonauth.auth.login.social.github;
+package com.reservation.commonauth.auth.oauth.github;
 
 import lombok.Data;
 
