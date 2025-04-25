@@ -1,9 +1,9 @@
-package com.reservation.domain.terms.clause;
+package com.reservation.domain.terms;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.reservation.websupport.exception.ErrorCode;
+import com.reservation.support.exception.ErrorCode;
 
 public record Clauses(List<Clause> values) {
 

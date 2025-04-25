@@ -1,18 +1,23 @@
-package com.reservation.domain.uploadedimage.domain;
+package com.reservation.domain.uploadedimage;
 
 import java.time.LocalDate;
 
+import com.reservation.auth.login.Role;
 import com.reservation.domain.base.BaseEntity;
+import com.reservation.domain.uploadedimage.enums.ImageDomain;
+import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Entity
 public class UploadedImage extends BaseEntity {
+
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private ImageDomain domain;
@@ -33,8 +38,10 @@ public class UploadedImage extends BaseEntity {
 	protected UploadedImage() {
 	}
 
-	public UploadedImage(Long id, ImageDomain domain, LocalDate uploadDate, String uuid, Long uploaderId,
-		Role uploaderRole) {
+	@Builder
+	public UploadedImage(
+		Long id, ImageDomain domain, LocalDate uploadDate, String uuid, Long uploaderId, Role uploaderRole) {
+
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("ID 값은 0보다 커야 합니다.");
 		}
@@ -60,48 +67,5 @@ public class UploadedImage extends BaseEntity {
 		this.uuid = uuid;
 		this.uploaderId = uploaderId;
 		this.uploaderRole = uploaderRole;
-	}
-
-	public static class UploadedImageBuilder {
-		private Long id;
-		private ImageDomain domain;
-		private LocalDate uploadDate;
-		private String uuid;
-		private Long uploaderId;
-		private Role uploaderRole;
-
-		public UploadedImageBuilder id(Long id) {
-			this.id = id;
-			return this;
-		}
-
-		public UploadedImageBuilder domain(ImageDomain domain) {
-			this.domain = domain;
-			return this;
-		}
-
-		public UploadedImageBuilder uploadDate(LocalDate uploadDate) {
-			this.uploadDate = uploadDate;
-			return this;
-		}
-
-		public UploadedImageBuilder uuid(String uuid) {
-			this.uuid = uuid;
-			return this;
-		}
-
-		public UploadedImageBuilder uploaderId(Long uploaderId) {
-			this.uploaderId = uploaderId;
-			return this;
-		}
-
-		public UploadedImageBuilder uploaderRole(Role uploaderRole) {
-			this.uploaderRole = uploaderRole;
-			return this;
-		}
-
-		public UploadedImage build() {
-			return new UploadedImage(id, domain, uploadDate, uuid, uploaderId, uploaderRole);
-		}
 	}
 }

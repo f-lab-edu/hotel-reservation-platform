@@ -1,14 +1,14 @@
-package com.reservation.common.terms.domain;
+package com.reservation.domain.terms;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.reservation.common.domain.BaseEntity;
-import com.reservation.commonmodel.exception.ErrorCode;
-import com.reservation.commonmodel.terms.TermsCode;
-import com.reservation.commonmodel.terms.TermsStatus;
-import com.reservation.commonmodel.terms.TermsType;
+import com.reservation.domain.base.BaseEntity;
+import com.reservation.domain.terms.enums.TermsCode;
+import com.reservation.domain.terms.enums.TermsStatus;
+import com.reservation.domain.terms.enums.TermsType;
+import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,10 +18,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Builder;
 import lombok.Getter;
 
+@Getter
 @Entity
 @Table(
 	name = "terms",
@@ -30,54 +31,43 @@ import lombok.Getter;
 	}
 )
 public class Terms extends BaseEntity {
-	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsCode code; // ex: TERMS001
 
-	@Getter
 	@Column(nullable = false)
 	private String title; // ex: 이용약관
 
-	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsType type; // 필수 or 선택
 
-	@Getter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private TermsStatus status; // 사용 or 미사용
 
-	@Getter
 	@Column(nullable = false)
 	private Integer version; // 버전 역할
 
-	@Getter
 	@Column(nullable = false)
 	private Boolean isLatest; // 최신 버전 여부
 
-	@Getter
 	@Column(nullable = false)
 	private LocalDateTime exposedFrom; // 노출 시작일
 
-	@Getter
 	@Column(nullable = true)
 	private LocalDateTime exposedToOrNull; // 노출 종료일
 
-	@Getter
 	@Column(nullable = false)
 	private Integer displayOrder; // 정렬 순서
 
 	@OneToMany(mappedBy = "terms", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private final List<Clause> clauseList = new ArrayList<>();
-
-	@Transient
-	private Clauses clauses;
+	private final List<Clause> clauses = new ArrayList<>();
 
 	protected Terms() {
 	}
 
+	@Builder
 	private Terms(Long id, TermsCode code, String title, TermsType type, TermsStatus status, Integer version,
 		Boolean isLatest, LocalDateTime exposedFrom, LocalDateTime exposedToOrNull, Integer displayOrder) {
 		if (code == null) {
@@ -119,94 +109,12 @@ public class Terms extends BaseEntity {
 		this.displayOrder = displayOrder;
 	}
 
-	public static class TermsBuilder {
-		private Long id;
-		private TermsCode code;
-		private String title;
-		private TermsType type;
-		private TermsStatus status;
-		private Integer version;
-		private Boolean isLatest;
-		private LocalDateTime exposedFrom;
-		private LocalDateTime exposedToOrNull;
-		private Integer displayOrder;
-
-		public TermsBuilder id(Long id) {
-			this.id = id;
-			return this;
-		}
-
-		public TermsBuilder code(TermsCode code) {
-			this.code = code;
-			return this;
-		}
-
-		public TermsBuilder title(String title) {
-			this.title = title;
-			return this;
-		}
-
-		public TermsBuilder type(TermsType type) {
-			this.type = type;
-			return this;
-		}
-
-		public TermsBuilder status(TermsStatus status) {
-			this.status = status;
-			return this;
-		}
-
-		public TermsBuilder version(Integer version) {
-			this.version = version;
-			return this;
-		}
-
-		public TermsBuilder isLatest(Boolean isLatest) {
-			this.isLatest = isLatest;
-			return this;
-		}
-
-		public TermsBuilder exposedFrom(LocalDateTime exposedFrom) {
-			this.exposedFrom = exposedFrom;
-			return this;
-		}
-
-		public TermsBuilder exposedToOrNull(LocalDateTime exposedToOrNull) {
-			this.exposedToOrNull = exposedToOrNull;
-			return this;
-		}
-
-		public TermsBuilder displayOrder(Integer displayOrder) {
-			this.displayOrder = displayOrder;
-			return this;
-		}
-
-		public Terms build() {
-			return new Terms(id, code, title, type, status, version, isLatest, exposedFrom, exposedToOrNull,
-				displayOrder);
-		}
-	}
-
-	public Clauses getClauses() {
-		if (clauses == null) {
-			this.clauses = new Clauses(this.clauseList);
-		}
-		return clauses;
-	}
-
-	public void addClause(Clause clause) {
-		this.clauseList.add(clause);
-	}
-
-	public void setClauses(Clauses clauses) {
-		this.clauses = clauses;
-		for (Clause clause : clauses.values()) {
-			addClause(clause);
-		}
+	public void setClauses(List<Clause> clauses) {
+		this.clauses.addAll(clauses);
 	}
 
 	public void validateComplete() {
-		if (clauses == null || clauses.isEmpty()) {
+		if (clauses.isEmpty()) {
 			throw ErrorCode.CONFLICT.exception("약관은 하나 이상의 조항을 포함해야 합니다.");
 		}
 	}
@@ -214,5 +122,10 @@ public class Terms extends BaseEntity {
 	public void deprecate() {
 		this.status = TermsStatus.DEPRECATED;
 		this.isLatest = false;
+	}
+
+	public void setNewVersionAndIdInitialization(int version) {
+		id = null; // 새로운 버전 생성 시 PK ID는 null 설정
+		this.version = version;
 	}
 }

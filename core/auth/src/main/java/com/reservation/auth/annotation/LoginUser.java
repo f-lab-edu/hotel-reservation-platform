@@ -1,4 +1,4 @@
-package com.reservation.fileupload.auth.annotation;
+package com.reservation.auth.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

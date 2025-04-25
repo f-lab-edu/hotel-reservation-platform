@@ -1,13 +1,14 @@
-package com.reservation.domain.socialaccount.domain;
+package com.reservation.domain.socialaccount;
 
-import com.reservation.common.domain.BaseEntity;
-import com.reservation.commonmodel.auth.login.SocialLoginProvider;
-import com.reservation.commonmodel.exception.ErrorCode;
+import com.reservation.auth.oauth.enums.SocialLoginProvider;
+import com.reservation.domain.base.BaseEntity;
+import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -26,6 +27,7 @@ public class SocialAccount extends BaseEntity {
 	protected SocialAccount() {
 	}
 
+	@Builder
 	public SocialAccount(SocialLoginProvider provider, String email, Long memberId) {
 		if (provider == null) {
 			throw ErrorCode.UNAUTHORIZED.exception("소셜 로그인 제공자는 필수 값입니다.");

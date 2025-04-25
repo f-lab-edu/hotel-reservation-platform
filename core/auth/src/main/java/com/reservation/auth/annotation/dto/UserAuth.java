@@ -1,7 +1,7 @@
-package com.reservation.fileupload.auth.dto;
+package com.reservation.auth.annotation.dto;
 
-import com.reservation.commonmodel.auth.Role;
-import com.reservation.commonmodel.exception.ErrorCode;
+import com.reservation.auth.login.Role;
+import com.reservation.support.exception.ErrorCode;
 
 public record UserAuth(Long userId, Role role) {
 	public UserAuth {

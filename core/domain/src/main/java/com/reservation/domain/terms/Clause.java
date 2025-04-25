@@ -1,8 +1,7 @@
-package com.reservation.domain.terms.clause;
+package com.reservation.domain.terms;
 
 import com.reservation.domain.base.BaseEntity;
-import com.reservation.domain.terms.Terms;
-import com.reservation.websupport.exception.ErrorCode;
+import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +11,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -44,6 +44,7 @@ public class Clause extends BaseEntity {
 	protected Clause() {
 	}
 
+	@Builder
 	private Clause(Terms terms, int clauseOrder, String title, String content) {
 		if (terms == null) {
 			throw ErrorCode.CONFLICT.exception("약관 정보는 필수입니다.");
@@ -61,36 +62,5 @@ public class Clause extends BaseEntity {
 		this.clauseOrder = clauseOrder;
 		this.title = title;
 		this.content = content;
-	}
-
-	public static class ClauseBuilder {
-		private Terms terms;
-		private int clauseOrder;
-		private String title;
-		private String content;
-
-		public ClauseBuilder terms(Terms terms) {
-			this.terms = terms;
-			return this;
-		}
-
-		public ClauseBuilder clauseOrder(int clauseOrder) {
-			this.clauseOrder = clauseOrder;
-			return this;
-		}
-
-		public ClauseBuilder title(String title) {
-			this.title = title;
-			return this;
-		}
-
-		public ClauseBuilder content(String content) {
-			this.content = content;
-			return this;
-		}
-
-		public Clause build() {
-			return new Clause(terms, clauseOrder, title, content);
-		}
 	}
 }

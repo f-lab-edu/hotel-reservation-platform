@@ -1,10 +1,11 @@
-package com.reservation.domain.member.domain;
+package com.reservation.domain.member;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.reservation.domain.base.BaseEntity;
-import com.reservation.websupport.exception.ErrorCode;
+import com.reservation.domain.member.enums.MemberStatus;
+import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

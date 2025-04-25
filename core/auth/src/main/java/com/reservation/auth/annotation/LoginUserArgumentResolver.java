@@ -1,4 +1,4 @@
-package com.reservation.fileupload.auth.annotation;
+package com.reservation.auth.annotation;
 
 import java.util.Collection;
 
@@ -6,15 +6,17 @@ import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.reservation.commonmodel.auth.Role;
-import com.reservation.commonmodel.exception.ErrorCode;
-import com.reservation.fileupload.auth.dto.UserAuth;
+import com.reservation.auth.annotation.dto.UserAuth;
+import com.reservation.auth.login.Role;
+import com.reservation.support.exception.ErrorCode;
 
+@Component
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
 
 	@Override
