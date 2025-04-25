@@ -1,10 +1,15 @@
 rootProject.name = "hotel-reservation-platform"
 
-// 멀티 모듈 추가
-include 'common'
-include 'common-model'
-include 'common-api'
-include 'common-auth'
-include 'customer'
-include 'host'
-include 'admin'
+// 📁 core 모듈
+include 'core:domain'
+include 'core:support'
+include 'core:query-support'
+include 'core:auth'
+
+// 📁 client 모듈
+include 'client:customer'
+include 'client:host'
+include 'client:admin'
+
+// 📁 기타 단독 모듈
+include 'file-upload'
