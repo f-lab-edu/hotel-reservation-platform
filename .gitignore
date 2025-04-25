@@ -16,6 +16,7 @@ core/auth/src/main/generated
 
 core/domain/build
 core/domain/out
+core/domain/src/main/generated
 
 core/support/build
 core/support/out
