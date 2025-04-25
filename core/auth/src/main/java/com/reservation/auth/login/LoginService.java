@@ -15,11 +15,9 @@ import com.reservation.auth.token.JwtTokenProvider;
 import com.reservation.support.enums.Role;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class LoginService {
 	private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
 

@@ -41,30 +41,30 @@ public class RoomController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> create(
 		@RequestBody NewRoomRequest request,
-		@LoginUserId Long hostId
+		@LoginUserId long hostId
 	) {
-		long roomTypeId = roomService.create(request.validateToDefaultRoomInfo(), hostId);
+		long createdRoomId = roomService.create(request.validateToDefaultRoomInfo(), hostId);
 
-		return ApiResponse.ok(roomTypeId);
+		return ApiResponse.ok(createdRoomId);
 	}
 
 	@PatchMapping("{roomId}")
 	@Operation(summary = "룸 타입 수정", description = "숙박 업체가 룸 타입을 수정합니다.")
 	public ApiResponse<Long> update(
-		@PathVariable Long roomId,
+		@PathVariable long roomId,
 		@Valid @RequestBody NewRoomRequest request,
-		@LoginUserId Long hostId
+		@LoginUserId long hostId
 	) {
-		long roomTypeId = roomService.update(roomId, request.validateToDefaultRoomInfo(), hostId);
+		long updatedRoomId = roomService.update(roomId, request.validateToDefaultRoomInfo(), hostId);
 
-		return ApiResponse.ok(roomTypeId);
+		return ApiResponse.ok(updatedRoomId);
 	}
 
 	@PostMapping("search")
 	@Operation(summary = "룸 정보 검색", description = "숙박 업체가 룸 정보를 검색 합니다.")
 	public ApiResponse<Page<SearchRoomResult>> search(
-		@LoginUserId Long hostId,
-		@RequestBody RoomSearchCondition condition
+		@RequestBody RoomSearchCondition condition,
+		@LoginUserId long hostId
 	) {
 		String roomNameOrNull = condition.nameOrNull();
 		PageRequest pageRequest = condition.toPageRequest();
@@ -74,13 +74,13 @@ public class RoomController {
 		return ApiResponse.ok(searchRoomPages);
 	}
 
-	@GetMapping("{id}")
+	@GetMapping("{roomId}")
 	@Operation(summary = "룸 정보 단일 조회", description = "숙박 업체가 룸 정보를 단일 조회합니다.")
 	public ApiResponse<Room> findOne(
-		@PathVariable Long id,
-		@LoginUserId Long hostId
+		@PathVariable long roomId,
+		@LoginUserId long hostId
 	) {
-		Room roomType = roomService.findOne(id, hostId);
+		Room roomType = roomService.findOne(roomId, hostId);
 		return ApiResponse.ok(roomType);
 	}
 }

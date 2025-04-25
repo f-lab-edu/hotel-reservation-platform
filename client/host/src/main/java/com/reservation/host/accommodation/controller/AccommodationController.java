@@ -47,9 +47,9 @@ public class AccommodationController {
 	@PutMapping("{accommodationId}")
 	@Operation(summary = "숙소 수정", description = "숙박 업체가 숙소를 수정합니다.")
 	public ApiResponse<Long> updateAccommodation(
-		@PathVariable Long accommodationId,
+		@PathVariable long accommodationId,
 		@RequestBody NewAccommodationRequest request,
-		@LoginUserId Long hostId
+		@LoginUserId long hostId
 	) {
 		long updatedAccommodationId =
 			accommodationService.updateAccommodation(request.validateToAccommodationInfo(), accommodationId, hostId);

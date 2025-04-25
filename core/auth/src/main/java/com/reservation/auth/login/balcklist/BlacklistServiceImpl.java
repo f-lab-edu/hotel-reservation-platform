@@ -12,11 +12,9 @@ import com.reservation.auth.token.RequestContext;
 import com.reservation.support.enums.Role;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class BlacklistServiceImpl implements BlacklistService {
 	public static final String BLACKLIST_TOKEN_PREFIX = "blacklist_token:";
 
@@ -42,7 +40,7 @@ public class BlacklistServiceImpl implements BlacklistService {
 		redisTemplate.opsForValue().set(blacklistKey, value, duration);
 	}
 
-	public boolean checkBlacklistToken(String token) {
-		return redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + token);
+	public boolean checkBlacklistToken(String accessToken) {
+		return redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + accessToken);
 	}
 }

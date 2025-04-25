@@ -131,7 +131,7 @@ public class AuthController {
 	@PostMapping("/auth/logout")
 	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER) //✅일반 고객만 접근 가능
 	@Operation(summary = "로그아웃", description = "일반 고객 로그아웃 API 입니다")
-	public ResponseEntity<Void> logout(@LoginUserId Long memberId) {
+	public ResponseEntity<Void> logout(@LoginUserId long memberId) {
 		String deleteRefreshTokenCookieKey = logoutService.logout(memberId, Role.CUSTOMER);
 
 		ResponseCookie deleteCookie = ResponseCookie.from(deleteRefreshTokenCookieKey, "")
@@ -149,7 +149,7 @@ public class AuthController {
 	@GetMapping("/auth/me")
 	@PreAuthorize(PRE_AUTH_ROLE_CUSTOMER) //✅일반 고객만 접근 가능
 	@Operation(summary = "ME", description = "일반 고객 정보 확인 API 입니다")
-	public ApiResponse<Member> getMe(@LoginUserId Long memberId) {
+	public ApiResponse<Member> getMe(@LoginUserId long memberId) {
 		Member findMember = authService.getMe(memberId);
 
 		return ApiResponse.ok(findMember);

@@ -12,11 +12,9 @@ import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class RefreshService {
 	private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
 
