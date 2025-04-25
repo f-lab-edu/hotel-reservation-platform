@@ -13,14 +13,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.reservation.common.response.ApiResponse;
-import com.reservation.common.uploadedimage.domain.ImageDomain;
-import com.reservation.common.uploadedimage.domain.UploadedImage;
-import com.reservation.common.uploadedimage.domain.UploadedImage.UploadedImageBuilder;
-import com.reservation.common.uploadedimage.service.UploadedImageService;
-import com.reservation.fileupload.auth.annotation.LoginUser;
-import com.reservation.fileupload.auth.dto.UserAuth;
+import com.reservation.auth.annotation.LoginUser;
+import com.reservation.auth.annotation.dto.UserAuth;
+import com.reservation.domain.uploadedimage.UploadedImage;
+import com.reservation.domain.uploadedimage.enums.ImageDomain;
 import com.reservation.fileupload.imageupload.controller.dto.response.UploadImageResponse;
+import com.reservation.fileupload.imageupload.service.UploadedImageService;
+import com.reservation.support.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +38,7 @@ public class ImageUploadController {
 	public ApiResponse<UploadImageResponse> uploadImage(
 		@RequestParam ImageDomain domain, @RequestPart MultipartFile file, @LoginUser UserAuth userAuth) {
 
-		UploadedImage uploadedImage = new UploadedImageBuilder()
+		UploadedImage uploadedImage = UploadedImage.builder()
 			.domain(domain)
 			.uploaderId(userAuth.userId())
 			.uploaderRole(userAuth.role())

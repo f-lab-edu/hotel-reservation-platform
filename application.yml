@@ -61,12 +61,12 @@ resilience4j:
         maxAttempts: 3        # 총 3번 시도 (최초 + 2회)
         waitDuration: 500ms   # 각 재시도 간 지연
         retryExceptions:
-          - com.reservation.commonmodel.exception.BusinessException
+          - com.reservation.support.exception.BusinessException
       githubOAuth:
         maxAttempts: 3        # 총 3번 시도 (최초 + 2회)
         waitDuration: 500ms   # 각 재시도 간 지연
         retryExceptions:
-          - com.reservation.commonmodel.exception.BusinessException
+          - com.reservation.support.exception.BusinessException
 
 logging:
   level:
