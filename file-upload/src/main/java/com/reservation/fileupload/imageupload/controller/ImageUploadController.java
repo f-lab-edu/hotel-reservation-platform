@@ -13,17 +13,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.reservation.common.response.ApiResponse;
-import com.reservation.common.uploadedimage.domain.ImageDomain;
-import com.reservation.common.uploadedimage.domain.UploadedImage;
-import com.reservation.common.uploadedimage.domain.UploadedImage.UploadedImageBuilder;
-import com.reservation.common.uploadedimage.service.UploadedImageService;
-import com.reservation.fileupload.auth.annotation.LoginUser;
-import com.reservation.fileupload.auth.domain.UserAuth;
+import com.reservation.auth.annotation.LoginUser;
+import com.reservation.auth.annotation.dto.UserAuth;
+import com.reservation.domain.uploadedimage.UploadedImage;
+import com.reservation.domain.uploadedimage.enums.ImageDomain;
 import com.reservation.fileupload.imageupload.controller.dto.response.UploadImageResponse;
+import com.reservation.fileupload.imageupload.service.UploadedImageService;
+import com.reservation.support.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -38,14 +36,12 @@ public class ImageUploadController {
 	@Operation(summary = "이미지 업로드", description = "이미지를 스토리지 서버에 업로드 합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<UploadImageResponse> uploadImage(
-		@RequestParam ImageDomain domain,
-		@RequestPart MultipartFile file,
-		@Schema(hidden = true) @LoginUser UserAuth userAuth) {
+		@RequestParam ImageDomain domain, @RequestPart MultipartFile file, @LoginUser UserAuth userAuth) {
 
-		UploadedImage uploadedImage = new UploadedImageBuilder()
+		UploadedImage uploadedImage = UploadedImage.builder()
 			.domain(domain)
-			.uploaderId(userAuth.getUserId())
-			.uploaderRole(userAuth.getRole())
+			.uploaderId(userAuth.userId())
+			.uploaderRole(userAuth.role())
 			.uploadDate(LocalDate.now())
 			.uuid(UUID.randomUUID().toString())
 			.build();
