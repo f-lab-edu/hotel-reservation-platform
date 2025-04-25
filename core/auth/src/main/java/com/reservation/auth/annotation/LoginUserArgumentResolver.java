@@ -13,7 +13,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.reservation.auth.annotation.dto.UserAuth;
-import com.reservation.auth.login.Role;
+import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 @Component

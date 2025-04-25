@@ -12,6 +12,7 @@ import com.reservation.auth.login.dto.AccessTokenHeader;
 import com.reservation.auth.login.dto.LoginSettingToken;
 import com.reservation.auth.login.dto.RefreshTokenCookie;
 import com.reservation.auth.token.JwtTokenProvider;
+import com.reservation.support.enums.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

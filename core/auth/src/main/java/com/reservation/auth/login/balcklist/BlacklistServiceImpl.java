@@ -7,9 +7,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.reservation.auth.login.BlacklistService;
-import com.reservation.auth.login.Role;
 import com.reservation.auth.token.JwtTokenProvider;
 import com.reservation.auth.token.RequestContext;
+import com.reservation.support.enums.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

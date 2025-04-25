@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.reservation.auth.login.dto.AccessTokenHeader;
 import com.reservation.auth.token.JwtTokenProvider;
 import com.reservation.auth.token.RequestContext;
+import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;

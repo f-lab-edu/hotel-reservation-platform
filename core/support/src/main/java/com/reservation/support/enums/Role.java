@@ -1,4 +1,4 @@
-package com.reservation.auth.login;
+package com.reservation.support.enums;
 
 import java.util.Arrays;
 

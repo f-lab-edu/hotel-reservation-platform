@@ -5,7 +5,7 @@
 
 build
 
-setting/data
+etc/data
 
 core/build
 core/out

@@ -1,6 +1,6 @@
 package com.reservation.auth.annotation.dto;
 
-import com.reservation.auth.login.Role;
+import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 public record UserAuth(Long userId, Role role) {

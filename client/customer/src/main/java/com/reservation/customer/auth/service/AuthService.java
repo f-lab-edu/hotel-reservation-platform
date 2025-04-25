@@ -6,17 +6,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reservation.auth.login.LoginService;
-import com.reservation.auth.login.Role;
 import com.reservation.auth.login.dto.LoginSettingToken;
 import com.reservation.auth.login.dto.OauthSettingToken;
 import com.reservation.auth.oauth.OAuthUserInfo;
 import com.reservation.auth.oauth.SocialLoginService;
-import com.reservation.auth.oauth.enums.SocialLoginProvider;
 import com.reservation.customer.auth.repository.JpaSocialAccountRepository;
 import com.reservation.customer.member.repository.JpaMemberRepository;
 import com.reservation.domain.member.Member;
 import com.reservation.domain.member.enums.MemberStatus;
 import com.reservation.domain.socialaccount.SocialAccount;
+import com.reservation.support.enums.Role;
+import com.reservation.support.enums.SocialLoginProvider;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;

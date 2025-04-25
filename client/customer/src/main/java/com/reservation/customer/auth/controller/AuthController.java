@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reservation.auth.annotation.LoginUserId;
 import com.reservation.auth.login.LogoutService;
 import com.reservation.auth.login.RefreshService;
-import com.reservation.auth.login.Role;
 import com.reservation.auth.login.dto.AccessTokenHeader;
 import com.reservation.auth.login.dto.LoginSettingToken;
 import com.reservation.auth.login.dto.OauthSettingToken;
 import com.reservation.auth.login.dto.RefreshTokenCookie;
-import com.reservation.auth.oauth.enums.SocialLoginProvider;
 import com.reservation.customer.auth.controller.request.LoginRequest;
 import com.reservation.customer.auth.service.AuthService;
 import com.reservation.domain.member.Member;
+import com.reservation.support.enums.Role;
+import com.reservation.support.enums.SocialLoginProvider;
 import com.reservation.support.exception.BusinessException;
 import com.reservation.support.response.ApiResponse;
 

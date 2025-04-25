@@ -4,11 +4,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reservation.auth.login.LoginService;
-import com.reservation.auth.login.Role;
 import com.reservation.auth.login.dto.LoginSettingToken;
 import com.reservation.domain.host.Host;
 import com.reservation.domain.host.enums.HostStatus;
 import com.reservation.host.host.repository.JpaHostRepository;
+import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.reservation.domain.socialaccount;
 
-import com.reservation.auth.oauth.enums.SocialLoginProvider;
 import com.reservation.domain.base.BaseEntity;
+import com.reservation.support.enums.SocialLoginProvider;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;

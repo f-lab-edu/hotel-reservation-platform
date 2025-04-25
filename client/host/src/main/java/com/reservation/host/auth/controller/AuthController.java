@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reservation.auth.annotation.LoginUserId;
 import com.reservation.auth.login.LogoutService;
 import com.reservation.auth.login.RefreshService;
-import com.reservation.auth.login.Role;
 import com.reservation.auth.login.dto.AccessTokenHeader;
 import com.reservation.auth.login.dto.LoginSettingToken;
 import com.reservation.auth.login.dto.RefreshTokenCookie;
 import com.reservation.domain.host.Host;
 import com.reservation.host.auth.controller.request.LoginRequest;
 import com.reservation.host.auth.service.AuthService;
+import com.reservation.support.enums.Role;
 import com.reservation.support.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.reservation.auth.oauth.enums.SocialLoginProvider;
+import com.reservation.support.enums.SocialLoginProvider;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;

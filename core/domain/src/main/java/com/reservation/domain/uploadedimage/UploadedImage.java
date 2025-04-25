@@ -2,9 +2,9 @@ package com.reservation.domain.uploadedimage;
 
 import java.time.LocalDate;
 
-import com.reservation.auth.login.Role;
 import com.reservation.domain.base.BaseEntity;
 import com.reservation.domain.uploadedimage.enums.ImageDomain;
+import com.reservation.support.enums.Role;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;

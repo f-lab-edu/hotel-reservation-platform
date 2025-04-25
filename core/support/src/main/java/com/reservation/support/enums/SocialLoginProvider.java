@@ -1,4 +1,4 @@
-package com.reservation.auth.oauth.enums;
+package com.reservation.support.enums;
 
 public enum SocialLoginProvider {
 	GOOGLE, GITHUB;
