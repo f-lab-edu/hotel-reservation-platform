@@ -48,9 +48,9 @@ public class RoomImageController {
 	@GetMapping("{roomId}/images")
 	@Operation(summary = "룸 이미지 URL 전체 조회", description = "숙박 업체가 룸 이미지를 조회합니다.")
 	public ApiResponse<List<RoomImage>> findRoomImages(
-		@PathVariable Long roomId,
-		@LoginUserId Long hostId) {
-		
+		@PathVariable long roomId,
+		@LoginUserId long hostId) {
+
 		List<RoomImage> roomImages = roomImageService.findRoomImages(roomId, hostId);
 
 		return ApiResponse.ok(roomImages);

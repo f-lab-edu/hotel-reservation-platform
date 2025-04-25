@@ -12,7 +12,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.reservation.admin.terms.controller.request.TermsCursor;
-import com.reservation.admin.terms.service.dto.QSearchTerms;
+import com.reservation.admin.terms.service.dto.QSearchTermsResult;
 import com.reservation.admin.terms.service.dto.SearchTermsResult;
 import com.reservation.domain.terms.QClause;
 import com.reservation.domain.terms.QTerms;
@@ -62,7 +62,7 @@ public class TermsQueryRepository {
 
 		// 데이터 조회
 		List<SearchTermsResult> searchTermResults = queryFactory
-			.select(new QSearchTerms(
+			.select(new QSearchTermsResult(
 				terms.id,
 				terms.code,
 				terms.title,
@@ -116,7 +116,7 @@ public class TermsQueryRepository {
 
 		// 데이터 조회
 		List<SearchTermsResult> searchTermResults = queryFactory
-			.select(new QSearchTerms(
+			.select(new QSearchTermsResult(
 				terms.id,
 				terms.code,
 				terms.title,

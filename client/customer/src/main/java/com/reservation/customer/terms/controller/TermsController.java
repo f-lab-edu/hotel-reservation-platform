@@ -38,7 +38,7 @@ public class TermsController {
 
 	@GetMapping("/{id}")
 	@Operation(summary = "약관 상세 조회", description = "특정 약관의 조문 내용을 확인합니다.")
-	public ApiResponse<Terms> findTermsById(@PathVariable Long id) {
+	public ApiResponse<Terms> findTermsById(@PathVariable long id) {
 		Terms findTerms = termsService.findById(id);
 
 		return ApiResponse.ok(findTerms);
