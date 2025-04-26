@@ -81,6 +81,7 @@ public class RoomService {
 
 	public Page<SearchRoomResult> search(long hostId, String roomNameOrNull, PageRequest pageRequest) {
 		long accommodationId = checkAccommodationByHostId(hostId).getId();
+		
 		return roomQueryRepository.pagingByAccommodationIdAndNameOrNull(accommodationId, roomNameOrNull, pageRequest);
 	}
 

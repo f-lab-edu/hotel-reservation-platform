@@ -47,11 +47,23 @@ public class RoomPricingPolicy extends BaseEntity {
 		if (dayOfWeek == null) {
 			throw ErrorCode.CONFLICT.exception("요일 정보는 필수입니다.");
 		}
-		if (price < 0) {
-			throw ErrorCode.CONFLICT.exception("가격은 0 이상이어야 합니다.");
+		if (price < 1000) {
+			throw ErrorCode.CONFLICT.exception("가격은 1,000 이상이어야 합니다.");
 		}
 		this.id = id;
 		this.roomId = roomId;
+		this.dayOfWeek = dayOfWeek;
+		this.price = price;
+	}
+
+	public void update(DayOfWeek dayOfWeek, int price) {
+		if (dayOfWeek == null) {
+			throw ErrorCode.CONFLICT.exception("요일 정보는 필수입니다.");
+		}
+		if (price < 1000) {
+			throw ErrorCode.CONFLICT.exception("가격은 1,000 이상이어야 합니다.");
+		}
+
 		this.dayOfWeek = dayOfWeek;
 		this.price = price;
 	}

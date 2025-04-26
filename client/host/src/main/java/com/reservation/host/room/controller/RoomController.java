@@ -80,7 +80,8 @@ public class RoomController {
 		@PathVariable long roomId,
 		@LoginUserId long hostId
 	) {
-		Room roomType = roomService.findOne(roomId, hostId);
-		return ApiResponse.ok(roomType);
+		Room findRoom = roomService.findOne(roomId, hostId);
+		
+		return ApiResponse.ok(findRoom);
 	}
 }
