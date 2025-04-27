@@ -20,13 +20,16 @@ public class RoomAvailability extends BaseEntity {
 	LocalDate date; // 예약 가능 날짜
 
 	@Column(nullable = false)
+	Integer price; // 가격
+
+	@Column(nullable = false)
 	Integer availableCount; // 예약 가능 개수
 
 	protected RoomAvailability() {
 	}
 
 	@Builder
-	public RoomAvailability(Long id, long roomId, LocalDate date, Integer availableCount) {
+	public RoomAvailability(Long id, long roomId, LocalDate date, int price, int availableCount) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("숙소 ID는 0보다 커야 합니다.");
 		}
@@ -36,6 +39,9 @@ public class RoomAvailability extends BaseEntity {
 		if (date == null) {
 			throw ErrorCode.BAD_REQUEST.exception("예약 가능 날짜는 필수입니다.");
 		}
+		if (price < 1000) {
+			throw ErrorCode.BAD_REQUEST.exception("가격은 1000 이상이어야 합니다.");
+		}
 		if (availableCount < 0) {
 			throw ErrorCode.BAD_REQUEST.exception("예약 가능 개수는 0 이상이어야 합니다.");
 		}
@@ -43,6 +49,7 @@ public class RoomAvailability extends BaseEntity {
 		this.id = id;
 		this.roomId = roomId;
 		this.date = date;
+		this.price = price;
 		this.availableCount = availableCount;
 	}
 }
