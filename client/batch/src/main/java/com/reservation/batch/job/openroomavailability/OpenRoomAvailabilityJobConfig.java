@@ -24,6 +24,9 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class OpenRoomAvailabilityJobConfig {
+	private static final int CHUNK_TIME_OUT = 60;
+	private static final int CHUNK_SIZE = 100000;
+
 	private final JobRepository jobRepository;
 	private final PlatformTransactionManager transactionManager;
 
@@ -46,7 +49,7 @@ public class OpenRoomAvailabilityJobConfig {
 		String stepName = "openRoomAvailabilityStep";
 
 		TimeAndSizeBasedCompletionPolicy timeAndSizeBasedCompletionPolicy =
-			new TimeAndSizeBasedCompletionPolicy(5, 100000);
+			new TimeAndSizeBasedCompletionPolicy(CHUNK_TIME_OUT, CHUNK_SIZE);
 
 		return new StepBuilder(stepName, jobRepository)
 			.<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>>
