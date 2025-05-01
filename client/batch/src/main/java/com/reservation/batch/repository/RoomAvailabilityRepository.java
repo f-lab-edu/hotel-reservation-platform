@@ -22,7 +22,7 @@ public class RoomAvailabilityRepository {
 
 		List<RoomAutoAvailabilityPolicy> results = em.createQuery(
 				"SELECT p FROM RoomAutoAvailabilityPolicy p " +
-					"WHERE p.enabled = true AND p.id > :lastSeenId " +
+					"WHERE p.enabled = true AND p.id >= :lastSeenId " +
 					"ORDER BY p.id ASC", RoomAutoAvailabilityPolicy.class)
 			.setParameter("lastSeenId", lastSeenId)
 			.setMaxResults(pageSize + 1)

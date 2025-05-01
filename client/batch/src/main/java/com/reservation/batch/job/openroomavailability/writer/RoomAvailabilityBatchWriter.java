@@ -1,12 +1,11 @@
 package com.reservation.batch.job.openroomavailability.writer;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -21,37 +20,32 @@ import lombok.extern.slf4j.Slf4j;
 @StepScope
 @RequiredArgsConstructor
 @Slf4j
-public class RoomAvailabilityBatchWriter implements ItemWriter<List<RoomAvailability>> {
-	private final static int BULK_INSERT_SIZE = 10000;
-
+public class RoomAvailabilityBatchWriter {
 	private final JdbcTemplate jdbcTemplate;
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;
 
-	@Override
-	public void write(Chunk<? extends List<RoomAvailability>> chunk) {
+	public void write(List<RoomAvailability> writeRoomAvailabilities) {
 		if (jobExecution.isStopping()) {
 			log.error("Job execution stopped {}", jobExecution.getExitStatus().getExitDescription());
 			throw ErrorCode.CONFLICT.exception("Job 중단 요청됨 → Writer 중단");
 		}
 
-		List<RoomAvailability> flatList = chunk.getItems().stream()
-			.flatMap(List::stream)
-			.toList();
-
-		if (flatList.isEmpty()) {
+		if (writeRoomAvailabilities.isEmpty()) {
 			return;
 		}
 
 		jdbcTemplate.batchUpdate(
-			"INSERT INTO room_availability (room_id, date, available_count, price) VALUES (?, ?, ?, ?)",
-			flatList,
-			BULK_INSERT_SIZE, // Batch Size (한 번에 몇개씩 insert할지)
+			"INSERT INTO room_availability (created_at, updated_at, available_count, date, room_id, price) VALUES (?, ?, ?, ?, ?, ?)",
+			writeRoomAvailabilities,
+			writeRoomAvailabilities.size(),
 			(ps, roomAvailability) -> {
-				ps.setLong(1, roomAvailability.getRoomId());
-				ps.setDate(2, Date.valueOf(roomAvailability.getDate()));
+				ps.setDate(1, Date.valueOf(LocalDate.now()));
+				ps.setDate(2, Date.valueOf(LocalDate.now()));
 				ps.setInt(3, roomAvailability.getAvailableCount());
-				ps.setInt(4, roomAvailability.getPrice());
+				ps.setDate(4, Date.valueOf(roomAvailability.getDate()));
+				ps.setLong(5, roomAvailability.getRoomId());
+				ps.setInt(6, roomAvailability.getPrice());
 			}
 		);
 	}

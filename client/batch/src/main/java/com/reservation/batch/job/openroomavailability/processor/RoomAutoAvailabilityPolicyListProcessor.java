@@ -2,11 +2,13 @@ package com.reservation.batch.job.openroomavailability.processor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 import com.reservation.batch.repository.JpaRoomAvailabilityRepository;
@@ -18,20 +20,19 @@ import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPol
 import com.reservation.domain.roomavailability.RoomAvailability;
 import com.reservation.domain.roompricingpolicy.RoomPricingPolicy;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
 @StepScope
-public class RoomAutoAvailabilityPolicyListProcessor implements
-	ItemProcessor<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>> {
-	private static final int MAX_PLUS_DAYS = 90;
+@RequiredArgsConstructor
+public class RoomAutoAvailabilityPolicyListProcessor {
+	private static final int MAX_PLUS_DAYS = 180;
 
-	JpaRoomRepository jpaRoomRepository;
-	JpaRoomAvailabilityRepository jpaRoomAvailabilityRepository;
-	JpaRoomPricingPolicyRepository jpaRoomPricingPolicyRepository;
+	private final JpaRoomRepository jpaRoomRepository;
+	private final JpaRoomAvailabilityRepository jpaRoomAvailabilityRepository;
+	private final JpaRoomPricingPolicyRepository jpaRoomPricingPolicyRepository;
 
-	@Override
 	public List<RoomAvailability> process(List<RoomAutoAvailabilityPolicy> policies) {
-		List<RoomAvailability> result = new ArrayList<>();
-
 		List<Long> roomIds = policies.stream()
 			.map(RoomAutoAvailabilityPolicy::getRoomId)
 			.toList();
@@ -49,16 +50,16 @@ public class RoomAutoAvailabilityPolicyListProcessor implements
 		// 요일별 가격 정책 조회
 		List<RoomPricingPolicy> roomPricingPolicies = jpaRoomPricingPolicyRepository.findByRoomIdIn(roomIds);
 
-		// 날짜별로 RoomAvailability 생성
-		for (LocalDate startDate = today; startDate.isBefore(endDay); startDate = startDate.plusDays(1)) {
-			List<RoomAvailability> createRoomAvailabilities =
-				createRoomAvailabilitiesMatchDateAndExisted(
-					startDate, rooms, findAvailabilityInRoomIdsResults, roomPricingPolicies);
-
-			result.addAll(createRoomAvailabilities);
-		}
-
-		return result;
+		// 날짜별로 Create RoomAvailability
+		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
+			.parallel()
+			.mapToObj(offset -> {
+				LocalDate date = today.plusDays(offset);
+				return createRoomAvailabilitiesMatchDateAndExisted(
+					date, rooms, findAvailabilityInRoomIdsResults, roomPricingPolicies);
+			})
+			.flatMap(List::stream)
+			.collect(Collectors.toList());
 	}
 
 	public List<RoomAvailability> createRoomAvailabilitiesMatchDateAndExisted(

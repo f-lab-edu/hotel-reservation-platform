@@ -11,7 +11,7 @@ import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
 import com.reservation.domain.roomavailability.RoomAvailability;
 
 public interface JpaRoomAvailabilityRepository extends JpaRepository<RoomAvailability, Long> {
-	@Query("SELECT ra.roomId, ra.date " +
+	@Query("SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomId, ra.date)  " +
 		"FROM RoomAvailability ra " +
 		"WHERE ra.roomId IN :roomIds " +
 		"AND ra.date BETWEEN :startDate AND :endDate")

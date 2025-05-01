@@ -1,7 +1,5 @@
 package com.reservation.batch.job.openroomavailability;
 
-import java.util.List;
-
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -12,21 +10,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.reservation.batch.job.openroomavailability.processor.RoomAutoAvailabilityPolicyListProcessor;
-import com.reservation.batch.job.openroomavailability.reader.RoomAutoAvailabilityPolicyListItemReader;
-import com.reservation.batch.job.openroomavailability.writer.RoomAvailabilityBatchWriter;
-import com.reservation.batch.policy.TimeAndSizeBasedCompletionPolicy;
-import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.batch.job.openroomavailability.tasklet.OpenRoomAvailabilityTasklet;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
 public class OpenRoomAvailabilityJobConfig {
-	private static final int CHUNK_TIME_OUT = 60;
-	private static final int CHUNK_SIZE = 100000;
-
 	private final JobRepository jobRepository;
 	private final PlatformTransactionManager transactionManager;
 
@@ -41,22 +31,11 @@ public class OpenRoomAvailabilityJobConfig {
 	}
 
 	@Bean
-	public Step openRoomAvailabilityStep(
-		RoomAutoAvailabilityPolicyListItemReader roomAutoAvailabilityPolicyListItemReader,
-		RoomAutoAvailabilityPolicyListProcessor roomAutoAvailabilityPolicyListProcessor,
-		RoomAvailabilityBatchWriter roomAvailabilityBatchWriter
-	) {
+	public Step openRoomAvailabilityStep(OpenRoomAvailabilityTasklet openRoomAvailabilityTasklet) {
 		String stepName = "openRoomAvailabilityStep";
 
-		TimeAndSizeBasedCompletionPolicy timeAndSizeBasedCompletionPolicy =
-			new TimeAndSizeBasedCompletionPolicy(CHUNK_TIME_OUT, CHUNK_SIZE);
-
 		return new StepBuilder(stepName, jobRepository)
-			.<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>>
-				chunk(timeAndSizeBasedCompletionPolicy, transactionManager)
-			.reader(roomAutoAvailabilityPolicyListItemReader)
-			.processor(roomAutoAvailabilityPolicyListProcessor)
-			.writer(roomAvailabilityBatchWriter)
+			.tasklet(openRoomAvailabilityTasklet, transactionManager)
 			.build();
 	}
 }
