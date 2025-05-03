@@ -10,5 +10,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = {"com.reservation.domain", "com.reservation.batch"})
 @EnableJpaRepositories(basePackages = "com.reservation.batch")
 public class JpaConfig {
-
 }
