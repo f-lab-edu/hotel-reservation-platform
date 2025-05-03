@@ -58,9 +58,9 @@ public class TermsController {
 	) {
 		Terms requestNewVersionTerms = request.validToTerms(id);
 
-		Long newVersionTermId = termsService.update(requestNewVersionTerms);
+		Long newVersionTermsId = termsService.update(requestNewVersionTerms);
 
-		return ok(newVersionTermId);
+		return ok(newVersionTermsId);
 	}
 
 	@GetMapping("/{id}")
@@ -73,7 +73,10 @@ public class TermsController {
 
 	@PostMapping("/search")
 	@Operation(summary = "약관 리스트 검색 (페이지 포맷)", description = "(조문 X) 관리자가 약관 리스트 조회 & 검색합니다.")
-	public ApiResponse<Page<SearchTermsResult>> searchTermsFormatPage(@RequestBody TermsSearchCondition condition) {
+	public ApiResponse<Page<SearchTermsResult>> searchTermsFormatPage(
+		@RequestBody TermsSearchCondition condition
+	) {
+		condition.validate();
 		TermsCode searchCodeOrNull = condition.codeOrNull();
 		boolean isLatest = condition.isLatestOrNull() == null || condition.isLatestOrNull();
 		PageRequest pageRequest = condition.toPageRequest();
