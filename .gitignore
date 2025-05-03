@@ -36,13 +36,19 @@ client/out
 client/admin/build
 client/admin/out
 client/admin/src/main/generated
+client/admin/src/main/build
 
 client/host/build
 client/host/out
 client/host/src/main/generated
+client/host/src/main/build
 
 client/customer/build
 client/customer/out
 client/customer/src/main/generated
 client/customer/src/main/build
 
+client/batch/build
+client/batch/out
+client/batch/src/main/generated
+client/batch/src/main/build

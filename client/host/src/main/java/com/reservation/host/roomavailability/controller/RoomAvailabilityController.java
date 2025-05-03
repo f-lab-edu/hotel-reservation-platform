@@ -21,6 +21,7 @@ import com.reservation.auth.annotation.LoginUserId;
 import com.reservation.domain.roomavailability.RoomAvailability;
 import com.reservation.host.roomavailability.controller.request.NewRoomAvailabilityRequest;
 import com.reservation.host.roomavailability.service.RoomAvailabilityService;
+import com.reservation.host.roomavailability.service.dto.DefaultRoomAvailabilityInfo;
 import com.reservation.support.response.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,8 +45,9 @@ public class RoomAvailabilityController {
 		@Valid @RequestBody NewRoomAvailabilityRequest request,
 		@LoginUserId long hostId
 	) {
-		Long RoomAvailabilityId =
-			availabilityService.createRoomAvailability(roomId, hostId, request.date(), request.availableCount());
+		DefaultRoomAvailabilityInfo createRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(roomId);
+
+		Long RoomAvailabilityId = availabilityService.createRoomAvailability(createRoomAvailabilityInfo, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);
 	}
@@ -58,13 +60,10 @@ public class RoomAvailabilityController {
 		@Valid @RequestBody NewRoomAvailabilityRequest request,
 		@LoginUserId long hostId
 	) {
+		DefaultRoomAvailabilityInfo updateRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(roomId);
+
 		Long RoomAvailabilityId =
-			availabilityService.updateRoomAvailability(
-				roomId,
-				hostId,
-				roomAvailabilityId,
-				request.date(),
-				request.availableCount());
+			availabilityService.updateRoomAvailability(updateRoomAvailabilityInfo, roomAvailabilityId, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);
 	}

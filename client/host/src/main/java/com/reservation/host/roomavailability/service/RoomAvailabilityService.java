@@ -10,6 +10,7 @@ import com.reservation.domain.roomavailability.RoomAvailability;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
 import com.reservation.host.room.repository.JpaRoomRepository;
 import com.reservation.host.roomavailability.repository.JpaRoomAvailabilityRepository;
+import com.reservation.host.roomavailability.service.dto.DefaultRoomAvailabilityInfo;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -23,13 +24,17 @@ public class RoomAvailabilityService {
 	private final JpaRoomRepository jpaRoomRepository;
 
 	@Transactional
-	public long createRoomAvailability(long roomId, long hostId, LocalDate date, int availableCount) {
-		checkRoomType(roomId, hostId);
+	public long createRoomAvailability(
+		DefaultRoomAvailabilityInfo createRoomAvailabilityInfo,
+		long hostId
+	) {
+		checkRoomType(createRoomAvailabilityInfo.roomId(), hostId);
 
 		RoomAvailability newRoomAvailability = RoomAvailability.builder()
-			.roomId(roomId)
-			.date(date)
-			.availableCount(availableCount)
+			.roomId(createRoomAvailabilityInfo.roomId())
+			.date(createRoomAvailabilityInfo.date())
+			.price(createRoomAvailabilityInfo.price())
+			.availableCount(createRoomAvailabilityInfo.availableCount())
 			.build();
 
 		return jpaRoomAvailabilityRepository.save(newRoomAvailability).getId();
@@ -46,19 +51,18 @@ public class RoomAvailabilityService {
 
 	@Transactional
 	public long updateRoomAvailability(
-		long roomId,
-		long hostId,
+		DefaultRoomAvailabilityInfo updateRoomAvailabilityInfo,
 		long updateRoomAvailabilityId,
-		LocalDate date,
-		int availableCount) {
-
-		checkRoomType(roomId, hostId);
+		long hostId
+	) {
+		checkRoomType(updateRoomAvailabilityInfo.roomId(), hostId);
 
 		RoomAvailability updateRoomAvailability = RoomAvailability.builder()
 			.id(updateRoomAvailabilityId)
-			.roomId(roomId)
-			.date(date)
-			.availableCount(availableCount)
+			.roomId(updateRoomAvailabilityInfo.roomId())
+			.date(updateRoomAvailabilityInfo.date())
+			.price(updateRoomAvailabilityInfo.price())
+			.availableCount(updateRoomAvailabilityInfo.availableCount())
 			.build();
 
 		return jpaRoomAvailabilityRepository.save(updateRoomAvailability).getId();
@@ -68,8 +72,8 @@ public class RoomAvailabilityService {
 		Long roomId,
 		Long hostId,
 		LocalDate startDate,
-		LocalDate endDate) {
-
+		LocalDate endDate
+	) {
 		if (startDate == null || endDate == null) {
 			throw ErrorCode.BAD_REQUEST.exception("시작일과 종료일을 입력해주세요.");
 		}

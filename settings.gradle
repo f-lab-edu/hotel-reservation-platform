@@ -10,6 +10,7 @@ include 'core:auth'
 include 'client:customer'
 include 'client:host'
 include 'client:admin'
+include 'client:batch'
 
 // 📁 기타 단독 모듈
 include 'file-upload'
