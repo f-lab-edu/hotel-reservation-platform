@@ -12,6 +12,7 @@ import com.reservation.host.room.repository.JpaRoomRepository;
 import com.reservation.host.roomavailability.repository.JpaRoomAvailabilityRepository;
 import com.reservation.support.exception.ErrorCode;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,6 +22,7 @@ public class RoomAvailabilityService {
 	private final JpaAccommodationRepository jpaAccommodationRepository;
 	private final JpaRoomRepository jpaRoomRepository;
 
+	@Transactional
 	public long createRoomAvailability(long roomId, long hostId, LocalDate date, int availableCount) {
 		checkRoomType(roomId, hostId);
 
@@ -42,6 +44,7 @@ public class RoomAvailabilityService {
 		}
 	}
 
+	@Transactional
 	public long updateRoomAvailability(
 		long roomId,
 		long hostId,
