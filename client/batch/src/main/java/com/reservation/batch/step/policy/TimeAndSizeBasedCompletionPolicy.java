@@ -1,4 +1,4 @@
-package com.reservation.batch.policy;
+package com.reservation.batch.step.policy;
 
 import java.util.List;
 

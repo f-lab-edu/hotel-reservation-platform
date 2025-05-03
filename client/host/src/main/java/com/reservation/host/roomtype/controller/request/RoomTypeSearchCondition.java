@@ -1,4 +1,4 @@
-package com.reservation.host.room.controller.request;
+package com.reservation.host.roomtype.controller.request;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-public record RoomSearchCondition(
+public record RoomTypeSearchCondition(
 	@Nullable
 	String nameOrNull,
 
@@ -24,14 +24,14 @@ public record RoomSearchCondition(
 	Integer size,
 
 	@Nullable
-	List<RoomSortCondition> sorts
-) implements PageableRequest<RoomSortCondition> {
+	List<RoomTypeSortCondition> sorts
+) implements PageableRequest<RoomTypeSortCondition> {
 	private static final int DEFAULT_PAGE_SIZE = 10;
 
 	@Schema(hidden = true)
 	@Override
 	public Sort.Order getDefaultSortOrder() {
-		return new Sort.Order(Sort.Direction.DESC, RoomSortField.NAME.getFieldName());
+		return new Sort.Order(Sort.Direction.DESC, RoomTypeSortField.NAME.getFieldName());
 	}
 
 	@Schema(hidden = true)

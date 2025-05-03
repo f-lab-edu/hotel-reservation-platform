@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import com.reservation.domain.accommodation.Accommodation;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
-import com.reservation.host.room.repository.JpaRoomRepository;
 import com.reservation.host.roomautoavailabilitypolicy.repository.JpaRoomAutoAvailabilityPolicyRepository;
 import com.reservation.host.roomautoavailabilitypolicy.service.dto.DefaultRoomAutoAvailabilityPolicyInfo;
+import com.reservation.host.roomtype.repository.JpaRoomTypeRepository;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -18,19 +18,19 @@ import lombok.RequiredArgsConstructor;
 public class RoomAutoAvailabilityPolicyService {
 	private final JpaRoomAutoAvailabilityPolicyRepository jpaRoomAutoAvailabilityPolicyRepository;
 	private final JpaAccommodationRepository jpaAccommodationRepository;
-	private final JpaRoomRepository jpaRoomRepository;
+	private final JpaRoomTypeRepository jpaRoomTypeRepository;
 
 	@Transactional
 	public long create(
-		long roomId,
+		long roomTypeId,
 		DefaultRoomAutoAvailabilityPolicyInfo createRoomAutoAvailabilityPolicyInfo,
 		long hostId
 	) {
-		validateHostAndRoom(roomId, hostId);
+		validateHostAndRoom(roomTypeId, hostId);
 
 		RoomAutoAvailabilityPolicy createRoomAutoAvailabilityPolicy =
 			RoomAutoAvailabilityPolicy.builder()
-				.roomId(roomId)
+				.roomTypeId(roomTypeId)
 				.maxRoomsPerDayOrNull(createRoomAutoAvailabilityPolicyInfo.maxRoomsPerDayOrNull())
 				.openDaysAheadOrNull(createRoomAutoAvailabilityPolicyInfo.openDaysAheadOrNull())
 				.enabled(createRoomAutoAvailabilityPolicyInfo.enabled())
@@ -39,24 +39,24 @@ public class RoomAutoAvailabilityPolicyService {
 		return jpaRoomAutoAvailabilityPolicyRepository.save(createRoomAutoAvailabilityPolicy).getId();
 	}
 
-	private void validateHostAndRoom(long roomId, long hostId) {
+	private void validateHostAndRoom(long roomTypeId, long hostId) {
 		Accommodation findAccommodation = jpaAccommodationRepository.findOneByHostId(hostId)
 			.orElseThrow(() -> ErrorCode.CONFLICT.exception("숙소 정보를 찾을 수 없습니다."));
 
-		if (!jpaRoomRepository.existsByIdAndAccommodationId(roomId, findAccommodation.getId())) {
+		if (!jpaRoomTypeRepository.existsByIdAndAccommodationId(roomTypeId, findAccommodation.getId())) {
 			throw ErrorCode.CONFLICT.exception("룸 정보를 찾을 수 없습니다.");
 		}
 	}
 
 	@Transactional
 	public long update(
-		long roomId,
+		long roomTypeId,
 		long roomAutoAvailabilityPolicyId,
 		DefaultRoomAutoAvailabilityPolicyInfo updateRoomAutoAvailabilityPolicyInfo,
 		long hostId
 	) {
 		RoomAutoAvailabilityPolicy existedRoomAutoAvailabilityPolicy =
-			findOne(roomId, roomAutoAvailabilityPolicyId, hostId);
+			findOne(roomTypeId, roomAutoAvailabilityPolicyId, hostId);
 
 		existedRoomAutoAvailabilityPolicy.update(
 			updateRoomAutoAvailabilityPolicyInfo.enabled(),
@@ -66,10 +66,11 @@ public class RoomAutoAvailabilityPolicyService {
 		return jpaRoomAutoAvailabilityPolicyRepository.save(existedRoomAutoAvailabilityPolicy).getId();
 	}
 
-	public RoomAutoAvailabilityPolicy findOne(long roomId, long roomAutoAvailabilityPolicyId, long hostId) {
-		validateHostAndRoom(roomId, hostId);
+	public RoomAutoAvailabilityPolicy findOne(long roomTypeId, long roomAutoAvailabilityPolicyId, long hostId) {
+		validateHostAndRoom(roomTypeId, hostId);
 
-		return jpaRoomAutoAvailabilityPolicyRepository.findOneByIdAndRoomId(roomAutoAvailabilityPolicyId, roomId)
+		return jpaRoomAutoAvailabilityPolicyRepository.findOneByIdAndRoomTypeId(roomAutoAvailabilityPolicyId,
+				roomTypeId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 예약 가용 자동화 정책을 찾을 수 없습니다."));
 	}
 }

@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/no-auth/terms") // 임시 인증 제외 조치
+@RequestMapping("/terms") // 임시 인증 제외 조치
 @RequiredArgsConstructor
 @Tag(name = "약관 API", description = "관리자용 약관 관리 API 입니다.")
 public class TermsController {

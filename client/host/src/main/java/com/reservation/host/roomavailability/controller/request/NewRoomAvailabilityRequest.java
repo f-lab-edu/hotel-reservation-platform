@@ -10,8 +10,8 @@ public record NewRoomAvailabilityRequest(
 	int price,
 	int availableCount
 ) {
-	public DefaultRoomAvailabilityInfo validateToDefaultRoomAvailabilityInfo(long roomId) {
-		if (roomId <= 0) {
+	public DefaultRoomAvailabilityInfo validateToDefaultRoomAvailabilityInfo(long roomTypeId) {
+		if (roomTypeId <= 0) {
 			throw ErrorCode.BAD_REQUEST.exception("룸 ID는 0보다 커야 합니다.");
 		}
 		if (date == null || date.isBefore(LocalDate.now())) {
@@ -24,6 +24,6 @@ public record NewRoomAvailabilityRequest(
 			throw ErrorCode.BAD_REQUEST.exception("예약 가능 개수는 0 이상이어야 합니다.");
 		}
 
-		return new DefaultRoomAvailabilityInfo(roomId, date, price, availableCount);
+		return new DefaultRoomAvailabilityInfo(roomTypeId, date, price, availableCount);
 	}
 }

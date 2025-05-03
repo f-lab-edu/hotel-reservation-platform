@@ -3,11 +3,11 @@ package com.reservation.batch.repository.dto;
 import java.time.LocalDate;
 
 public record FindAvailabilityInRoomIdsResult(
-	long roomId,
+	long roomTypeId,
 	LocalDate date
 ) {
-	public FindAvailabilityInRoomIdsResult(long roomId, LocalDate date) {
-		this.roomId = roomId;
+	public FindAvailabilityInRoomIdsResult(long roomTypeId, LocalDate date) {
+		this.roomTypeId = roomTypeId;
 		this.date = date;
 	}
 }

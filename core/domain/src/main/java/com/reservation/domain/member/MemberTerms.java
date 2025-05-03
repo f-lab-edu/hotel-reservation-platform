@@ -13,9 +13,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class MemberTerms extends BaseEntity {
 	@Column(nullable = false)
 	private Boolean isAgreed;
@@ -33,9 +35,6 @@ public class MemberTerms extends BaseEntity {
 	@Getter
 	@Column(nullable = false)
 	private LocalDateTime agreedAt;
-
-	protected MemberTerms() {
-	}
 
 	@Builder
 	public MemberTerms(Boolean isAgreed, Member member, Terms terms, LocalDateTime agreedAt) {

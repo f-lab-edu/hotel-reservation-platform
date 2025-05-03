@@ -1,9 +1,9 @@
-package com.reservation.host.room.controller.request;
+package com.reservation.host.roomtype.controller.request;
 
-import com.reservation.host.room.service.dto.DefaultRoomInfo;
+import com.reservation.host.roomtype.service.dto.DefaultRoomTypeInfo;
 import com.reservation.support.exception.ErrorCode;
 
-public record NewRoomRequest(
+public record NewRoomTypeRequest(
 	long accommodationId,
 	String name,
 	int capacity,
@@ -11,7 +11,7 @@ public record NewRoomRequest(
 	String descriptionOrNull,
 	int roomCount
 ) {
-	public DefaultRoomInfo validateToDefaultRoomInfo() {
+	public DefaultRoomTypeInfo validateToDefaultRoomInfo() {
 		if (accommodationId <= 0) {
 			throw ErrorCode.BAD_REQUEST.exception("숙소 ID는 0보다 커야 합니다.");
 		}
@@ -28,7 +28,7 @@ public record NewRoomRequest(
 			throw ErrorCode.BAD_REQUEST.exception("방 개수는 0개 이상이어야 합니다.");
 		}
 
-		return new DefaultRoomInfo(
+		return new DefaultRoomTypeInfo(
 			accommodationId,
 			name,
 			capacity,

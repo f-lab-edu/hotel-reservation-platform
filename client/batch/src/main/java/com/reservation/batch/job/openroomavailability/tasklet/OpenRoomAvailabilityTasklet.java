@@ -11,7 +11,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
 import com.reservation.batch.job.openroomavailability.processor.RoomAutoAvailabilityPolicyListProcessor;
-import com.reservation.batch.job.openroomavailability.reader.RoomAutoAvailabilityPolicyListItemReader;
+import com.reservation.batch.job.openroomavailability.reader.RoomAutoAvailabilityPolicyListReader;
 import com.reservation.batch.job.openroomavailability.writer.RoomAvailabilityBatchWriter;
 import com.reservation.batch.repository.dto.CursorPage;
 import com.reservation.batch.utils.Perf;
@@ -27,7 +27,7 @@ public class OpenRoomAvailabilityTasklet implements Tasklet {
 	private static final long TIMEOUT_MILLIS = 5000L;
 	private static final int MAX_WRITE_COUNT = 100000;
 
-	private final RoomAutoAvailabilityPolicyListItemReader roomAutoAvailabilityPolicyListItemReader;
+	private final RoomAutoAvailabilityPolicyListReader roomAutoAvailabilityPolicyListReader;
 	private final RoomAutoAvailabilityPolicyListProcessor roomAutoAvailabilityPolicyListProcessor;
 	private final RoomAvailabilityBatchWriter roomAvailabilityBatchWriter;
 
@@ -45,7 +45,7 @@ public class OpenRoomAvailabilityTasklet implements Tasklet {
 
 		while (!readProcessorWriterSet) {
 			CursorPage<RoomAutoAvailabilityPolicy, Long> roomAutoAvailabilityPolicyLongCursorPage =
-				roomAutoAvailabilityPolicyListItemReader.read(lastSeenId);
+				roomAutoAvailabilityPolicyListReader.read(lastSeenId);
 			contribution.incrementReadCount();
 
 			List<RoomAutoAvailabilityPolicy> readRoomAutoAvailabilityPolicies =

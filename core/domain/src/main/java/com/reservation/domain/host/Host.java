@@ -10,9 +10,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Host extends BaseEntity {
 	@Column(nullable = false)
 	private String password;
@@ -23,9 +25,6 @@ public class Host extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private HostStatus status;
-
-	protected Host() {
-	}
 
 	@Builder
 	public Host(Long id, String password, String email, HostStatus status) {

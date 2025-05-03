@@ -1,4 +1,4 @@
-package com.reservation.domain.room;
+package com.reservation.domain.roomtype;
 
 import com.reservation.domain.base.BaseEntity;
 import com.reservation.support.exception.ErrorCode;
@@ -7,10 +7,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-public class Room extends BaseEntity {
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+public class RoomType extends BaseEntity {
 	@Column(nullable = false)
 	private Long accommodationId;
 
@@ -29,12 +31,16 @@ public class Room extends BaseEntity {
 	@Column(nullable = false)
 	private Integer roomCount; // 이 방 타입에 몇 개의 방이 존재하는지
 
-	protected Room() {
-	}
-
 	@Builder
-	public Room(Long id, Long accommodationId, String name, Integer capacity, Integer price,
-		String descriptionOrNull, Integer roomCount) {
+	public RoomType(
+		Long id,
+		Long accommodationId,
+		String name,
+		Integer capacity,
+		Integer price,
+		String descriptionOrNull,
+		Integer roomCount
+	) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("룸 타입 ID는 0보다 커야 합니다.");
 		}

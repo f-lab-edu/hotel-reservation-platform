@@ -1,11 +1,11 @@
-package com.reservation.host.room.service.dto;
+package com.reservation.host.roomtype.service.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
 
 import lombok.Getter;
 
 @Getter
-public class SearchRoomResult {
+public class SearchRoomTypeResult {
 	long id;
 	long accommodationId;
 	String name;
@@ -16,7 +16,7 @@ public class SearchRoomResult {
 	String mainImageUrl;
 
 	@QueryProjection
-	public SearchRoomResult(
+	public SearchRoomTypeResult(
 		long id,
 		long accommodationId,
 		String name,

@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 약관 조항
@@ -23,6 +24,7 @@ import lombok.Getter;
 		@UniqueConstraint(name = "uk_clause_terms_order", columnNames = {"terms_id", "clauseOrder"})
 	}
 )
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Clause extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "terms_id", nullable = false)
@@ -40,9 +42,6 @@ public class Clause extends BaseEntity {
 	@Lob
 	@Column(nullable = false)
 	private String content; // 조문 내용
-
-	protected Clause() {
-	}
 
 	@Builder
 	private Clause(Terms terms, int clauseOrder, String title, String content) {

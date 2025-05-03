@@ -10,9 +10,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class SocialAccount extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -23,9 +25,6 @@ public class SocialAccount extends BaseEntity {
 
 	@Column(nullable = false)
 	Long memberId; // Member ID
-
-	protected SocialAccount() {
-	}
 
 	@Builder
 	public SocialAccount(SocialLoginProvider provider, String email, Long memberId) {

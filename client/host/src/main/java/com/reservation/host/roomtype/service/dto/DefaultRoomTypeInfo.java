@@ -1,6 +1,6 @@
-package com.reservation.host.room.service.dto;
+package com.reservation.host.roomtype.service.dto;
 
-public record DefaultRoomInfo(
+public record DefaultRoomTypeInfo(
 	long accommodationId,
 	String name,
 	int capacity,

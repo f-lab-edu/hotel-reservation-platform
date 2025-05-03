@@ -25,33 +25,33 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/room")
+@RequestMapping("/room-type")
 @Tag(name = "룸 이미지 관리 API", description = "숙박 업체 룸 이미지 관리 API 입니다.")
 @PreAuthorize(PRE_AUTH_ROLE_HOST) //✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 public class RoomImageController {
 	private final RoomImageService roomImageService;
 
-	@PutMapping("{roomId}/images")
+	@PutMapping("{roomTypeId}/images")
 	@Operation(summary = "룸 이미지(복수) 업데이트", description = "숙박 업체가 룸 이미지(복수)를 업데이트합니다.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ApiResponse<Void> updateRoomImagesRequest(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@RequestBody UpdateRoomImagesRequest request,
 		@LoginUserId long hostId) {
 
-		roomImageService.updateRoomImagesRequest(roomId, request.validateRoomImages(), hostId);
+		roomImageService.updateRoomImagesRequest(roomTypeId, request.validateRoomImages(), hostId);
 
 		return ApiResponse.noContent();
 	}
 
-	@GetMapping("{roomId}/images")
+	@GetMapping("{roomTypeId}/images")
 	@Operation(summary = "룸 이미지 URL 전체 조회", description = "숙박 업체가 룸 이미지를 조회합니다.")
 	public ApiResponse<List<RoomImage>> findRoomImages(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@LoginUserId long hostId) {
 
-		List<RoomImage> roomImages = roomImageService.findRoomImages(roomId, hostId);
+		List<RoomImage> roomImages = roomImageService.findRoomImages(roomTypeId, hostId);
 
 		return ApiResponse.ok(roomImages);
 	}

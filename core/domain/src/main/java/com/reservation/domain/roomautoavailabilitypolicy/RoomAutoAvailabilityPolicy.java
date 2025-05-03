@@ -7,29 +7,28 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class RoomAutoAvailabilityPolicy extends BaseEntity {
 	@Column(nullable = false)
-	private long roomId;
+	private long roomTypeId;
 
 	@Column(nullable = false)
 	private Boolean enabled; // 자동 생성 여부
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "open_days_ahead")
 	private Integer openDaysAheadOrNull; // 오늘부터 몇 일치 열어둘지
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "max_rooms_per_day")
 	private Integer maxRoomsPerDayOrNull; // 하루 최대 열어둘 방 수
-
-	protected RoomAutoAvailabilityPolicy() {
-	}
 
 	@Builder
 	public RoomAutoAvailabilityPolicy(
 		Long id,
-		long roomId,
+		long roomTypeId,
 		Boolean enabled,
 		Integer openDaysAheadOrNull,
 		Integer maxRoomsPerDayOrNull
@@ -37,7 +36,7 @@ public class RoomAutoAvailabilityPolicy extends BaseEntity {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("숙소 ID는 0보다 커야 합니다.");
 		}
-		if (roomId <= 0) {
+		if (roomTypeId <= 0) {
 			throw ErrorCode.CONFLICT.exception("룸 ID는 0보다 커야 합니다.");
 		}
 		if (enabled == null) {
@@ -51,7 +50,7 @@ public class RoomAutoAvailabilityPolicy extends BaseEntity {
 		}
 
 		this.id = id;
-		this.roomId = roomId;
+		this.roomTypeId = roomTypeId;
 		this.enabled = enabled;
 		this.openDaysAheadOrNull = openDaysAheadOrNull;
 		this.maxRoomsPerDayOrNull = maxRoomsPerDayOrNull;

@@ -1,4 +1,4 @@
-package com.reservation.host.room.service;
+package com.reservation.host.roomtype.service;
 
 import java.util.Optional;
 
@@ -7,12 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.reservation.domain.accommodation.Accommodation;
-import com.reservation.domain.room.Room;
+import com.reservation.domain.roomtype.RoomType;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
-import com.reservation.host.room.repository.JpaRoomRepository;
-import com.reservation.host.room.repository.RoomQueryRepository;
-import com.reservation.host.room.service.dto.DefaultRoomInfo;
-import com.reservation.host.room.service.dto.SearchRoomResult;
+import com.reservation.host.roomtype.repository.JpaRoomTypeRepository;
+import com.reservation.host.roomtype.repository.RoomTypeQueryRepository;
+import com.reservation.host.roomtype.service.dto.DefaultRoomTypeInfo;
+import com.reservation.host.roomtype.service.dto.SearchRoomTypeResult;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -20,20 +20,21 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class RoomService {
-	private final JpaRoomRepository jpaRoomRepository;
+public class RoomTypeService {
+	private final JpaRoomTypeRepository jpaRoomTypeRepository;
 	private final JpaAccommodationRepository jpaAccommodationRepository;
-	private final RoomQueryRepository roomQueryRepository;
+	private final RoomTypeQueryRepository roomTypeQueryRepository;
 
 	@Transactional
-	public long create(DefaultRoomInfo createRoomInfo, long hostId) {
+	public long create(DefaultRoomTypeInfo createRoomInfo, long hostId) {
 		checkAccommodation(createRoomInfo.accommodationId(), hostId);
 
-		if (jpaRoomRepository.existsByNameAndAccommodationId(createRoomInfo.name(), createRoomInfo.accommodationId())) {
+		if (jpaRoomTypeRepository.existsByNameAndAccommodationId(createRoomInfo.name(),
+			createRoomInfo.accommodationId())) {
 			throw ErrorCode.CONFLICT.exception("이미 존재하는 룸 이름 입니다.");
 		}
 
-		Room newRoom = Room.builder()
+		RoomType newRoomType = RoomType.builder()
 			.price(createRoomInfo.price())
 			.capacity(createRoomInfo.capacity())
 			.descriptionOrNull(createRoomInfo.descriptionOrNull())
@@ -42,7 +43,7 @@ public class RoomService {
 			.accommodationId(createRoomInfo.accommodationId())
 			.build();
 
-		return jpaRoomRepository.save(newRoom).getId();
+		return jpaRoomTypeRepository.save(newRoomType).getId();
 	}
 
 	private void checkAccommodation(long accommodationId, long hostId) {
@@ -52,22 +53,23 @@ public class RoomService {
 	}
 
 	@Transactional
-	public long update(long roomId, DefaultRoomInfo updateRoomInfo, long hostId) {
+	public long update(long roomTypeId, DefaultRoomTypeInfo updateRoomInfo, long hostId) {
 		checkAccommodation(updateRoomInfo.accommodationId(), hostId);
 
-		if (!jpaRoomRepository.existsByIdAndAccommodationId(roomId, updateRoomInfo.accommodationId())) {
+		if (!jpaRoomTypeRepository.existsByIdAndAccommodationId(roomTypeId, updateRoomInfo.accommodationId())) {
 			throw ErrorCode.NOT_FOUND.exception("룸 정보를 찾을 수 없습니다.");
 		}
 
-		Optional<Room> existedRoom =
-			jpaRoomRepository.findOneByNameAndAccommodationId(updateRoomInfo.name(), updateRoomInfo.accommodationId());
+		Optional<RoomType> existedRoom =
+			jpaRoomTypeRepository.findOneByNameAndAccommodationId(updateRoomInfo.name(),
+				updateRoomInfo.accommodationId());
 
-		if (existedRoom.isPresent() && roomId != existedRoom.get().getId()) {
+		if (existedRoom.isPresent() && roomTypeId != existedRoom.get().getId()) {
 			throw ErrorCode.CONFLICT.exception("이미 존재하는 룸 이름 입니다.");
 		}
 
-		Room updateRoom = Room.builder()
-			.id(roomId)
+		RoomType updateRoomType = RoomType.builder()
+			.id(roomTypeId)
 			.price(updateRoomInfo.price())
 			.capacity(updateRoomInfo.capacity())
 			.descriptionOrNull(updateRoomInfo.descriptionOrNull())
@@ -76,13 +78,14 @@ public class RoomService {
 			.accommodationId(updateRoomInfo.accommodationId())
 			.build();
 
-		return jpaRoomRepository.save(updateRoom).getId();
+		return jpaRoomTypeRepository.save(updateRoomType).getId();
 	}
 
-	public Page<SearchRoomResult> search(long hostId, String roomNameOrNull, PageRequest pageRequest) {
+	public Page<SearchRoomTypeResult> search(long hostId, String roomNameOrNull, PageRequest pageRequest) {
 		long accommodationId = checkAccommodationByHostId(hostId).getId();
-		
-		return roomQueryRepository.pagingByAccommodationIdAndNameOrNull(accommodationId, roomNameOrNull, pageRequest);
+
+		return roomTypeQueryRepository.pagingByAccommodationIdAndNameOrNull(accommodationId, roomNameOrNull,
+			pageRequest);
 	}
 
 	private Accommodation checkAccommodationByHostId(long hostId) {
@@ -90,10 +93,10 @@ public class RoomService {
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("업체 숙소 정보가 존재하지 않습니다."));
 	}
 
-	public Room findOne(long roomId, long hostId) {
+	public RoomType findOne(long roomTypeId, long hostId) {
 		long accommodationId = checkAccommodationByHostId(hostId).getId();
 
-		return jpaRoomRepository.findOneByIdAndAccommodationId(roomId, accommodationId)
+		return jpaRoomTypeRepository.findOneByIdAndAccommodationId(roomTypeId, accommodationId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("조회하려는 룸 타입을 찾을 수 없습니다."));
 	}
 }
