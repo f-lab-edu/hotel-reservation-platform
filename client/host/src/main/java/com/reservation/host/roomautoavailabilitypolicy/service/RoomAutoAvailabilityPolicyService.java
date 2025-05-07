@@ -31,8 +31,8 @@ public class RoomAutoAvailabilityPolicyService {
 		RoomAutoAvailabilityPolicy createRoomAutoAvailabilityPolicy =
 			RoomAutoAvailabilityPolicy.builder()
 				.roomTypeId(roomTypeId)
-				.maxRoomsPerDayOrNull(createRoomAutoAvailabilityPolicyInfo.maxRoomsPerDayOrNull())
-				.openDaysAheadOrNull(createRoomAutoAvailabilityPolicyInfo.openDaysAheadOrNull())
+				.maxRoomsPerDay(createRoomAutoAvailabilityPolicyInfo.maxRoomsPerDay())
+				.openDaysAhead(createRoomAutoAvailabilityPolicyInfo.openDaysAhead())
 				.enabled(createRoomAutoAvailabilityPolicyInfo.enabled())
 				.build();
 
@@ -60,8 +60,8 @@ public class RoomAutoAvailabilityPolicyService {
 
 		existedRoomAutoAvailabilityPolicy.update(
 			updateRoomAutoAvailabilityPolicyInfo.enabled(),
-			updateRoomAutoAvailabilityPolicyInfo.openDaysAheadOrNull(),
-			updateRoomAutoAvailabilityPolicyInfo.maxRoomsPerDayOrNull());
+			updateRoomAutoAvailabilityPolicyInfo.openDaysAhead(),
+			updateRoomAutoAvailabilityPolicyInfo.maxRoomsPerDay());
 
 		return jpaRoomAutoAvailabilityPolicyRepository.save(existedRoomAutoAvailabilityPolicy).getId();
 	}

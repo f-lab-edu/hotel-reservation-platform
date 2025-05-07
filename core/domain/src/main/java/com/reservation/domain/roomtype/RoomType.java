@@ -25,7 +25,7 @@ public class RoomType extends BaseEntity {
 	@Column(nullable = false)
 	private Integer price;
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "description")
 	private String descriptionOrNull;
 
 	@Column(nullable = false)

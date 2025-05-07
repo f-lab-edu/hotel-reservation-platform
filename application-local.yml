@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hotel
+    url: jdbc:mysql://localhost:3306/hotel?rewriteBatchedStatements=true
     username: root
     password: root1234
 

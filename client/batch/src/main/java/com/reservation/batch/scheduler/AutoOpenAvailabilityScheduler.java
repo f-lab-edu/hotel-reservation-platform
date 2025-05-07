@@ -15,12 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoOpenAvailabilityScheduler {
 
 	private final JobLauncher jobLauncher;
-	private final Job openRoomAvailabilityTaskletJob;
+	private final Job improvedOpenAvailabilityTaskletJob;
 
 	@Scheduled(cron = "0 0 0 * * *") // 임의로 매일 자정에 실행되도록 세팅
 	public void runBatch() {
 		try {
-			jobLauncher.run(openRoomAvailabilityTaskletJob, new JobParametersBuilder()
+			jobLauncher.run(improvedOpenAvailabilityTaskletJob, new JobParametersBuilder()
 				.addLong("run.id", System.currentTimeMillis())
 				.toJobParameters()
 			);

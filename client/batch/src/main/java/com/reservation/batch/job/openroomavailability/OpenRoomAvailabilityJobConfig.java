@@ -12,11 +12,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.reservation.batch.job.openroomavailability.processor.RoomAutoAvailabilityPolicyListItemProcessor;
-import com.reservation.batch.job.openroomavailability.reader.RoomAutoAvailabilityPolicyListItemReader;
-import com.reservation.batch.job.openroomavailability.tasklet.OpenRoomAvailabilityTasklet;
-import com.reservation.batch.job.openroomavailability.writer.RoomAvailabilityBatchItemWriter;
-import com.reservation.batch.step.policy.TimeAndSizeBasedCompletionPolicy;
+import com.reservation.batch.job.openroomavailability.processor.ImprovedOpenAvailabilityChunkProcessor;
+import com.reservation.batch.job.openroomavailability.processor.OriginOpenAvailabilityChunkProcessor;
+import com.reservation.batch.job.openroomavailability.reader.RoomAutoPolicyChunkReader;
+import com.reservation.batch.job.openroomavailability.tasklet.ImprovedOpenAvailabilityTasklet;
+import com.reservation.batch.job.openroomavailability.tasklet.OriginOpenAvailabilityTasklet;
+import com.reservation.batch.job.openroomavailability.writer.RoomAvailabilityChunkWriter;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
 import com.reservation.domain.roomavailability.RoomAvailability;
 
@@ -29,51 +30,92 @@ public class OpenRoomAvailabilityJobConfig {
 	private final PlatformTransactionManager transactionManager;
 
 	@Bean
-	public Job openRoomAvailabilityChunkJob(Step openRoomAvailabilityChunkStep) {
-		String jobName = "openRoomAvailabilityChunkJob";
+	public Job originOpenAvailabilityChunkJob(Step originOpenAvailabilityChunkStep) {
+		String jobName = "originOpenAvailabilityChunkJob";
 
 		return new JobBuilder(jobName, jobRepository)
-			.start(openRoomAvailabilityChunkStep)
+			.start(originOpenAvailabilityChunkStep)
 			.incrementer(new RunIdIncrementer())
 			.build();
 	}
 
 	@Bean
-	public Step openRoomAvailabilityChunkStep(
-		RoomAutoAvailabilityPolicyListItemReader roomAutoAvailabilityPolicyListItemReader,
-		RoomAutoAvailabilityPolicyListItemProcessor roomAutoAvailabilityPolicyListItemProcessor,
-		RoomAvailabilityBatchItemWriter roomAvailabilityBatchItemWriter
+	public Step originOpenAvailabilityChunkStep(
+		RoomAutoPolicyChunkReader reader,
+		OriginOpenAvailabilityChunkProcessor originProcessor,
+		RoomAvailabilityChunkWriter writer
 	) {
-		String stepName = "openRoomAvailabilityChunkStep";
-
-		TimeAndSizeBasedCompletionPolicy timeAndSizeBasedCompletionPolicy =
-			new TimeAndSizeBasedCompletionPolicy(5, 10);
+		String stepName = "originOpenAvailabilityChunkStep";
 
 		return new StepBuilder(stepName, jobRepository)
-			.<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>>
-				chunk(timeAndSizeBasedCompletionPolicy, transactionManager)
-			.reader(roomAutoAvailabilityPolicyListItemReader)
-			.processor(roomAutoAvailabilityPolicyListItemProcessor)
-			.writer(roomAvailabilityBatchItemWriter)
+			.<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>>chunk(1, transactionManager)
+			.reader(reader)
+			.processor(originProcessor)
+			.writer(writer)
 			.build();
 	}
 
 	@Bean
-	public Job openRoomAvailabilityTaskletJob(Step openRoomAvailabilityTaskletStep) {
-		String jobName = "openRoomAvailabilityTaskletJob";
+	public Job improvedOpenAvailabilityChunkJob(Step improvedOpenAvailabilityChunkStep) {
+		String jobName = "improvedOpenAvailabilityChunkJob";
 
 		return new JobBuilder(jobName, jobRepository)
-			.start(openRoomAvailabilityTaskletStep)
+			.start(improvedOpenAvailabilityChunkStep)
 			.incrementer(new RunIdIncrementer())
 			.build();
 	}
 
 	@Bean
-	public Step openRoomAvailabilityTaskletStep(OpenRoomAvailabilityTasklet openRoomAvailabilityTasklet) {
+	public Step improvedOpenAvailabilityChunkStep(
+		RoomAutoPolicyChunkReader reader,
+		ImprovedOpenAvailabilityChunkProcessor improvedProcessor,
+		RoomAvailabilityChunkWriter writer
+	) {
+		String stepName = "improvedOpenAvailabilityChunkStep";
+
+		return new StepBuilder(stepName, jobRepository)
+			.<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>>chunk(1, transactionManager)
+			.reader(reader)
+			.processor(improvedProcessor)
+			.writer(writer)
+			.build();
+	}
+
+	@Bean
+	public Job originOpenAvailabilityTaskletJob(Step originOpenAvailabilityTaskletStep) {
+		String jobName = "originOpenAvailabilityTaskletJob";
+
+		return new JobBuilder(jobName, jobRepository)
+			.start(originOpenAvailabilityTaskletStep)
+			.incrementer(new RunIdIncrementer())
+			.build();
+	}
+
+	@Bean
+	public Step originOpenAvailabilityTaskletStep(OriginOpenAvailabilityTasklet originTasklet) {
 		String stepName = "openRoomAvailabilityTaskletStep";
 
 		return new StepBuilder(stepName, jobRepository)
-			.tasklet(openRoomAvailabilityTasklet, transactionManager)
+			.tasklet(originTasklet, transactionManager)
+			.build();
+	}
+
+	@Bean
+	public Job improvedOpenAvailabilityTaskletJob(Step improvedOpenAvailabilityTaskletStep) {
+		String jobName = "improvedOpenAvailabilityTaskletJob";
+
+		return new JobBuilder(jobName, jobRepository)
+			.start(improvedOpenAvailabilityTaskletStep)
+			.incrementer(new RunIdIncrementer())
+			.build();
+	}
+
+	@Bean
+	public Step improvedOpenAvailabilityTaskletStep(ImprovedOpenAvailabilityTasklet improvedTasklet) {
+		String stepName = "improvedOpenAvailabilityTaskletStep";
+
+		return new StepBuilder(stepName, jobRepository)
+			.tasklet(improvedTasklet, transactionManager)
 			.build();
 	}
 }
