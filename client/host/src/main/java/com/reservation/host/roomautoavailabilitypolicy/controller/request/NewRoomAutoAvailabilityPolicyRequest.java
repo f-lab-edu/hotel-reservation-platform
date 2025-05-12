@@ -4,32 +4,24 @@ import com.reservation.host.roomautoavailabilitypolicy.service.dto.DefaultRoomAu
 import com.reservation.support.exception.ErrorCode;
 
 public record NewRoomAutoAvailabilityPolicyRequest(
-	Boolean enabled,
-	Integer openDaysAheadOrNull,
-	Integer maxRoomsPerDayOrNull
+	boolean enabled,
+	int openDaysAhead,
+	int maxRoomsPerDay
 ) {
 	public DefaultRoomAutoAvailabilityPolicyInfo validateToDefaultRoomAutoAvailabilityPolicyInfo() {
-		if (enabled == null) {
-			throw ErrorCode.BAD_REQUEST.exception("자동 생성 여부는 필수입니다.");
+		if (!enabled && (openDaysAhead > 0 || maxRoomsPerDay > 0)) {
+			throw ErrorCode.BAD_REQUEST.exception("자동 생성 여부가 false일 때는 예약 가능일과 개수를 설정할 수 없습니다.");
 		}
-		if (enabled && (openDaysAheadOrNull == null || openDaysAheadOrNull < 7 || openDaysAheadOrNull > 90)) {
-			throw ErrorCode.BAD_REQUEST.exception("자동 생성 예약 가능일은 7일 이상 90일 이하여야 합니다.");
+		if (enabled && openDaysAhead < 7) {
+			throw ErrorCode.BAD_REQUEST.exception("자동 생성 예약 가능일은 7일 이상이어야 합니다.");
 		}
-		if (enabled && (maxRoomsPerDayOrNull == null || maxRoomsPerDayOrNull < 0)) {
-			throw ErrorCode.BAD_REQUEST.exception("자동 생성 예약 가능 개수는 0개 이상이어야 합니다.");
+		if (enabled && maxRoomsPerDay < 1) {
+			throw ErrorCode.BAD_REQUEST.exception("자동 생성 예약 가능 개수는 1개 이상이어야 합니다.");
 		}
-		if (!enabled) {
-			return new DefaultRoomAutoAvailabilityPolicyInfo(
-				false,
-				null,
-				null
-			);
-		}
-
 		return new DefaultRoomAutoAvailabilityPolicyInfo(
-			true,
-			openDaysAheadOrNull,
-			maxRoomsPerDayOrNull
+			enabled,
+			openDaysAhead,
+			maxRoomsPerDay
 		);
 	}
 }

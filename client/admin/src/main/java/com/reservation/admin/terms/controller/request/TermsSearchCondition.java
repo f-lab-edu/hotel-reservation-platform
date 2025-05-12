@@ -30,9 +30,6 @@ public record TermsSearchCondition(
 		if (size != null && (size < 10 || size > 100)) {
 			throw ErrorCode.BAD_REQUEST.exception("페이지 사이즈는 10 이상 100 이하이어야 합니다.");
 		}
-		if (!sorts.isEmpty()) {
-
-		}
 	}
 
 	@Schema(hidden = true)

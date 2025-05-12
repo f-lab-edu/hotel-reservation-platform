@@ -9,6 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 public class AsyncJobLauncherConfig {
 
+	// 비동기 JobLauncher
 	@Bean
 	public TaskExecutorJobLauncher asyncJobLauncher(JobRepository jobRepository) throws Exception {
 		TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();

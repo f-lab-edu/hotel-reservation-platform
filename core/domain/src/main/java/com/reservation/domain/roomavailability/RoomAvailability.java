@@ -9,31 +9,30 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class RoomAvailability extends BaseEntity {
 	@Column(nullable = false)
-	long roomId; // 룸 타입 ID
+	private long roomTypeId; // 룸 타입 ID
 
 	@Column(nullable = false)
-	LocalDate date; // 예약 가능 날짜
+	private LocalDate date; // 예약 가능 날짜
 
 	@Column(nullable = false)
-	Integer price; // 가격
+	private Integer price; // 가격
 
 	@Column(nullable = false)
-	Integer availableCount; // 예약 가능 개수
-
-	protected RoomAvailability() {
-	}
+	private Integer availableCount; // 예약 가능 개수
 
 	@Builder
-	public RoomAvailability(Long id, long roomId, LocalDate date, int price, int availableCount) {
+	public RoomAvailability(Long id, long roomTypeId, LocalDate date, int price, int availableCount) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("숙소 ID는 0보다 커야 합니다.");
 		}
-		if (roomId <= 0) {
+		if (roomTypeId <= 0) {
 			throw ErrorCode.BAD_REQUEST.exception("룸 ID는 0보다 커야 합니다.");
 		}
 		if (date == null) {
@@ -47,7 +46,7 @@ public class RoomAvailability extends BaseEntity {
 		}
 
 		this.id = id;
-		this.roomId = roomId;
+		this.roomTypeId = roomTypeId;
 		this.date = date;
 		this.price = price;
 		this.availableCount = availableCount;

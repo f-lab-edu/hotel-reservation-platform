@@ -30,37 +30,39 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/room")
+@RequestMapping("/room-type")
 @Tag(name = "룸 예약 가용 정보 API", description = "룸 예약 가용 정보 관리 API 입니다.")
 @PreAuthorize(PRE_AUTH_ROLE_HOST) //✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 public class RoomAvailabilityController {
 	private final RoomAvailabilityService availabilityService;
 
-	@PostMapping("{roomId}/availability")
+	@PostMapping("{roomTypeId}/availability")
 	@Operation(summary = "룸 가용 정보 생성", description = "숙박 업체가 룸 가용 정보를 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> createRoomAvailability(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@Valid @RequestBody NewRoomAvailabilityRequest request,
 		@LoginUserId long hostId
 	) {
-		DefaultRoomAvailabilityInfo createRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(roomId);
+		DefaultRoomAvailabilityInfo createRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(
+			roomTypeId);
 
 		Long RoomAvailabilityId = availabilityService.createRoomAvailability(createRoomAvailabilityInfo, hostId);
 
 		return ApiResponse.ok(RoomAvailabilityId);
 	}
 
-	@PatchMapping("{roomId}/availability/{roomAvailabilityId}")
+	@PatchMapping("{roomTypeId}/availability/{roomAvailabilityId}")
 	@Operation(summary = "룸 가용 정보 수정", description = "숙박 업체가 룸 가용 정보를 수정합니다.")
 	public ApiResponse<Long> updateRoomAvailability(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomAvailabilityId,
 		@Valid @RequestBody NewRoomAvailabilityRequest request,
 		@LoginUserId long hostId
 	) {
-		DefaultRoomAvailabilityInfo updateRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(roomId);
+		DefaultRoomAvailabilityInfo updateRoomAvailabilityInfo = request.validateToDefaultRoomAvailabilityInfo(
+			roomTypeId);
 
 		Long RoomAvailabilityId =
 			availabilityService.updateRoomAvailability(updateRoomAvailabilityInfo, roomAvailabilityId, hostId);
@@ -68,16 +70,16 @@ public class RoomAvailabilityController {
 		return ApiResponse.ok(RoomAvailabilityId);
 	}
 
-	@GetMapping("{roomId}/availability")
+	@GetMapping("{roomTypeId}/availability")
 	@Operation(summary = "룸 가용 정보 조회", description = "숙박 업체가 룸 가용 조회합니다.")
 	public ApiResponse<List<RoomAvailability>> findRoomAvailability(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@RequestParam LocalDate startDate,
 		@RequestParam LocalDate endDate,
 		@LoginUserId long hostId
 	) {
 		List<RoomAvailability> roomAvailabilities =
-			availabilityService.findRoomAvailability(roomId, hostId, startDate, endDate);
+			availabilityService.findRoomAvailability(roomTypeId, hostId, startDate, endDate);
 
 		return ApiResponse.ok(roomAvailabilities);
 	}

@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -22,9 +23,10 @@ import lombok.Getter;
 		@UniqueConstraint(name = "uk_room_price_day_of_week", columnNames = {"room_type_id", "day_of_week"})
 	}
 )
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class RoomPricingPolicy extends BaseEntity {
 	@Column(nullable = false)
-	private long roomId;
+	private long roomTypeId;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -33,15 +35,12 @@ public class RoomPricingPolicy extends BaseEntity {
 	@Column(nullable = false)
 	private int price;
 
-	protected RoomPricingPolicy() {
-	}
-
 	@Builder
-	public RoomPricingPolicy(Long id, long roomId, DayOfWeek dayOfWeek, int price) {
+	public RoomPricingPolicy(Long id, long roomTypeId, DayOfWeek dayOfWeek, int price) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("ID는 0보다 커야 합니다.");
 		}
-		if (roomId <= 0) {
+		if (roomTypeId <= 0) {
 			throw ErrorCode.CONFLICT.exception("룸 ID는 0보다 커야 합니다.");
 		}
 		if (dayOfWeek == null) {
@@ -51,7 +50,7 @@ public class RoomPricingPolicy extends BaseEntity {
 			throw ErrorCode.CONFLICT.exception("가격은 1,000 이상이어야 합니다.");
 		}
 		this.id = id;
-		this.roomId = roomId;
+		this.roomTypeId = roomTypeId;
 		this.dayOfWeek = dayOfWeek;
 		this.price = price;
 	}

@@ -71,12 +71,12 @@ resilience4j:
         retryExceptions:
           - com.reservation.support.exception.BusinessException
 
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
-    net.ttddyy.dsproxy.listener: DEBUG
-    com.github.gavlyukovskiy.boot.jdbc.decorator: DEBUG
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
+#    org.hibernate.orm.jdbc.bind: trace
+#    net.ttddyy.dsproxy.listener: DEBUG
+#    com.github.gavlyukovskiy.boot.jdbc.decorator: DEBUG
 
 decorator:
   datasource:

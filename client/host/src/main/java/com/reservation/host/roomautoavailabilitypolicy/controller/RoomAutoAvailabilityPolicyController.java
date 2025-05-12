@@ -25,33 +25,33 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/room")
+@RequestMapping("/room-type")
 @PreAuthorize(PRE_AUTH_ROLE_HOST) //✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 @Tag(name = "룸 예약 가용 자동화 정책 관리 API", description = "숙박 업체 예약 가용 자동화 정책 관리 API 입니다.")
 public class RoomAutoAvailabilityPolicyController {
 	private final RoomAutoAvailabilityPolicyService roomAutoAvailabilityPolicyService;
 
-	@PostMapping("{roomId}/auto-availability-policy")
+	@PostMapping("{roomTypeId}/auto-availability-policy")
 	@Operation(summary = "룸 예약 가용 자동화 정책 등록", description = "숙박 업체가 룸 예약 가용 자동화 정책을 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> create(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@RequestBody NewRoomAutoAvailabilityPolicyRequest request,
 		@LoginUserId long hostId
 	) {
 		DefaultRoomAutoAvailabilityPolicyInfo createRoomAutoAvailabilityPolicyInfo = request.validateToDefaultRoomAutoAvailabilityPolicyInfo();
 
 		long createdRoomAutoAvailabilityPolicyId =
-			roomAutoAvailabilityPolicyService.create(roomId, createRoomAutoAvailabilityPolicyInfo, hostId);
+			roomAutoAvailabilityPolicyService.create(roomTypeId, createRoomAutoAvailabilityPolicyInfo, hostId);
 
 		return ApiResponse.ok(createdRoomAutoAvailabilityPolicyId);
 	}
 
-	@PatchMapping("{roomId}/auto-availability-policy/{roomAutoAvailabilityPolicyId}")
+	@PatchMapping("{roomTypeId}/auto-availability-policy/{roomAutoAvailabilityPolicyId}")
 	@Operation(summary = "룸 예약 가용 자동화 정책 수정", description = "숙박 업체가 룸 예약 가용 자동화 정책을 수정합니다.")
 	public ApiResponse<Long> update(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomAutoAvailabilityPolicyId,
 		@RequestBody NewRoomAutoAvailabilityPolicyRequest request,
 		@LoginUserId long hostId
@@ -60,7 +60,7 @@ public class RoomAutoAvailabilityPolicyController {
 
 		long updatedRoomAutoAvailabilityPolicyId =
 			roomAutoAvailabilityPolicyService.update(
-				roomId,
+				roomTypeId,
 				roomAutoAvailabilityPolicyId,
 				updateRoomAutoAvailabilityPolicyInfo,
 				hostId);
@@ -68,16 +68,16 @@ public class RoomAutoAvailabilityPolicyController {
 		return ApiResponse.ok(updatedRoomAutoAvailabilityPolicyId);
 	}
 
-	@GetMapping("{roomId}/auto-availability-policy/{roomAutoAvailabilityPolicyId}")
+	@GetMapping("{roomTypeId}/auto-availability-policy/{roomAutoAvailabilityPolicyId}")
 	@Operation(summary = "룸 예약 가용 자동화 정책 단일 조회", description = "숙박 업체가 룸 예약 가용 자동화 정책를 단일 조회합니다.")
 	public ApiResponse<RoomAutoAvailabilityPolicy> findOne(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomAutoAvailabilityPolicyId,
 		@LoginUserId long hostId
 	) {
 		RoomAutoAvailabilityPolicy findRoomAutoAvailabilityPolicy =
-			roomAutoAvailabilityPolicyService.findOne(roomId, roomAutoAvailabilityPolicyId, hostId);
-		
+			roomAutoAvailabilityPolicyService.findOne(roomTypeId, roomAutoAvailabilityPolicyId, hostId);
+
 		return ApiResponse.ok(findRoomAutoAvailabilityPolicy);
 	}
 }

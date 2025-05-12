@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import com.reservation.domain.accommodation.Accommodation;
 import com.reservation.domain.roomavailability.RoomAvailability;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
-import com.reservation.host.room.repository.JpaRoomRepository;
 import com.reservation.host.roomavailability.repository.JpaRoomAvailabilityRepository;
 import com.reservation.host.roomavailability.service.dto.DefaultRoomAvailabilityInfo;
+import com.reservation.host.roomtype.repository.JpaRoomTypeRepository;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -21,17 +21,17 @@ import lombok.RequiredArgsConstructor;
 public class RoomAvailabilityService {
 	private final JpaRoomAvailabilityRepository jpaRoomAvailabilityRepository;
 	private final JpaAccommodationRepository jpaAccommodationRepository;
-	private final JpaRoomRepository jpaRoomRepository;
+	private final JpaRoomTypeRepository jpaRoomTypeRepository;
 
 	@Transactional
 	public long createRoomAvailability(
 		DefaultRoomAvailabilityInfo createRoomAvailabilityInfo,
 		long hostId
 	) {
-		checkRoomType(createRoomAvailabilityInfo.roomId(), hostId);
+		checkRoomType(createRoomAvailabilityInfo.roomTypeId(), hostId);
 
 		RoomAvailability newRoomAvailability = RoomAvailability.builder()
-			.roomId(createRoomAvailabilityInfo.roomId())
+			.roomTypeId(createRoomAvailabilityInfo.roomTypeId())
 			.date(createRoomAvailabilityInfo.date())
 			.price(createRoomAvailabilityInfo.price())
 			.availableCount(createRoomAvailabilityInfo.availableCount())
@@ -40,11 +40,11 @@ public class RoomAvailabilityService {
 		return jpaRoomAvailabilityRepository.save(newRoomAvailability).getId();
 	}
 
-	private void checkRoomType(long roomId, long hostId) {
+	private void checkRoomType(long roomTypeId, long hostId) {
 		Accommodation findAccommodation = jpaAccommodationRepository.findOneByHostId(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("숙소 정보를 찾을 수 없습니다."));
 
-		if (!jpaRoomRepository.existsByIdAndAccommodationId(roomId, findAccommodation.getId())) {
+		if (!jpaRoomTypeRepository.existsByIdAndAccommodationId(roomTypeId, findAccommodation.getId())) {
 			throw ErrorCode.NOT_FOUND.exception("룸타입 정보를 찾을 수 없습니다.");
 		}
 	}
@@ -55,11 +55,11 @@ public class RoomAvailabilityService {
 		long updateRoomAvailabilityId,
 		long hostId
 	) {
-		checkRoomType(updateRoomAvailabilityInfo.roomId(), hostId);
+		checkRoomType(updateRoomAvailabilityInfo.roomTypeId(), hostId);
 
 		RoomAvailability updateRoomAvailability = RoomAvailability.builder()
 			.id(updateRoomAvailabilityId)
-			.roomId(updateRoomAvailabilityInfo.roomId())
+			.roomTypeId(updateRoomAvailabilityInfo.roomTypeId())
 			.date(updateRoomAvailabilityInfo.date())
 			.price(updateRoomAvailabilityInfo.price())
 			.availableCount(updateRoomAvailabilityInfo.availableCount())
@@ -69,7 +69,7 @@ public class RoomAvailabilityService {
 	}
 
 	public List<RoomAvailability> findRoomAvailability(
-		Long roomId,
+		Long roomTypeId,
 		Long hostId,
 		LocalDate startDate,
 		LocalDate endDate
@@ -84,8 +84,8 @@ public class RoomAvailabilityService {
 			throw ErrorCode.BAD_REQUEST.exception("최대 조회 기간은 90일입니다.");
 		}
 
-		checkRoomType(roomId, hostId);
+		checkRoomType(roomTypeId, hostId);
 
-		return jpaRoomAvailabilityRepository.findByRoomIdAndDateBetween(roomId, startDate, endDate);
+		return jpaRoomAvailabilityRepository.findByRoomTypeIdAndDateBetween(roomTypeId, startDate, endDate);
 	}
 }

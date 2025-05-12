@@ -13,9 +13,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class UploadedImage extends BaseEntity {
 
 	@Column(nullable = false)
@@ -34,9 +36,6 @@ public class UploadedImage extends BaseEntity {
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Role uploaderRole;
-
-	protected UploadedImage() {
-	}
 
 	@Builder
 	public UploadedImage(

@@ -7,9 +7,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class RoomImage extends BaseEntity {
 	@Column(nullable = false)
 	private Long roomTypeId;
@@ -22,9 +24,6 @@ public class RoomImage extends BaseEntity {
 
 	@Column(nullable = false)
 	private Boolean isMainImage;
-
-	protected RoomImage() {
-	}
 
 	@Builder
 	public RoomImage(Long id, Long roomTypeId, String imageUrl, Integer displayOrder, Boolean isMainImage) {

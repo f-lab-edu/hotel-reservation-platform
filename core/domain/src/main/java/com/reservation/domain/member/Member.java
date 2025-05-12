@@ -14,9 +14,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Transient;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 	@Column(nullable = true)
 	private String password;
@@ -33,9 +35,6 @@ public class Member extends BaseEntity {
 
 	@Transient
 	private final List<MemberTerms> memberTermsList = new ArrayList<>();
-
-	protected Member() {
-	}
 
 	@Builder
 	public Member(String password, MemberStatus status, String email, String phoneNumber) {

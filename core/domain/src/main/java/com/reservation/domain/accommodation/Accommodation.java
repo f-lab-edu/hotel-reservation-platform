@@ -8,9 +8,11 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Accommodation extends BaseEntity {
 	@Column(nullable = false)
 	private Long hostId; // 숙소 소유자
@@ -18,7 +20,7 @@ public class Accommodation extends BaseEntity {
 	@Column(nullable = false)
 	private String name; // 숙소 이름
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "description")
 	private String descriptionOrNull; // 숙소 설명은 생략 가능
 
 	@Embedded
@@ -27,14 +29,11 @@ public class Accommodation extends BaseEntity {
 	@Column(nullable = false)
 	private Boolean isVisible; // 노출 여부 (기본 false)
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "main_image_url")
 	private String mainImageUrlOrNull; // 숙소 대표 이미지 URL 생략 가능
 
 	@Column(nullable = false)
 	private String contactNumber; // 연락처
-
-	protected Accommodation() {
-	}
 
 	@Builder
 	public Accommodation(

@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
 
 public interface JpaRoomAutoAvailabilityPolicyRepository extends JpaRepository<RoomAutoAvailabilityPolicy, Long> {
-	Optional<RoomAutoAvailabilityPolicy> findOneByIdAndRoomId(long roomAutoAvailabilityPolicyId, long roomId);
+	Optional<RoomAutoAvailabilityPolicy> findOneByIdAndRoomTypeId(long roomAutoAvailabilityPolicyId, long roomTypeId);
 }

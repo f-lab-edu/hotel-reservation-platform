@@ -26,33 +26,33 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/room")
+@RequestMapping("/room-type")
 @PreAuthorize(PRE_AUTH_ROLE_HOST) //✅숙박 업체만 접근 가능
 @RequiredArgsConstructor
 @Tag(name = "룸 가격 정책 관리 API", description = "숙박 업체 룸 가격 정책 관리 API 입니다.")
 public class RoomPricingPolicyController {
 	private final RoomPricingPolicyService roomPricingPolicyService;
 
-	@PostMapping("{roomId}/pricing-policy")
+	@PostMapping("{roomTypeId}/pricing-policy")
 	@Operation(summary = "룸 가격 정책 등록", description = "숙박 업체가 가격 정책을 등록합니다.")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResponse<Long> create(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@RequestBody NewRoomPricingPolicyRequest request,
 		@LoginUserId long hostId
 	) {
 		DefaultRoomPricingPolicyInfo createRoomPricingPolicyInfo = request.validateToDefaultRoomPricingPolicyInfo();
 
 		long createdRoomPricingPolicyId =
-			roomPricingPolicyService.create(roomId, createRoomPricingPolicyInfo, hostId);
+			roomPricingPolicyService.create(roomTypeId, createRoomPricingPolicyInfo, hostId);
 
 		return ApiResponse.ok(createdRoomPricingPolicyId);
 	}
 
-	@PatchMapping("{roomId}/pricing-policy/{roomPricingPolicyId}")
+	@PatchMapping("{roomTypeId}/pricing-policy/{roomPricingPolicyId}")
 	@Operation(summary = "룸 예약 가용 자동화 정책 수정", description = "숙박 업체가 룸 예약 가용 자동화 정책을 수정합니다.")
 	public ApiResponse<Long> update(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomPricingPolicyId,
 		@RequestBody NewRoomPricingPolicyRequest request,
 		@LoginUserId long hostId
@@ -61,7 +61,7 @@ public class RoomPricingPolicyController {
 
 		long updatedRoomAutoAvailabilityPolicyId =
 			roomPricingPolicyService.update(
-				roomId,
+				roomTypeId,
 				roomPricingPolicyId,
 				updateRoomPricingPolicyInfo,
 				hostId);
@@ -69,26 +69,27 @@ public class RoomPricingPolicyController {
 		return ApiResponse.ok(updatedRoomAutoAvailabilityPolicyId);
 	}
 
-	@DeleteMapping("{roomId}/pricing-policy/{roomPricingPolicyId}")
+	@DeleteMapping("{roomTypeId}/pricing-policy/{roomPricingPolicyId}")
 	@Operation(summary = "룸 예약 가용 자동화 정책 수정", description = "숙박 업체가 룸 예약 가용 자동화 정책을 수정합니다.")
 	public ApiResponse<Long> delete(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomPricingPolicyId,
 		@LoginUserId long hostId
 	) {
-		roomPricingPolicyService.delete(roomId, roomPricingPolicyId, hostId);
+		roomPricingPolicyService.delete(roomTypeId, roomPricingPolicyId, hostId);
 
 		return ApiResponse.noContent();
 	}
 
-	@GetMapping("{roomId}/pricing-policy/{roomPricingPolicyId}")
+	@GetMapping("{roomTypeId}/pricing-policy/{roomPricingPolicyId}")
 	@Operation(summary = "룸 예약 가용 자동화 정책 단일 조회", description = "숙박 업체가 룸 예약 가용 자동화 정책를 단일 조회합니다.")
 	public ApiResponse<RoomPricingPolicy> findOne(
-		@PathVariable long roomId,
+		@PathVariable long roomTypeId,
 		@PathVariable long roomPricingPolicyId,
 		@LoginUserId long hostId
 	) {
-		RoomPricingPolicy findRoomPricingPolicy = roomPricingPolicyService.findOne(roomId, roomPricingPolicyId, hostId);
+		RoomPricingPolicy findRoomPricingPolicy = roomPricingPolicyService.findOne(roomTypeId, roomPricingPolicyId,
+			hostId);
 
 		return ApiResponse.ok(findRoomPricingPolicy);
 	}
