@@ -62,6 +62,47 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 		throw ErrorCode.CONFLICT.exception("Invalid lastSeenId type: " + lastSeenId.getClass().getName());
 	}
 
+	private record ReadProcessCombineResult(
+		boolean hasNext,
+		Long lastSeenId,
+		List<RoomAvailability> outputAvailabilities
+	) {
+	}
+	
+	// Output 임계치까지 [read - processor] 반복 수행
+	private ReadProcessCombineResult combineReaderProcessor(
+		Long lastSeenId,
+		StepContribution contribution,
+		Perf perf
+	) {
+		boolean outputThreshold = false;
+		boolean hasNext = true;
+		List<RoomAvailability> outputResult = new ArrayList<>(MAX_WRITE_COUNT);
+
+		while (!outputThreshold) {
+			CursorPage<RoomAutoAvailabilityPolicy, Long> autoPolicyCursorPage = autoPolicyReader.read(lastSeenId);
+			contribution.incrementReadCount();
+
+			List<RoomAutoAvailabilityPolicy> inputAutoPolicies = autoPolicyCursorPage.content();
+			perf.log("Reader rows", inputAutoPolicies.size());
+
+			lastSeenId = autoPolicyCursorPage.nextCursor();
+
+			List<RoomAvailability> outputAvailabilities = openAvailabilityProcessor.process(inputAutoPolicies);
+			perf.log("Output rows", outputAvailabilities.size());
+
+			outputResult.addAll(outputAvailabilities);
+
+			if (!autoPolicyCursorPage.hasNext()) {
+				hasNext = false;
+				break;
+			}
+			outputThreshold = outputResult.size() >= BASE_LINE_WRITE_COUNT;
+		}
+
+		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);
+	}
+
 	private void writeAvailabilities(
 		List<RoomAvailability> writeAvailabilities,
 		boolean hasNext,
@@ -101,46 +142,5 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 			return RepeatStatus.CONTINUABLE;
 		}
 		return RepeatStatus.FINISHED;
-	}
-
-	private record ReadProcessCombineResult(
-		boolean hasNext,
-		Long lastSeenId,
-		List<RoomAvailability> outputAvailabilities
-	) {
-	}
-
-	// Output 임계치까지 [read - processor] 반복 수행
-	private ReadProcessCombineResult combineReaderProcessor(
-		Long lastSeenId,
-		StepContribution contribution,
-		Perf perf
-	) {
-		boolean outputThreshold = false;
-		boolean hasNext = true;
-		List<RoomAvailability> outputResult = new ArrayList<>(MAX_WRITE_COUNT);
-
-		while (!outputThreshold) {
-			CursorPage<RoomAutoAvailabilityPolicy, Long> autoPolicyCursorPage = autoPolicyReader.read(lastSeenId);
-			contribution.incrementReadCount();
-
-			List<RoomAutoAvailabilityPolicy> inputAutoPolicies = autoPolicyCursorPage.content();
-			perf.log("Reader rows", inputAutoPolicies.size());
-
-			lastSeenId = autoPolicyCursorPage.nextCursor();
-
-			List<RoomAvailability> outputAvailabilities = openAvailabilityProcessor.process(inputAutoPolicies);
-			perf.log("Output rows", outputAvailabilities.size());
-
-			outputResult.addAll(outputAvailabilities);
-
-			if (!autoPolicyCursorPage.hasNext()) {
-				hasNext = false;
-				break;
-			}
-			outputThreshold = outputResult.size() >= BASE_LINE_WRITE_COUNT;
-		}
-
-		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);
 	}
 }

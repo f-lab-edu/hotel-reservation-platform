@@ -59,28 +59,6 @@ public class OriginOpenAvailabilityTasklet implements Tasklet {
 		throw ErrorCode.CONFLICT.exception("Invalid lastSeenId type: " + lastSeenId.getClass().getName());
 	}
 
-	private void writeAvailabilities(
-		List<RoomAvailability> writeAvailabilities,
-		StepContribution contribution,
-		Perf perf
-	) {
-		availabilityWriter.write(writeAvailabilities);
-		contribution.incrementWriteCount(writeAvailabilities.size());
-		perf.log("Write rows", writeAvailabilities.size());
-	}
-
-	private RepeatStatus handleExecuteResult(
-		boolean hasNext,
-		Long lastSeenId,
-		ChunkContext chunkContext
-	) {
-		if (hasNext) {
-			chunkContext.setAttribute("lastSeenId", lastSeenId);
-			return RepeatStatus.CONTINUABLE;
-		}
-		return RepeatStatus.FINISHED;
-	}
-
 	private record ReadProcessCombineResult(
 		boolean hasNext,
 		Long lastSeenId,
@@ -120,5 +98,27 @@ public class OriginOpenAvailabilityTasklet implements Tasklet {
 		}
 
 		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);
+	}
+
+	private void writeAvailabilities(
+		List<RoomAvailability> writeAvailabilities,
+		StepContribution contribution,
+		Perf perf
+	) {
+		availabilityWriter.write(writeAvailabilities);
+		contribution.incrementWriteCount(writeAvailabilities.size());
+		perf.log("Write rows", writeAvailabilities.size());
+	}
+
+	private RepeatStatus handleExecuteResult(
+		boolean hasNext,
+		Long lastSeenId,
+		ChunkContext chunkContext
+	) {
+		if (hasNext) {
+			chunkContext.setAttribute("lastSeenId", lastSeenId);
+			return RepeatStatus.CONTINUABLE;
+		}
+		return RepeatStatus.FINISHED;
 	}
 }
