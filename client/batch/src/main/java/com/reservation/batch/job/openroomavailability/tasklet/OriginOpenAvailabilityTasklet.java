@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @StepScope
 @RequiredArgsConstructor
 public class OriginOpenAvailabilityTasklet implements Tasklet {
-	private static final int BASE_LINE_WRITE_COUNT = 100000;
+	private static final int BASE_LINE_WRITE_COUNT = 90000;
 	private static final int MAX_WRITE_COUNT = 150000;
 
 	private final RoomAutoPolicyTaskletReader autoPolicyReader;
@@ -116,7 +116,7 @@ public class OriginOpenAvailabilityTasklet implements Tasklet {
 				hasNext = false;
 				break;
 			}
-			outputThreshold = outputResult.size() > BASE_LINE_WRITE_COUNT;
+			outputThreshold = outputResult.size() >= BASE_LINE_WRITE_COUNT;
 		}
 
 		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);

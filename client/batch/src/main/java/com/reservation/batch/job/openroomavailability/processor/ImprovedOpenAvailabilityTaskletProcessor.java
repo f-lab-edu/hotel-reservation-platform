@@ -25,6 +25,8 @@ import com.reservation.domain.roompricingpolicy.RoomPricingPolicy;
 import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
 
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,6 +47,8 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 	private final LocalDate today = LocalDate.now();
 	private final LocalDate endDay = today.plusDays(MAX_PLUS_DAYS);
 
+	private final Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+
 	public List<RoomAvailability> process(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
 		if (jobExecution.isStopping()) {
 			log.error("Job execution stopped {}", jobExecution.getExitStatus().getExitDescription());
@@ -60,17 +64,25 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 		// 날짜별로 RoomAvailability 생성
 		List<RoomAvailability> outputAvailabilities = createAvailabilitiesSetPeriod(inputAutoPolicies);
 
-		perf.log("Output rows", outputAvailabilities.size());
-
 		return outputAvailabilities;
 	}
 
-	private record AutoPolicyRelatedInfo(
-		List<RoomType> findRoomTypes,
-		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
-		Set<String> existingDateAvailabilities,
-		Map<String, Integer> roomPricingMap
-	) {
+	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
+
+		List<RoomAvailability> outputAvailabilities = new ArrayList<>(inputAutoPolicies.size() * MAX_PLUS_DAYS / 2);
+
+		// 성능 최적화★ for -> 병렬 stream 처리
+		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
+			.parallel()
+			.mapToObj(offset -> createAvailabilitiesMatchDate(
+				today.plusDays(offset),
+				autoPolicyRelatedInfo.findRoomTypes,
+				autoPolicyRelatedInfo.roomAutoPolicyMap,
+				autoPolicyRelatedInfo.existingDateAvailabilities,
+				autoPolicyRelatedInfo.roomPricingMap))
+			.flatMap(List::stream)
+			.toList();
 	}
 
 	// Availability 생성 시 필요한 정보를 위한 AutoPolicy 관련 정보 조회
@@ -115,21 +127,12 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 		return new AutoPolicyRelatedInfo(findRoomTypes, roomAutoPolicyMap, existingDateAvailabilities, roomPricingMap);
 	}
 
-	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
-		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(
-			inputAutoPolicies);
-
-		// 성능 최적화★ for -> 병렬 stream 처리
-		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
-			.parallel()
-			.mapToObj(offset -> createAvailabilitiesMatchDate(
-				today.plusDays(offset),
-				autoPolicyRelatedInfo.findRoomTypes,
-				autoPolicyRelatedInfo.roomAutoPolicyMap,
-				autoPolicyRelatedInfo.existingDateAvailabilities,
-				autoPolicyRelatedInfo.roomPricingMap))
-			.flatMap(List::stream)
-			.toList();
+	private record AutoPolicyRelatedInfo(
+		List<RoomType> findRoomTypes,
+		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
+		Set<String> existingDateAvailabilities,
+		Map<String, Integer> roomPricingMap
+	) {
 	}
 
 	// 미래 날짜별 예약 생성

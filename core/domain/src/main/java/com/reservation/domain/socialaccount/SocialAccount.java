@@ -24,7 +24,7 @@ public class SocialAccount extends BaseEntity {
 	private String email;
 
 	@Column(nullable = false)
-	Long memberId; // Member ID
+	private Long memberId; // Member ID
 
 	@Builder
 	public SocialAccount(SocialLoginProvider provider, String email, Long memberId) {

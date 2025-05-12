@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomAutoPolicyChunkReader implements ItemReader<List<RoomAutoAvailabilityPolicy>> {
-	private static final int READ_SIZE = 500;
+	private static final int READ_SIZE = 600;
 
 	private final RoomAvailabilityRepository availabilityRepository;
 

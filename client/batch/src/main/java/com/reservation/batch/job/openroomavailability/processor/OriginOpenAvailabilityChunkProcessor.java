@@ -39,7 +39,8 @@ public class OriginOpenAvailabilityChunkProcessor
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;
 
-	private final LocalDate today = LocalDate.now();
+	// private final LocalDate today = LocalDate.now();
+	private final LocalDate today = LocalDate.of(2025, 5, 4);
 	private final LocalDate endDay = today.plusDays(MAX_PLUS_DAYS);
 
 	@Override
@@ -63,11 +64,25 @@ public class OriginOpenAvailabilityChunkProcessor
 		return outputAvailabilities;
 	}
 
-	private record AutoPolicyRelatedInfo(
-		List<RoomType> findRoomTypes,
-		List<RoomPricingPolicy> registeredPricingPolicies,
-		List<FindAvailabilityInRoomIdsResult> existingAvailabilities
-	) {
+	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
+
+		List<RoomAvailability> outputAvailabilities = new ArrayList<>(inputAutoPolicies.size() * MAX_PLUS_DAYS / 2);
+
+		// 최대 예약 오픈 기간 범위로 RoomAvailability 생성
+		for (LocalDate settingDate = today; settingDate.isBefore(endDay); settingDate = settingDate.plusDays(1)) {
+			List<RoomAvailability> createAvailabilities =
+				createAvailabilitiesMatchDate(
+					settingDate,
+					autoPolicyRelatedInfo.findRoomTypes,
+					inputAutoPolicies,
+					autoPolicyRelatedInfo.existingAvailabilities,
+					autoPolicyRelatedInfo.registeredPricingPolicies);
+
+			outputAvailabilities.addAll(createAvailabilities);
+		}
+
+		return outputAvailabilities;
 	}
 
 	// Availability 생성 시 필요한 정보를 위한 AutoPolicy 관련 정보 조회
@@ -92,25 +107,11 @@ public class OriginOpenAvailabilityChunkProcessor
 		return new AutoPolicyRelatedInfo(findRoomTypes, registeredPricingPolicies, existingAvailabilities);
 	}
 
-	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
-		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
-
-		List<RoomAvailability> outputAvailabilities = new ArrayList<>();
-
-		// 최대 예약 오픈 기간 범위로 RoomAvailability 생성
-		for (LocalDate settingDate = today; settingDate.isBefore(endDay); settingDate = settingDate.plusDays(1)) {
-			List<RoomAvailability> createAvailabilities =
-				createAvailabilitiesMatchDate(
-					settingDate,
-					autoPolicyRelatedInfo.findRoomTypes,
-					inputAutoPolicies,
-					autoPolicyRelatedInfo.existingAvailabilities,
-					autoPolicyRelatedInfo.registeredPricingPolicies);
-
-			outputAvailabilities.addAll(createAvailabilities);
-		}
-
-		return outputAvailabilities;
+	private record AutoPolicyRelatedInfo(
+		List<RoomType> findRoomTypes,
+		List<RoomPricingPolicy> registeredPricingPolicies,
+		List<FindAvailabilityInRoomIdsResult> existingAvailabilities
+	) {
 	}
 
 	// 미래 날짜별 예약 생성

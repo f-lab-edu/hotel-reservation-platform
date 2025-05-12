@@ -45,7 +45,7 @@ public class ImprovedOpenAvailabilityChunkProcessor
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;
 
-	private final LocalDate today = LocalDate.now();
+	private final LocalDate today = LocalDate.of(2025, 5, 4);
 	private final LocalDate endDay = today.plusDays(MAX_PLUS_DAYS);
 
 	@Override
@@ -69,12 +69,20 @@ public class ImprovedOpenAvailabilityChunkProcessor
 		return outputAvailabilities;
 	}
 
-	private record AutoPolicyRelatedInfo(
-		List<RoomType> findRoomTypes,
-		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
-		Set<String> existingDateAvailabilities,
-		Map<String, Integer> roomPricingMap
-	) {
+	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
+
+		// 성능 최적화★ for -> 병렬 stream 처리
+		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
+			.parallel()
+			.mapToObj(offset -> createAvailabilitiesMatchDate(
+				today.plusDays(offset),
+				autoPolicyRelatedInfo.findRoomTypes,
+				autoPolicyRelatedInfo.roomAutoPolicyMap,
+				autoPolicyRelatedInfo.existingDateAvailabilities,
+				autoPolicyRelatedInfo.roomPricingMap))
+			.flatMap(List::stream)
+			.toList();
 	}
 
 	// Availability 생성 시 필요한 정보를 위한 AutoPolicy 관련 정보 조회
@@ -119,20 +127,12 @@ public class ImprovedOpenAvailabilityChunkProcessor
 		return new AutoPolicyRelatedInfo(findRoomTypes, roomAutoPolicyMap, existingDateAvailabilities, roomPricingMap);
 	}
 
-	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
-		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
-
-		// 성능 최적화★ for -> 병렬 stream 처리
-		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
-			.parallel()
-			.mapToObj(offset -> createAvailabilitiesMatchDate(
-				today.plusDays(offset),
-				autoPolicyRelatedInfo.findRoomTypes,
-				autoPolicyRelatedInfo.roomAutoPolicyMap,
-				autoPolicyRelatedInfo.existingDateAvailabilities,
-				autoPolicyRelatedInfo.roomPricingMap))
-			.flatMap(List::stream)
-			.toList();
+	private record AutoPolicyRelatedInfo(
+		List<RoomType> findRoomTypes,
+		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
+		Set<String> existingDateAvailabilities,
+		Map<String, Integer> roomPricingMap
+	) {
 	}
 
 	// 미래 날짜별 예약 생성

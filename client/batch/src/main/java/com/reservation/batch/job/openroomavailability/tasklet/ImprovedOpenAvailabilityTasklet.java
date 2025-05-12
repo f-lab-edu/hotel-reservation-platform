@@ -2,6 +2,7 @@ package com.reservation.batch.job.openroomavailability.tasklet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -32,6 +33,8 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 	private final ImprovedOpenAvailabilityTaskletProcessor openAvailabilityProcessor;
 	private final RoomAvailabilityTaskletWriter availabilityWriter;
 
+	private List<RoomAvailability> remainAvailabilities = new ArrayList<>();
+
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
 		// 성능 측정을 위한 시간 로깅
@@ -41,11 +44,10 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 		Long lastSeenId = getLastSeenId(chunkContext.getAttribute("lastSeenId"));
 
 		// Output 임계치까지 [read - process] 반복 실행
-		ReadProcessCombineResult combineResult = combineReaderProcessor(lastSeenId,
-			contribution, perf);
+		ReadProcessCombineResult combineResult = combineReaderProcessor(lastSeenId, contribution, perf);
 
 		// Output 결과 저장
-		writeAvailabilities(combineResult.outputAvailabilities, contribution, perf);
+		writeAvailabilities(combineResult.outputAvailabilities, combineResult.hasNext, contribution, perf);
 
 		return handleExecuteResult(combineResult.hasNext, combineResult.lastSeenId, chunkContext);
 	}
@@ -62,12 +64,31 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 
 	private void writeAvailabilities(
 		List<RoomAvailability> writeAvailabilities,
+		boolean hasNext,
 		StepContribution contribution,
 		Perf perf
 	) {
-		availabilityWriter.write(writeAvailabilities);
-		contribution.incrementWriteCount(writeAvailabilities.size());
-		perf.log("Write rows", writeAvailabilities.size());
+		remainAvailabilities.addAll(writeAvailabilities);
+		int tryWriterCount = remainAvailabilities.size() / BASE_LINE_WRITE_COUNT;
+		IntStream.range(0, tryWriterCount)
+			.parallel()
+			.forEach(i -> {
+				int startIndex = i * BASE_LINE_WRITE_COUNT;
+				int endIndex = startIndex + BASE_LINE_WRITE_COUNT;
+				List<RoomAvailability> writeChunk = remainAvailabilities.subList(startIndex, endIndex);
+				availabilityWriter.write(writeChunk);
+				contribution.incrementWriteCount(writeChunk.size());
+				perf.log("Write rows", writeChunk.size());
+			});
+
+		remainAvailabilities =
+			remainAvailabilities.subList(tryWriterCount * BASE_LINE_WRITE_COUNT, remainAvailabilities.size());
+
+		if (!hasNext) {
+			availabilityWriter.write(remainAvailabilities);
+			contribution.incrementWriteCount(remainAvailabilities.size());
+			perf.log("Last Write rows", remainAvailabilities.size());
+		}
 	}
 
 	private RepeatStatus handleExecuteResult(
@@ -117,7 +138,7 @@ public class ImprovedOpenAvailabilityTasklet implements Tasklet {
 				hasNext = false;
 				break;
 			}
-			outputThreshold = outputResult.size() > BASE_LINE_WRITE_COUNT;
+			outputThreshold = outputResult.size() >= BASE_LINE_WRITE_COUNT;
 		}
 
 		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);

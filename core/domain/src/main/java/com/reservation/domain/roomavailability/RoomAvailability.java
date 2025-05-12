@@ -16,16 +16,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class RoomAvailability extends BaseEntity {
 	@Column(nullable = false)
-	long roomTypeId; // 룸 타입 ID
+	private long roomTypeId; // 룸 타입 ID
 
 	@Column(nullable = false)
-	LocalDate date; // 예약 가능 날짜
+	private LocalDate date; // 예약 가능 날짜
 
 	@Column(nullable = false)
-	Integer price; // 가격
+	private Integer price; // 가격
 
 	@Column(nullable = false)
-	Integer availableCount; // 예약 가능 개수
+	private Integer availableCount; // 예약 가능 개수
 
 	@Builder
 	public RoomAvailability(Long id, long roomTypeId, LocalDate date, int price, int availableCount) {

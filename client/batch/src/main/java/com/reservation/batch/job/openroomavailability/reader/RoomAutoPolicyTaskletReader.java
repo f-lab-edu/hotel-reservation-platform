@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomAutoPolicyTaskletReader {
-	private static final int READ_SIZE = 250;
+	private static final int READ_SIZE = 600;
 
 	private final RoomAvailabilityRepository availabilityRepository;
 
