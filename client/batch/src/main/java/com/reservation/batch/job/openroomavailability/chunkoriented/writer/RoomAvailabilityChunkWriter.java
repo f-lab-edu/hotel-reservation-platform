@@ -1,4 +1,4 @@
-package com.reservation.batch.job.openroomavailability.writer;
+package com.reservation.batch.job.openroomavailability.chunkoriented.writer;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -11,19 +11,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.reservation.batch.utils.Perf;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.OriginRoomAvailability;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @StepScope
 @RequiredArgsConstructor
-public class RoomAvailabilityChunkWriter implements ItemWriter<List<RoomAvailability>> {
+public class RoomAvailabilityChunkWriter implements ItemWriter<List<OriginRoomAvailability>> {
 	private final JdbcTemplate jdbcTemplate;
 
 	@Override
-	public void write(Chunk<? extends List<RoomAvailability>> output) {
-		List<RoomAvailability> writeAvailabilities = output.getItems().stream()
+	public void write(Chunk<? extends List<OriginRoomAvailability>> output) {
+		List<OriginRoomAvailability> writeAvailabilities = output.getItems().stream()
 			.flatMap(List::stream)
 			.toList();
 
@@ -34,7 +34,7 @@ public class RoomAvailabilityChunkWriter implements ItemWriter<List<RoomAvailabi
 		Perf perf = new Perf();
 
 		String insertSql =
-			"INSERT INTO room_availability (created_at, updated_at, available_count, date, room_type_id, price)"
+			"INSERT INTO origin_room_availability (created_at, updated_at, available_count, date, room_type_id, price)"
 				+ " VALUES (?, ?, ?, ?, ?, ?)";
 
 		jdbcTemplate.batchUpdate(
@@ -45,7 +45,7 @@ public class RoomAvailabilityChunkWriter implements ItemWriter<List<RoomAvailabi
 				ps.setDate(1, Date.valueOf(LocalDate.now()));
 				ps.setDate(2, Date.valueOf(LocalDate.now()));
 				ps.setInt(3, availability.getAvailableCount());
-				ps.setDate(4, Date.valueOf(availability.getDate()));
+				ps.setDate(4, Date.valueOf(availability.getOpenDate()));
 				ps.setLong(5, availability.getRoomTypeId());
 				ps.setInt(6, availability.getPrice());
 			}

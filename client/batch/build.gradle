@@ -9,7 +9,9 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.11.0'
     implementation 'cn.hutool:hutool-core:5.8.37'
-    
+    implementation 'com.opencsv:opencsv:5.11'
+    implementation 'com.univocity:univocity-parsers:2.9.1'
+
     runtimeOnly 'mysql:mysql-connector-java:8.0.33'
 
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'

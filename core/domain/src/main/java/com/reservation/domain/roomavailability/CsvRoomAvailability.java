@@ -11,15 +11,29 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/*
+CREATE TABLE `csv_room_availability` (
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `available_count` int NOT NULL,
+  `date` date NOT NULL,
+  `price` int NOT NULL,
+  `room_type_id` bigint NOT NULL,
+  PRIMARY KEY `room_type_pk` (`room_type_id`, `date`),
+  KEY `room_type_id` (`room_type_id`),
+  CONSTRAINT `csv_room_availability_fk` FOREIGN KEY (`room_type_id`) REFERENCES `room_type` (`id`)
+);
+* */
+
 @Getter
 @Entity
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class RoomAvailability extends BaseEntity {
+public class CsvRoomAvailability extends BaseEntity {
 	@Column(nullable = false)
 	private long roomTypeId; // 룸 타입 ID
 
 	@Column(nullable = false)
-	private LocalDate date; // 예약 가능 날짜
+	private LocalDate openDate; // 예약 가능 날짜
 
 	@Column(nullable = false)
 	private Integer price; // 가격
@@ -28,14 +42,14 @@ public class RoomAvailability extends BaseEntity {
 	private Integer availableCount; // 예약 가능 개수
 
 	@Builder
-	public RoomAvailability(Long id, long roomTypeId, LocalDate date, int price, int availableCount) {
+	public CsvRoomAvailability(Long id, long roomTypeId, LocalDate openDate, int price, int availableCount) {
 		if (id != null && id <= 0) {
 			throw ErrorCode.CONFLICT.exception("숙소 ID는 0보다 커야 합니다.");
 		}
 		if (roomTypeId <= 0) {
 			throw ErrorCode.BAD_REQUEST.exception("룸 ID는 0보다 커야 합니다.");
 		}
-		if (date == null) {
+		if (openDate == null) {
 			throw ErrorCode.BAD_REQUEST.exception("예약 가능 날짜는 필수입니다.");
 		}
 		if (price < 1000) {
@@ -47,7 +61,7 @@ public class RoomAvailability extends BaseEntity {
 
 		this.id = id;
 		this.roomTypeId = roomTypeId;
-		this.date = date;
+		this.openDate = openDate;
 		this.price = price;
 		this.availableCount = availableCount;
 	}

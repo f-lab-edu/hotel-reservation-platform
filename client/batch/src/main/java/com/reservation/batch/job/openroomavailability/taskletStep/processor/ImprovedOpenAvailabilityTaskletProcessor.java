@@ -1,4 +1,4 @@
-package com.reservation.batch.job.openroomavailability.processor;
+package com.reservation.batch.job.openroomavailability.taskletStep.processor;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -14,13 +14,13 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.repository.JpaRoomAvailabilityRepository;
+import com.reservation.batch.repository.JpaOriginRoomAvailabilityRepository;
 import com.reservation.batch.repository.JpaRoomPricingPolicyRepository;
 import com.reservation.batch.repository.JpaRoomTypeRepository;
 import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
 import com.reservation.batch.utils.Perf;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.OriginRoomAvailability;
 import com.reservation.domain.roompricingpolicy.RoomPricingPolicy;
 import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
@@ -38,7 +38,7 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 	private static final int MAX_PLUS_DAYS = 180;
 
 	private final JpaRoomTypeRepository roomTypeRepository;
-	private final JpaRoomAvailabilityRepository availabilityRepository;
+	private final JpaOriginRoomAvailabilityRepository availabilityRepository;
 	private final JpaRoomPricingPolicyRepository pricingPolicyRepository;
 
 	@Value("#{stepExecution.jobExecution}")
@@ -49,7 +49,7 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 
 	private final Snowflake snowflake = IdUtil.getSnowflake(1, 1);
 
-	public List<RoomAvailability> process(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+	public List<OriginRoomAvailability> process(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
 		if (jobExecution.isStopping()) {
 			log.error("Job execution stopped {}", jobExecution.getExitStatus().getExitDescription());
 			throw ErrorCode.CONFLICT.exception("Job 중단 요청됨 → Reader 중단");
@@ -62,15 +62,17 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 		Perf perf = new Perf();
 
 		// 날짜별로 RoomAvailability 생성
-		List<RoomAvailability> outputAvailabilities = createAvailabilitiesSetPeriod(inputAutoPolicies);
+		List<OriginRoomAvailability> outputAvailabilities = createAvailabilitiesSetPeriod(inputAutoPolicies);
 
 		return outputAvailabilities;
 	}
 
-	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+	private List<OriginRoomAvailability> createAvailabilitiesSetPeriod(
+		List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
 		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
 
-		List<RoomAvailability> outputAvailabilities = new ArrayList<>(inputAutoPolicies.size() * MAX_PLUS_DAYS / 2);
+		List<OriginRoomAvailability> outputAvailabilities = new ArrayList<>(
+			inputAutoPolicies.size() * MAX_PLUS_DAYS / 2);
 
 		// 성능 최적화★ for -> 병렬 stream 처리
 		return IntStream.range(0, (int)ChronoUnit.DAYS.between(today, endDay))
@@ -136,14 +138,14 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 	}
 
 	// 미래 날짜별 예약 생성
-	public List<RoomAvailability> createAvailabilitiesMatchDate(
+	public List<OriginRoomAvailability> createAvailabilitiesMatchDate(
 		LocalDate settingDate,
 		List<RoomType> findRoomTypes,
 		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
 		Set<String> existingDateAvailabilities,
 		Map<String, Integer> roomPricingMap
 	) {
-		List<RoomAvailability> createAvailabilities = new ArrayList<>(findRoomTypes.size());
+		List<OriginRoomAvailability> createAvailabilities = new ArrayList<>(findRoomTypes.size());
 
 		for (RoomType roomType : findRoomTypes) {
 			// 예약 오픈 생성 가능한 날짜인지 검증
@@ -161,11 +163,11 @@ public class ImprovedOpenAvailabilityTaskletProcessor {
 			// 요일별 가격 정책 조회 -> 없다면 기본 RoomType 가격 적용
 			int roomPrice = findSettingDatePrice(settingDate, roomType, roomPricingMap);
 
-			RoomAvailability newAvailability = RoomAvailability.builder()
+			OriginRoomAvailability newAvailability = OriginRoomAvailability.builder()
 				.roomTypeId(roomType.getId())
 				.availableCount(roomType.getCapacity())
 				.price(roomPrice)
-				.date(settingDate)
+				.openDate(settingDate)
 				.build();
 
 			createAvailabilities.add(newAvailability);

@@ -1,4 +1,4 @@
-package com.reservation.batch.job.openroomavailability.processor;
+package com.reservation.batch.job.openroomavailability.loadinfile.processor;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -11,17 +11,14 @@ import java.util.stream.IntStream;
 
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.repository.JpaRoomAvailabilityRepository;
+import com.reservation.batch.repository.JpaCsvRoomAvailabilityRepository;
 import com.reservation.batch.repository.JpaRoomPricingPolicyRepository;
 import com.reservation.batch.repository.JpaRoomTypeRepository;
 import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
-import com.reservation.batch.utils.Perf;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
-import com.reservation.domain.roomavailability.RoomAvailability;
 import com.reservation.domain.roompricingpolicy.RoomPricingPolicy;
 import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
@@ -33,23 +30,20 @@ import lombok.extern.slf4j.Slf4j;
 @StepScope
 @RequiredArgsConstructor
 @Slf4j
-public class ImprovedOpenAvailabilityChunkProcessor
-	implements ItemProcessor<List<RoomAutoAvailabilityPolicy>, List<RoomAvailability>> {
-
+public class CsvOpenAvailabilityTaskletProcessor {
 	private static final int MAX_PLUS_DAYS = 180;
 
 	private final JpaRoomTypeRepository roomTypeRepository;
-	private final JpaRoomAvailabilityRepository availabilityRepository;
+	private final JpaCsvRoomAvailabilityRepository availabilityRepository;
 	private final JpaRoomPricingPolicyRepository pricingPolicyRepository;
 
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;
 
-	private final LocalDate today = LocalDate.of(2025, 5, 4);
+	private final LocalDate today = LocalDate.now();
 	private final LocalDate endDay = today.plusDays(MAX_PLUS_DAYS);
 
-	@Override
-	public List<RoomAvailability> process(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+	public List<String[]> process(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
 		if (jobExecution.isStopping()) {
 			log.error("Job execution stopped {}", jobExecution.getExitStatus().getExitDescription());
 			throw ErrorCode.CONFLICT.exception("Job 중단 요청됨 → Reader 중단");
@@ -59,17 +53,13 @@ public class ImprovedOpenAvailabilityChunkProcessor
 			return null;
 		}
 
-		Perf perf = new Perf();
-
 		// 날짜별로 RoomAvailability 생성
-		List<RoomAvailability> outputAvailabilities = createAvailabilitiesSetPeriod(inputAutoPolicies);
-
-		perf.log("Output rows", outputAvailabilities.size());
-
-		return outputAvailabilities;
+		return createAvailabilitiesSetPeriod(inputAutoPolicies);
 	}
 
-	private List<RoomAvailability> createAvailabilitiesSetPeriod(List<RoomAutoAvailabilityPolicy> inputAutoPolicies) {
+	private List<String[]> createAvailabilitiesSetPeriod(
+		List<RoomAutoAvailabilityPolicy> inputAutoPolicies
+	) {
 		AutoPolicyRelatedInfo autoPolicyRelatedInfo = findAutoPolicyRelatedInfo(inputAutoPolicies);
 
 		// 성능 최적화★ for -> 병렬 stream 처리
@@ -136,14 +126,14 @@ public class ImprovedOpenAvailabilityChunkProcessor
 	}
 
 	// 미래 날짜별 예약 생성
-	public List<RoomAvailability> createAvailabilitiesMatchDate(
+	public List<String[]> createAvailabilitiesMatchDate(
 		LocalDate settingDate,
 		List<RoomType> findRoomTypes,
 		Map<Long, RoomAutoAvailabilityPolicy> roomAutoPolicyMap,
 		Set<String> existingDateAvailabilities,
 		Map<String, Integer> roomPricingMap
 	) {
-		List<RoomAvailability> createAvailabilities = new ArrayList<>(findRoomTypes.size());
+		List<String[]> createAvailabilities = new ArrayList<>(findRoomTypes.size());
 
 		for (RoomType roomType : findRoomTypes) {
 			// 예약 오픈 생성 가능한 날짜인지 검증
@@ -161,14 +151,15 @@ public class ImprovedOpenAvailabilityChunkProcessor
 			// 요일별 가격 정책 조회 -> 없다면 기본 RoomType 가격 적용
 			int roomPrice = findSettingDatePrice(settingDate, roomType, roomPricingMap);
 
-			RoomAvailability newAvailability = RoomAvailability.builder()
-				.roomTypeId(roomType.getId())
-				.availableCount(roomType.getCapacity())
-				.price(roomPrice)
-				.date(settingDate)
-				.build();
-
-			createAvailabilities.add(newAvailability);
+			// 성능 최적화를 위해 String[] 배열로 변환
+			createAvailabilities.add(
+				new String[] {
+					roomType.getId().toString(),
+					settingDate.toString(),
+					roomType.getCapacity().toString(),
+					String.valueOf(roomPrice)
+				}
+			);
 		}
 
 		return createAvailabilities;
