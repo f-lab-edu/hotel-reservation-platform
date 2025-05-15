@@ -5,8 +5,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.OriginRoomAvailability;
 
-public interface JpaRoomAvailabilityRepository extends JpaRepository<RoomAvailability, Long> {
-	List<RoomAvailability> findByRoomTypeIdAndDateBetween(Long roomTypeId, LocalDate startDate, LocalDate endDate);
+public interface JpaRoomAvailabilityRepository extends JpaRepository<OriginRoomAvailability, Long> {
+	List<OriginRoomAvailability> findByRoomTypeIdAndDateBetween(Long roomTypeId, LocalDate startDate,
+		LocalDate endDate);
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.reservation.domain.accommodation.Accommodation;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.OriginRoomAvailability;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
 import com.reservation.host.roomavailability.repository.JpaRoomAvailabilityRepository;
 import com.reservation.host.roomavailability.service.dto.DefaultRoomAvailabilityInfo;
@@ -30,14 +30,14 @@ public class RoomAvailabilityService {
 	) {
 		checkRoomType(createRoomAvailabilityInfo.roomTypeId(), hostId);
 
-		RoomAvailability newRoomAvailability = RoomAvailability.builder()
+		OriginRoomAvailability newOriginRoomAvailability = OriginRoomAvailability.builder()
 			.roomTypeId(createRoomAvailabilityInfo.roomTypeId())
 			.date(createRoomAvailabilityInfo.date())
 			.price(createRoomAvailabilityInfo.price())
 			.availableCount(createRoomAvailabilityInfo.availableCount())
 			.build();
 
-		return jpaRoomAvailabilityRepository.save(newRoomAvailability).getId();
+		return jpaRoomAvailabilityRepository.save(newOriginRoomAvailability).getId();
 	}
 
 	private void checkRoomType(long roomTypeId, long hostId) {
@@ -57,7 +57,7 @@ public class RoomAvailabilityService {
 	) {
 		checkRoomType(updateRoomAvailabilityInfo.roomTypeId(), hostId);
 
-		RoomAvailability updateRoomAvailability = RoomAvailability.builder()
+		OriginRoomAvailability updateOriginRoomAvailability = OriginRoomAvailability.builder()
 			.id(updateRoomAvailabilityId)
 			.roomTypeId(updateRoomAvailabilityInfo.roomTypeId())
 			.date(updateRoomAvailabilityInfo.date())
@@ -65,10 +65,10 @@ public class RoomAvailabilityService {
 			.availableCount(updateRoomAvailabilityInfo.availableCount())
 			.build();
 
-		return jpaRoomAvailabilityRepository.save(updateRoomAvailability).getId();
+		return jpaRoomAvailabilityRepository.save(updateOriginRoomAvailability).getId();
 	}
 
-	public List<RoomAvailability> findRoomAvailability(
+	public List<OriginRoomAvailability> findRoomAvailability(
 		Long roomTypeId,
 		Long hostId,
 		LocalDate startDate,

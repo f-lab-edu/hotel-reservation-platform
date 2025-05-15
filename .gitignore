@@ -52,3 +52,5 @@ client/batch/build
 client/batch/out
 client/batch/src/main/generated
 client/batch/src/main/build
+
+tmp
