@@ -1,4 +1,4 @@
-package com.reservation.customer.terms.service.dto;
+package com.reservation.admin.terms.repository.dto;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +10,7 @@ import com.reservation.domain.terms.enums.TermsType;
 import lombok.Getter;
 
 @Getter
-public class SearchTerms {
+public class SearchTermsResult {
 	Long id;
 	TermsCode code;
 	String title;
@@ -24,7 +24,7 @@ public class SearchTerms {
 	LocalDateTime createdAt;
 
 	@QueryProjection
-	public SearchTerms(
+	public SearchTermsResult(
 		Long id,
 		TermsCode code,
 		String title,

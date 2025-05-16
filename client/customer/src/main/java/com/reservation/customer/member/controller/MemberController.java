@@ -26,6 +26,7 @@ public class MemberController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ApiResponse<Void> signup(@Valid @RequestBody SignupRequest request) {
 		memberService.signup(request.email(), request.password(), request.phoneNumber());
+		
 		return ApiResponse.noContent();
 	}
 }

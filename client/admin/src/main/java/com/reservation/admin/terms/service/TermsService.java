@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.reservation.admin.terms.controller.request.TermsCursor;
 import com.reservation.admin.terms.repository.JpaTermsRepository;
 import com.reservation.admin.terms.repository.TermsQueryRepository;
-import com.reservation.admin.terms.service.dto.SearchTermsResult;
+import com.reservation.admin.terms.repository.dto.SearchTermsResult;
 import com.reservation.domain.terms.Terms;
 import com.reservation.domain.terms.enums.TermsCode;
 import com.reservation.domain.terms.enums.TermsStatus;

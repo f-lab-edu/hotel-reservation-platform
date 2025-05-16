@@ -4,8 +4,11 @@ import com.reservation.domain.base.BaseEntity;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.SqlResultSetMapping;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +16,17 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@SqlResultSetMapping(
+	name = "RoomAvailabilitySearchResultMapping",
+	classes = @ConstructorResult(
+		targetClass = RoomAvailabilitySearchResult.class,
+		columns = {
+			@ColumnResult(name = "accommodation_id", type = Long.class),
+			@ColumnResult(name = "accommodation_name", type = String.class),
+			@ColumnResult(name = "average_price", type = Integer.class)
+		}
+	)
+)
 public class Accommodation extends BaseEntity {
 	@Column(nullable = false)
 	private Long hostId; // 숙소 소유자

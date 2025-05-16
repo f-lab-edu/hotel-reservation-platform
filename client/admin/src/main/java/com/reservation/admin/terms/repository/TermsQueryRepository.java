@@ -12,8 +12,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.reservation.admin.terms.controller.request.TermsCursor;
+import com.reservation.admin.terms.repository.dto.SearchTermsResult;
 import com.reservation.admin.terms.service.dto.QSearchTermsResult;
-import com.reservation.admin.terms.service.dto.SearchTermsResult;
 import com.reservation.domain.terms.QClause;
 import com.reservation.domain.terms.QTerms;
 import com.reservation.domain.terms.Terms;
@@ -42,9 +42,11 @@ public class TermsQueryRepository {
 		return Optional.ofNullable(result);
 	}
 
-	public Page<SearchTermsResult> searchTermsFormatPage
-		(TermsCode searchCodeOrNull, boolean isLatest, PageRequest pageRequest) {
-
+	public Page<SearchTermsResult> searchTermsFormatPage(
+		TermsCode searchCodeOrNull,
+		boolean isLatest,
+		PageRequest pageRequest
+	) {
 		QTerms terms = QTerms.terms;
 		BooleanBuilder builder = new BooleanBuilder();
 
@@ -93,8 +95,12 @@ public class TermsQueryRepository {
 		return new PageImpl<>(searchTermResults, pageRequest, total != null ? total : 0);
 	}
 
-	public KeysetPage<SearchTermsResult, TermsCursor> findTermsByKeysetCondition
-		(TermsCode searchCodeOrNull, boolean isLatest, int size, List<TermsCursor> cursors) {
+	public KeysetPage<SearchTermsResult, TermsCursor> findTermsByKeysetCondition(
+		TermsCode searchCodeOrNull,
+		boolean isLatest,
+		int size,
+		List<TermsCursor> cursors
+	) {
 		QTerms terms = QTerms.terms;
 		// 커서 조건을 위한 빌더
 		BooleanBuilder cursorPredicate = CursorUtils.getCursorPredicate(cursors, QTerms.class, "terms");

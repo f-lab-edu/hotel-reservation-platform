@@ -2,7 +2,7 @@ package com.reservation.admin.terms.controller.request;
 
 import java.time.LocalDateTime;
 
-import com.reservation.admin.terms.service.dto.SearchTermsResult;
+import com.reservation.admin.terms.repository.dto.SearchTermsResult;
 import com.reservation.querysupport.cursor.CursorField;
 import com.reservation.querysupport.cursor.CursorPathType;
 import com.reservation.support.exception.ErrorCode;
