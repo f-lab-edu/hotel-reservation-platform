@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import com.reservation.customer.roomavailability.repository.dto.AvailableRoomTypeResult;
 import com.reservation.customer.roomavailability.repository.dto.SearchAvailableRoomSortField;
 import com.reservation.domain.accommodation.RoomAvailabilitySearchResult;
 
@@ -94,5 +95,53 @@ public class RoomAvailabilityQueryRepository {
 
 		// 5. PageImpl 생성
 		return new PageImpl<>(results, PageRequest.of(page, size), totalCount);
+	}
+
+	public List<AvailableRoomTypeResult> findAvailableRoomTypes(
+		Long accommodationId,
+		LocalDate checkIn,
+		LocalDate checkOut,
+		int capacity,
+		long requiredDayCount
+	) {
+		String sql = """
+			SELECT 
+			    rt.id AS room_type_id,
+			    rt.name,
+			    rt.capacity,
+			    FLOOR(SUM(ra.price) / :requiredDayCount) AS price_per_night,
+			    SUM(ra.price) AS total_price,
+			    ri.image_url,
+			    MIN(ra.available_count) AS remaining_count
+			FROM room_availability ra
+			JOIN room_type rt ON ra.room_type_id = rt.id
+			LEFT OUTER JOIN room_image ri ON ri.room_type_id = rt.id AND ri.is_main_image = true
+			WHERE rt.accommodation_id = :accommodationId
+			  AND ra.open_date >= :checkIn AND ra.open_date < :checkOut
+			  AND ra.available_count > 0
+			  AND rt.capacity >= :capacity
+			GROUP BY rt.id, rt.name, rt.capacity, ri.image_url
+			HAVING COUNT(DISTINCT ra.open_date) = :requiredDayCount
+			""";
+
+		List<Object[]> rows = entityManager.createNativeQuery(sql)
+			.setParameter("accommodationId", accommodationId)
+			.setParameter("checkIn", checkIn)
+			.setParameter("checkOut", checkOut)
+			.setParameter("capacity", capacity)
+			.setParameter("requiredDayCount", requiredDayCount)
+			.getResultList();
+
+		return rows.stream()
+			.map(row -> new AvailableRoomTypeResult(
+				((Number)row[0]).longValue(),
+				(String)row[1],
+				((Number)row[2]).intValue(),
+				((Number)row[3]).intValue(),
+				((Number)row[4]).intValue(),
+				(String)row[5],
+				((Number)row[6]).intValue()
+			))
+			.toList();
 	}
 }
