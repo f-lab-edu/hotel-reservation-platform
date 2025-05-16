@@ -2,13 +2,18 @@ package com.reservation.customer.roomavailability.controller;
 
 import static com.reservation.support.response.ApiResponse.*;
 
+import java.util.List;
+
 import org.springframework.data.domain.PageImpl;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reservation.customer.roomavailability.controller.request.FindAvailableRoomTypesRequest;
 import com.reservation.customer.roomavailability.controller.request.SearchAvailableRoomCondition;
+import com.reservation.customer.roomavailability.repository.dto.AvailableRoomTypeResult;
 import com.reservation.customer.roomavailability.repository.dto.SearchAvailableRoomSortField;
 import com.reservation.customer.roomavailability.service.RoomAvailabilityService;
 import com.reservation.customer.roomavailability.service.dto.DefaultRoomAvailabilitySearchInfo;
@@ -40,5 +45,19 @@ public class RoomAvailabilityController {
 			availabilityService.searchRoomAvailability(searchInfo, sortField, page, size);
 
 		return ok(searchResults);
+	}
+
+	@GetMapping("{accommodationId}/rooms")
+	@Operation(summary = "예약 가능한 객실 리스트 조회 API", description = "일반 사용자가 예약 가능한 객실 리스트를 조회합니다.")
+	public ApiResponse<List<AvailableRoomTypeResult>> findAvailableRoomTypes(
+		@PathVariable Long accommodationId,
+		@ModelAttribute FindAvailableRoomTypesRequest request
+	) {
+		DefaultRoomAvailabilitySearchInfo searchInfo = request.validateToSearchInfo();
+
+		List<AvailableRoomTypeResult> availableRoomTypes =
+			availabilityService.findAvailableRoomTypes(accommodationId, searchInfo);
+
+		return ok(availableRoomTypes);
 	}
 }
