@@ -4,9 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.reservation.customer.terms.controller.request.TermsSearchCondition;
 import com.reservation.customer.terms.repository.TermsQueryRepository;
-import com.reservation.customer.terms.service.dto.SearchTerms;
+import com.reservation.customer.terms.repository.dto.SearchTerms;
 import com.reservation.domain.terms.Terms;
 import com.reservation.domain.terms.enums.TermsStatus;
 import com.reservation.support.exception.ErrorCode;
@@ -20,9 +19,7 @@ import lombok.extern.log4j.Log4j2;
 public class TermsService {
 	private final TermsQueryRepository termsQueryRepository;
 
-	public Page<SearchTerms> findTerms(TermsSearchCondition condition) {
-		PageRequest pageRequest = condition.toPageRequest();
-
+	public Page<SearchTerms> findTerms(PageRequest pageRequest) {
 		return termsQueryRepository.findTermsByCondition(pageRequest);
 	}
 
