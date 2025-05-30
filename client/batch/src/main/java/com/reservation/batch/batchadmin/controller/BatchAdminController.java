@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/batch")
 @RequiredArgsConstructor
 public class BatchAdminController {
-
 	private final BatchAdminService batchAdminService;
 
 	@GetMapping("/jobs")

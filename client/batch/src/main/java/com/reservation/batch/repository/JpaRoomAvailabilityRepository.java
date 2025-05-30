@@ -11,12 +11,12 @@ import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
 import com.reservation.domain.roomavailability.RoomAvailability;
 
 public interface JpaRoomAvailabilityRepository extends JpaRepository<RoomAvailability, Long> {
-	@Query("SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomId, ra.date)  " +
+	@Query("SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomTypeId, ra.date)  " +
 		"FROM RoomAvailability ra " +
-		"WHERE ra.roomId IN :roomIds " +
+		"WHERE ra.roomTypeId IN :roomTypeIds " +
 		"AND ra.date BETWEEN :startDate AND :endDate")
 	List<FindAvailabilityInRoomIdsResult> findExistingDatesByRoomIds(
-		@Param("roomIds") List<Long> roomIds,
+		@Param("roomTypeIds") List<Long> roomTypeIds,
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDate endDate);
 }

@@ -1,9 +1,14 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hotel
+    url: jdbc:mysql://localhost:3306/hotel?rewriteBatchedStatements=true
     username: root
     password: root1234
-
+    hikari:
+      data-source-properties:
+        useServerPrepStmts: true         # 서버 측 Prepared Statement 사용하도록 설정
+        cachePrepStmts: true             # Prepared Statement 캐싱을 활성화
+        prepStmtCacheSize: 250           # 캐싱할 Prepared Statement 최대 개수
+        prepStmtCacheSqlLimit: 204800000 # 캐싱할 SQL 쿼리의 최대 길이를 설정
   redis:
     host: localhost
     port: 6379

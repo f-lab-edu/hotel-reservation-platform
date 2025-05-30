@@ -46,12 +46,12 @@ public class BatchAdminService {
 			.stream().map(JobExecutionSummary::from).toList();
 	}
 
-	public TriggerJobResult triggerJob(String triggerJobName, Map<String, String> triggerJobParameters) {
-		Job findJob = getJob(triggerJobName);
+	public TriggerJobResult triggerJob(String jobName, Map<String, String> jobParameterMap) {
+		Job findJob = getJob(jobName);
 
 		// JobParameters 변환
 		JobParametersBuilder builder = new JobParametersBuilder();
-		triggerJobParameters.forEach(builder::addString);
+		jobParameterMap.forEach(builder::addString);
 
 		// run.id는 매번 달라야 JobInstance 중복되지 않음
 		builder.addLong(DEFAULT_RUN_ID, System.currentTimeMillis());
@@ -67,7 +67,7 @@ public class BatchAdminService {
 
 		return new TriggerJobResult(
 			execution.getId(),
-			triggerJobName,
+			jobName,
 			execution.getStatus(),
 			execution.getStartTime(),
 			execution.getJobParameters()
@@ -101,6 +101,7 @@ public class BatchAdminService {
 		try {
 			newExecution = taskExecutorJobLauncher.run(retryJob, jobParameters);
 		} catch (Exception e) {
+			log.error("retryJob Error", e);
 			throw ErrorCode.CONFLICT.exception("Job 재시도 실패: " + e.getMessage());
 		}
 
@@ -118,18 +119,18 @@ public class BatchAdminService {
 		if (jobExecution == null) {
 			throw ErrorCode.NOT_FOUND.exception("해당 ExecutionId를 찾을 수 없습니다.");
 		}
+		
 		return jobExecution;
 	}
 
 	public void stopJob(long executionId) {
 		JobExecution jobExecution = getJobExecution(executionId);
-
-		if (jobExecution.isRunning()) {
-			jobExecution.setStatus(BatchStatus.STOPPING); // 상태를 STOPPING으로 변경
-			jobExecution.setExitStatus(new ExitStatus("STOPPING_BY_ADMIN"));
-			jobRepository.update(jobExecution);
-		} else {
+		if (!jobExecution.isRunning()) {
 			throw ErrorCode.CONFLICT.exception("현재 실행 중인 Job만 중단할 수 있습니다.");
 		}
+
+		jobExecution.setStatus(BatchStatus.STOPPING); // 상태를 STOPPING으로 변경
+		jobExecution.setExitStatus(new ExitStatus("STOPPING_BY_ADMIN"));
+		jobRepository.update(jobExecution);
 	}
 }

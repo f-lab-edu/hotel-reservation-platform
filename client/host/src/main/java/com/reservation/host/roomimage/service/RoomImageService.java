@@ -6,12 +6,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.reservation.domain.accommodation.Accommodation;
-import com.reservation.domain.room.Room;
 import com.reservation.domain.roomimage.RoomImage;
+import com.reservation.domain.roomtype.RoomType;
 import com.reservation.host.accommodation.repository.JpaAccommodationRepository;
-import com.reservation.host.room.repository.JpaRoomRepository;
 import com.reservation.host.roomimage.repository.JpaRoomImageRepository;
 import com.reservation.host.roomimage.service.dto.DefaultRoomImageInfo;
+import com.reservation.host.roomtype.repository.JpaRoomTypeRepository;
 import com.reservation.support.exception.ErrorCode;
 
 import jakarta.transaction.Transactional;
@@ -21,19 +21,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoomImageService {
 	private final JpaRoomImageRepository jpaRoomImageRepository;
-	private final JpaRoomRepository jpaRoomRepository;
+	private final JpaRoomTypeRepository jpaRoomTypeRepository;
 	private final JpaAccommodationRepository jpaAccommodationRepository;
 
 	@Transactional
-	public void updateRoomImagesRequest(long roomId, List<DefaultRoomImageInfo> updateRoomImageInfos, Long hostId) {
+	public void updateRoomImagesRequest(long roomTypeId, List<DefaultRoomImageInfo> updateRoomImageInfos, Long hostId) {
 		Accommodation findAccommodation = jpaAccommodationRepository.findOneByHostId(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("숙소를 정보가 존재하지 않습니다."));
 
-		Room findRoom = jpaRoomRepository.findOneByIdAndAccommodationId(roomId, findAccommodation.getId())
+		RoomType findRoomType = jpaRoomTypeRepository.findOneByIdAndAccommodationId(roomTypeId,
+				findAccommodation.getId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("해당하는 방을 찾을 수 없습니다."));
 
 		// 기존 객실타입 이미지
-		List<RoomImage> existingRoomImages = jpaRoomImageRepository.findByRoomTypeId(roomId);
+		List<RoomImage> existingRoomImages = jpaRoomImageRepository.findByRoomTypeId(roomTypeId);
 
 		// 객실타입 이미지 업데이트
 		List<RoomImage> newRoomImages = updateRoomImages(updateRoomImageInfos, existingRoomImages);
@@ -93,9 +94,10 @@ public class RoomImageService {
 		Accommodation findAccommodation = jpaAccommodationRepository.findOneByHostId(hostId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("숙소를 정보가 존재하지 않습니다."));
 
-		Room findRoom = jpaRoomRepository.findOneByIdAndAccommodationId(roomTypeId, findAccommodation.getId())
+		RoomType findRoomType = jpaRoomTypeRepository.findOneByIdAndAccommodationId(roomTypeId,
+				findAccommodation.getId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("해당하는 객실타입을 찾을 수 없습니다."));
 
-		return jpaRoomImageRepository.findByRoomTypeId(findRoom.getId());
+		return jpaRoomImageRepository.findByRoomTypeId(findRoomType.getId());
 	}
 }

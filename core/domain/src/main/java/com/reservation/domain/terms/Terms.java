@@ -21,6 +21,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -30,6 +31,7 @@ import lombok.Getter;
 		@UniqueConstraint(name = "uk_terms_code_version", columnNames = {"code", "version"})
 	}
 )
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class Terms extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -55,7 +57,7 @@ public class Terms extends BaseEntity {
 	@Column(nullable = false)
 	private LocalDateTime exposedFrom; // 노출 시작일
 
-	@Column(nullable = true)
+	@Column(nullable = true, name = "exposed_to")
 	private LocalDateTime exposedToOrNull; // 노출 종료일
 
 	@Column(nullable = false)
@@ -64,12 +66,19 @@ public class Terms extends BaseEntity {
 	@OneToMany(mappedBy = "terms", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<Clause> clauses = new ArrayList<>();
 
-	protected Terms() {
-	}
-
 	@Builder
-	private Terms(Long id, TermsCode code, String title, TermsType type, TermsStatus status, Integer version,
-		Boolean isLatest, LocalDateTime exposedFrom, LocalDateTime exposedToOrNull, Integer displayOrder) {
+	private Terms(
+		Long id,
+		TermsCode code,
+		String title,
+		TermsType type,
+		TermsStatus status,
+		Integer version,
+		Boolean isLatest,
+		LocalDateTime exposedFrom,
+		LocalDateTime exposedToOrNull,
+		Integer displayOrder
+	) {
 		if (code == null) {
 			throw ErrorCode.CONFLICT.exception("약관 코드는 필수입니다.");
 		}
