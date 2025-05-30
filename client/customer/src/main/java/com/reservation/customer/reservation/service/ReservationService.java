@@ -1,5 +1,7 @@
 package com.reservation.customer.reservation.service;
 
+import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
+
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -48,8 +50,8 @@ public class ReservationService {
 		// 2. 예약 가능 여부 확인
 		validateAvailability(command);
 
-		// 3. 수량 차감 (낙관적 락 기반)
-		decreaseAvailabilityCount(command);
+		// 3. 수량 차감 (낙관적 락 기반) 5회 retry
+		executeWithRetry(5, () -> decreaseAvailabilityCount(command));
 
 		// 4. 총 숙박 요금 계산
 		int totalPrice = calculateTotalPrice(command);
@@ -97,7 +99,7 @@ public class ReservationService {
 		);
 	}
 
-	private void decreaseAvailabilityCount(CreateReservationCommand command) {
+	private List<OriginRoomAvailability> decreaseAvailabilityCount(CreateReservationCommand command) {
 		List<OriginRoomAvailability> availabilities =
 			roomAvailabilityRepository.findAllByRoomTypeIdAndOpenDateBetween(
 				command.roomTypeId(), command.checkIn(), command.checkOut().minusDays(1)
@@ -112,6 +114,6 @@ public class ReservationService {
 		}
 
 		// 버전 기반 낙관적 락으로 saveAll 시점에 충돌 검증
-		roomAvailabilityRepository.saveAll(availabilities);
+		return roomAvailabilityRepository.saveAll(availabilities);
 	}
 }

@@ -1,7 +1,6 @@
 package com.reservation.customer.reservation.controller;
 
 import static com.reservation.support.response.ApiResponse.*;
-import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +13,7 @@ import com.reservation.auth.annotation.LoginUserId;
 import com.reservation.customer.auth.controller.AuthController;
 import com.reservation.customer.reservation.controller.request.RoomReservationRequest;
 import com.reservation.customer.reservation.service.ReservationService;
+import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
 import com.reservation.customer.reservation.service.dto.CreateReservationResult;
 import com.reservation.support.response.ApiResponse;
 
@@ -36,9 +36,8 @@ public class ReservationController {
 		@LoginUserId long memberId,
 		@RequestBody RoomReservationRequest request
 	) {
-		System.out.println("sadasdasdasdasdas    " + memberId);
-		CreateReservationResult result = executeWithRetry(5,
-			() -> reservationService.pessimisticCreateReservation(memberId, request.validateToCreateCommand()));
+		CreateReservationCommand command = request.validateToCreateCommand();
+		CreateReservationResult result = reservationService.pessimisticCreateReservation(memberId, command);
 
 		return ok(result);
 	}
