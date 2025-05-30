@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.customer.terms.controller.request.TermsSearchCondition;
+import com.reservation.customer.terms.repository.dto.SearchTerms;
 import com.reservation.customer.terms.service.TermsService;
-import com.reservation.customer.terms.service.dto.SearchTerms;
 import com.reservation.domain.terms.Terms;
 import com.reservation.support.response.ApiResponse;
 
@@ -31,7 +31,7 @@ public class TermsController {
 	public ApiResponse<Page<SearchTerms>> findTerms(
 		@Valid @RequestBody TermsSearchCondition condition
 	) {
-		Page<SearchTerms> termsPage = termsService.findTerms(condition);
+		Page<SearchTerms> termsPage = termsService.findTerms(condition.toPageRequest());
 
 		return ApiResponse.ok(termsPage);
 	}
