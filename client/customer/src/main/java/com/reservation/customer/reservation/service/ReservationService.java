@@ -1,18 +1,25 @@
 package com.reservation.customer.reservation.service;
 
+import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
+
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.reservation.customer.member.repository.JpaMemberRepository;
 import com.reservation.customer.reservation.repository.JpaReservationRepository;
 import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
 import com.reservation.customer.reservation.service.dto.CreateReservationResult;
 import com.reservation.customer.roomavailability.repository.JpaRoomAvailabilityRepository;
+import com.reservation.customer.roomtype.repository.JpaRoomTypeRepository;
+import com.reservation.domain.member.Member;
 import com.reservation.domain.reservation.Reservation;
 import com.reservation.domain.reservation.enums.ReservationStatus;
 import com.reservation.domain.roomavailability.OriginRoomAvailability;
+import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -21,43 +28,62 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservationService {
 	private final JpaReservationRepository reservationRepository;
+	private final JpaMemberRepository memberRepository;
 	private final JpaRoomAvailabilityRepository roomAvailabilityRepository;
+	private final JpaRoomTypeRepository roomTypeRepository;
 
+	@Value("${iamport.imp-uid}")
+	private String impUid;
+
+	/**
+	 * 낙관적 락을 사용하여 예약 생성
+	 * - 회원 존재 여부 확인
+	 * - 룸 타입 존재 여부 확인
+	 * - 예약 가능 여부 확인
+	 * - 수량 차감 (낙관적 락 기반) 5회 retry
+	 * - 총 숙박 요금 계산
+	 * - 임시 예약(PENDING) 생성
+	 */
 	@Transactional
-	public CreateReservationResult createReservation(Long memberId, CreateReservationCommand command) {
-		// 1. 예약 가능 여부 확인
+	public CreateReservationResult optimisticCreateReservation(long memberId, CreateReservationCommand command) {
+		// 0. 회원 존재 여부 확인
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("회원이 존재하지 않습니다."));
+
+		// 1. 예약 룸 정보 조회
+		RoomType roomType = roomTypeRepository.findById(command.roomTypeId())
+			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 타입이 존재하지 않습니다."));
+		// 2. 예약 가능 여부 확인
 		validateAvailability(command);
 
-		// 2. 수량 차감 (낙관적 락 기반)
-		decreaseAvailabilityCount(command);
+		// 3. 수량 차감 (낙관적 락 기반) 5회 retry
+		executeWithRetry(5, () -> decreaseAvailabilityCount(command));
 
-		// 3. 총 숙박 요금 계산
+		// 4. 총 숙박 요금 계산
 		int totalPrice = calculateTotalPrice(command);
 
 		// 4. 임시 예약(PENDING) 생성
 		Reservation reservation = reservationRepository.save(
 			Reservation.builder()
 				.roomTypeId(command.roomTypeId())
-				.memberId(memberId)
+				.memberId(member.getId())
 				.checkIn(command.checkIn())
 				.checkOut(command.checkOut())
 				.guestCount(command.guestCount())
-				.customerName(command.customerName())
-				.phoneNumber(command.phoneNumber())
-				.paymentMethod(command.paymentMethod())
+				.phoneNumber(member.getPhoneNumber())
 				.totalPrice(totalPrice)
 				.status(ReservationStatus.PENDING)
 				.build()
 		);
 
-		// 5. 결제 URL 생성 (PG 연동 / Mock)
-		String paymentUrl = generatePaymentUrl(reservation);
-
 		return new CreateReservationResult(
 			reservation.getId(),
+			member.getEmail(),
+			member.getPhoneNumber(),
+			roomType.getName(),
 			reservation.getStatus(),
 			reservation.getTotalPrice(),
-			paymentUrl
+			impUid
 		);
 	}
 
@@ -79,12 +105,7 @@ public class ReservationService {
 		);
 	}
 
-	private String generatePaymentUrl(Reservation reservation) {
-		// PG 연동 시 reservationId를 넘겨야 함
-		return "https://mock-pg.com/pay?reservationId=" + reservation.getId();
-	}
-
-	private void decreaseAvailabilityCount(CreateReservationCommand command) {
+	private List<OriginRoomAvailability> decreaseAvailabilityCount(CreateReservationCommand command) {
 		List<OriginRoomAvailability> availabilities =
 			roomAvailabilityRepository.findAllByRoomTypeIdAndOpenDateBetween(
 				command.roomTypeId(), command.checkIn(), command.checkOut().minusDays(1)
@@ -99,6 +120,6 @@ public class ReservationService {
 		}
 
 		// 버전 기반 낙관적 락으로 saveAll 시점에 충돌 검증
-		roomAvailabilityRepository.saveAll(availabilities);
+		return roomAvailabilityRepository.saveAll(availabilities);
 	}
 }

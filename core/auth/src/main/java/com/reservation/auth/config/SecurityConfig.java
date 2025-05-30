@@ -40,7 +40,7 @@ public class SecurityConfig {
 			)
 			.exceptionHandling(handler -> handler.authenticationEntryPoint(authenticationEntryPoint))
 			.httpBasic(AbstractHttpConfigurer::disable)
-			.csrf(AbstractHttpConfigurer::disable)
+			.cors().and().csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.logout().disable();
 

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +44,7 @@ public class AuthController {
 
 	@PostMapping("no-auth/login") //❗JWT auth 제외
 	@Operation(summary = "일반 로그인", description = "일반 고객 로그인 API 입니다, 로그인 성공 시 JWT 토큰을 발급합니다")
+	@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
 	public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
 		LoginSettingToken loginSettingToken = authService.login(request.email(), request.password());
 
@@ -59,6 +61,7 @@ public class AuthController {
 		return ResponseEntity.noContent()
 			.header(accessTokenHeader.name(), accessTokenHeader.value())
 			.header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+			.header("Access-Control-Expose-Headers", accessTokenHeader.name())
 			.build();
 	}
 
