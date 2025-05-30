@@ -3,6 +3,7 @@ package com.reservation.customer.reservation.controller.request;
 import java.time.LocalDate;
 
 import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
+import com.reservation.domain.reservation.ReservationPolicy;
 import com.reservation.support.exception.ErrorCode;
 
 public record RoomReservationRequest(
@@ -26,6 +27,9 @@ public record RoomReservationRequest(
 		}
 		if (guestCount == null || guestCount <= 0) {
 			throw ErrorCode.BAD_REQUEST.exception("투숙 인원은 1명 이상이어야 합니다.");
+		}
+		if (checkIn.plusDays(ReservationPolicy.MAX_RESERVATION_DAYS).isBefore(checkOut)) {
+			throw ErrorCode.BAD_REQUEST.exception("예약 가능 최대 기간은 30일 이내입니다.");
 		}
 
 		return new CreateReservationCommand(
