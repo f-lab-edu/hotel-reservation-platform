@@ -47,7 +47,7 @@ public class RoomAvailabilityController {
 		return ok(searchResults);
 	}
 
-	@GetMapping("{accommodationId}/rooms")
+	@GetMapping("/{accommodationId}/rooms")
 	@Operation(summary = "예약 가능한 객실 리스트 조회 API", description = "일반 사용자가 예약 가능한 객실 리스트를 조회합니다.")
 	public ApiResponse<List<AvailableRoomTypeResult>> findAvailableRoomTypes(
 		@PathVariable Long accommodationId,

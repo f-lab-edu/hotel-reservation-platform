@@ -7,6 +7,7 @@ import com.reservation.support.exception.ErrorCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,10 @@ public class OriginRoomAvailability extends BaseEntity {
 
 	@Column(nullable = false)
 	private Integer availableCount; // 예약 가능 개수
+
+	@Version
+	@Column(nullable = false)
+	private int version;
 
 	@Builder
 	public OriginRoomAvailability(Long id, long roomTypeId, LocalDate openDate, int price, int availableCount) {
@@ -50,5 +55,12 @@ public class OriginRoomAvailability extends BaseEntity {
 		this.openDate = openDate;
 		this.price = price;
 		this.availableCount = availableCount;
+	}
+
+	public void decreaseAvailableCount() {
+		if (this.availableCount <= 0) {
+			throw ErrorCode.CONFLICT.exception("해당 날짜의 객실 수량이 부족합니다.");
+		}
+		this.availableCount -= 1;
 	}
 }
