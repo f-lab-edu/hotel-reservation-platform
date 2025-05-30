@@ -8,13 +8,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.CsvRoomAvailability;
+import com.reservation.domain.roomavailability.RoomAvailabilityId;
 
-public interface JpaRoomAvailabilityRepository extends JpaRepository<RoomAvailability, Long> {
-	@Query("SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomTypeId, ra.date)  " +
-		"FROM RoomAvailability ra " +
-		"WHERE ra.roomTypeId IN :roomTypeIds " +
-		"AND ra.date BETWEEN :startDate AND :endDate")
+public interface JpaCsvRoomAvailabilityRepository extends JpaRepository<CsvRoomAvailability, RoomAvailabilityId> {
+	@Query(
+		"SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomTypeId, ra.openDate) "
+			+
+			"FROM CsvRoomAvailability ra " +
+			"WHERE ra.roomTypeId IN :roomTypeIds " +
+			"AND ra.openDate BETWEEN :startDate AND :endDate")
 	List<FindAvailabilityInRoomIdsResult> findExistingDatesByRoomIds(
 		@Param("roomTypeIds") List<Long> roomTypeIds,
 		@Param("startDate") LocalDate startDate,

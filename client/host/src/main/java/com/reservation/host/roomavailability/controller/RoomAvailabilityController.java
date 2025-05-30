@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reservation.auth.annotation.LoginUserId;
-import com.reservation.domain.roomavailability.RoomAvailability;
+import com.reservation.domain.roomavailability.OriginRoomAvailability;
 import com.reservation.host.roomavailability.controller.request.NewRoomAvailabilityRequest;
 import com.reservation.host.roomavailability.service.RoomAvailabilityService;
 import com.reservation.host.roomavailability.service.dto.DefaultRoomAvailabilityInfo;
@@ -72,13 +72,13 @@ public class RoomAvailabilityController {
 
 	@GetMapping("{roomTypeId}/availability")
 	@Operation(summary = "룸 가용 정보 조회", description = "숙박 업체가 룸 가용 조회합니다.")
-	public ApiResponse<List<RoomAvailability>> findRoomAvailability(
+	public ApiResponse<List<OriginRoomAvailability>> findRoomAvailability(
 		@PathVariable long roomTypeId,
 		@RequestParam LocalDate startDate,
 		@RequestParam LocalDate endDate,
 		@LoginUserId long hostId
 	) {
-		List<RoomAvailability> roomAvailabilities =
+		List<OriginRoomAvailability> roomAvailabilities =
 			availabilityService.findRoomAvailability(roomTypeId, hostId, startDate, endDate);
 
 		return ApiResponse.ok(roomAvailabilities);
