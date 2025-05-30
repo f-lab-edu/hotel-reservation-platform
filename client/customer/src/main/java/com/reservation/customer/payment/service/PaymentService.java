@@ -3,9 +3,12 @@ package com.reservation.customer.payment.service;
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import com.reservation.customer.roomavailability.repository.JpaRoomAvailabilityR
 import com.reservation.domain.payment.Payment;
 import com.reservation.domain.payment.enums.PaymentStatus;
 import com.reservation.domain.reservation.Reservation;
+import com.reservation.domain.reservation.enums.ReservationStatus;
 import com.reservation.domain.roomavailability.OriginRoomAvailability;
 import com.reservation.support.exception.ErrorCode;
 import com.siot.IamportRestClient.request.CancelData;
@@ -68,9 +72,17 @@ public class PaymentService {
 			.status(PaymentStatus.INITIATED)
 			.build();
 
-		// 결제 금액 검증
+		// 만약 10분 초과로 이미 예약이 취소된 경우
+		if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
+			// 이미 취소된 예약 -> 결제금액 취소(아임포트)
+			payment.markCancelled();
+			paymentRepository.save(payment);
+			return optimisticCancelPayment(reservation, iamportPayment.payment().getImpUid(), iamportPrice);
+		}
+
+		// 만약 10분 초과로 이미 예약이 취소된 경우 또는 결제 금액이 맞지 않는 경우
 		if (iamportPrice != reservationTotalPrice) {
-			// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
+			// 결제금액 위변조로 의심 -> 결제금액 취소(아임포트) 및 예약 취소 & 예약 수량 원복
 			payment.markCancelled();
 			paymentRepository.save(payment);
 			return optimisticCancelPayment(reservation, iamportPayment.payment().getImpUid(), iamportPrice);
@@ -127,54 +139,83 @@ public class PaymentService {
 			throw ErrorCode.CONFLICT.exception("결제 미완료 상태입니다. 다시 결제해주세요");
 		}
 
-		// 예약 조회
-		Reservation reservation = reservationRepository.findById(reservationId)
-			.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약된 내역이 없습니다."));
+		// 2. 비관적 락 처리 시작
+		RLock lock = getReservationLock(reservationId);
+		boolean isLocked = false;
+		try {
+			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isLocked) {
+				throw ErrorCode.CONFLICT.exception("해당 예약 건은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+			}
 
-		// 결제해야할 예약 금액
-		int reservationTotalPrice = reservation.getTotalPrice();
-		// 실 결제 금액
-		int iamportPrice = iamportPayment.payment().getAmount().intValue();
+			// 예약 조회
+			Reservation reservation = reservationRepository.findById(reservationId)
+				.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약된 내역이 없습니다."));
 
-		Payment payment = Payment.builder()
-			.paymentUid(paymentUid)
-			.price(iamportPrice)
-			.status(PaymentStatus.INITIATED)
-			.build();
+			// 결제해야할 예약 금액
+			int reservationTotalPrice = reservation.getTotalPrice();
+			// 실 결제 금액
+			int iamportPrice = iamportPayment.payment().getAmount().intValue();
 
-		// 결제 금액 검증
-		if (iamportPrice != reservationTotalPrice) {
-			// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
-			payment.markCancelled();
+			Payment payment = Payment.builder()
+				.paymentUid(paymentUid)
+				.price(iamportPrice)
+				.status(PaymentStatus.INITIATED)
+				.build();
+
+			// 10분 초과로 이미 예약이 취소된 경우
+			if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
+				// 이미 취소된 예약 -> 결제금액 취소(아임포트)
+				payment.markCancelled();
+				paymentRepository.save(payment);
+				CancelData cancelData = new CancelData(paymentUid, true, new BigDecimal(iamportPrice));
+				return new IamportPayment(iamport.cancelPaymentByImpUid(cancelData));
+			}
+
+			// 결제 금액이 맞지 않는 경우
+			if (iamportPrice != reservationTotalPrice) {
+				// 결제금액 위변조로 의심 -> 결제금액 취소(아임포트) 및 예약 취소 & 예약 수량 원복
+				payment.markCancelled();
+				paymentRepository.save(payment);
+				return redissonCancelPayment(reservation, iamportPayment.payment().getImpUid(), iamportPrice);
+			}
+
+			// 결제 완료
+			payment.markCompleted();
 			paymentRepository.save(payment);
-			return redissonCancelPayment(reservation, iamportPayment.payment().getImpUid(), iamportPrice);
+
+			// 예약 완료
+			reservation.markConfirmed();
+			reservationRepository.save(reservation);
+			return iamportPayment;
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			throw ErrorCode.CONFLICT.exception("결제 검증 처리 중 오류 발생");
+		} finally {
+			if (isLocked) {
+				lock.unlock();
+			}
 		}
-
-		// 결제 완료
-		payment.markCompleted();
-		paymentRepository.save(payment);
-
-		// 예약 완료
-		reservation.markConfirmed();
-		reservationRepository.save(reservation);
-		return iamportPayment;
 	}
 
-	// 아임포트 결제 취소 처리 -> 레디슨 락 기반
+	private RLock getReservationLock(long reservationId) {
+		String lockKey = "reservation:lock:" + reservationId;
+		return redisson.getLock(lockKey);
+	}
+
+	// 아임포트 결제 취소 처리 -> 낙관적 락 기반
 	private IamportPayment redissonCancelPayment(Reservation reservation, String paymentUid, int amount) {
 		// 1. 예약 취소
 		reservation.markCanceled();
 		reservationRepository.save(reservation);
 
-		// 2. 비관적 락 처리 시작
-		RLock lock = getReservationLock(reservation);
-
+		// 2. 예약 가능 수량 증가 (redisson 멀티 락 기반)
+		RLock lock = getReservationPeriodLock(reservation);
 		boolean isLocked = false;
 		try {
 			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-
 			if (!isLocked) {
-				throw ErrorCode.CONFLICT.exception("해당 객실은 현재 다른 예약 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+				throw ErrorCode.CONFLICT.exception("해당 객실은 현재 다른 예약 중에 있습니다. 잠시 후 다시 시도해 주세요.");
 			}
 
 			// 2. 예약 가능 수량 증가
@@ -183,10 +224,9 @@ public class PaymentService {
 			// 3. 결제 취소
 			CancelData cancelData = new CancelData(paymentUid, true, new BigDecimal(amount));
 			return new IamportPayment(iamport.cancelPaymentByImpUid(cancelData));
-
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			throw ErrorCode.INTERNAL_SERVER_ERROR.exception("예약 처리 중 오류 발생");
+			throw ErrorCode.CONFLICT.exception("예약 취소 및 가능 수량 증가 중 오류 발생: " + e.getMessage());
 		} finally {
 			if (isLocked) {
 				lock.unlock();
@@ -194,13 +234,17 @@ public class PaymentService {
 		}
 	}
 
-	private RLock getReservationLock(Reservation reservation) {
-		String lockKey =
-			"reservation:lock:"
-				+ reservation.getRoomTypeId()
-				+ ":" + reservation.getCheckIn() + ":"
-				+ reservation.getCheckOut();
+	private RLock getReservationPeriodLock(Reservation reservation) {
+		List<RLock> locks = new ArrayList<>();
+		LocalDate checkIn = reservation.getCheckIn();
+		LocalDate checkOut = reservation.getCheckOut();
 
-		return redisson.getLock(lockKey);
+		for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(
+			1)) {
+			String key = "reservation:lock:" + reservation.getRoomTypeId() + ":" + date;
+			locks.add(redisson.getLock(key));
+		}
+
+		return new RedissonMultiLock(locks.toArray(new RLock[0]));
 	}
 }

@@ -2,10 +2,13 @@ package com.reservation.customer.reservation.service;
 
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -151,9 +154,8 @@ public class ReservationService {
 		RoomType roomType = roomTypeRepository.findById(command.roomTypeId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 타입이 존재하지 않습니다."));
 
-		// 2. 비관적 락 처리 시작
-		RLock lock = getReservationLock(command);
-
+		// 2. 비관적 락 처리 시작 (redisson 멀티 락 기반)
+		RLock lock = getReservationPeriodLock(command);
 		boolean isLocked = false;
 		try {
 			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
@@ -205,10 +207,14 @@ public class ReservationService {
 		}
 	}
 
-	private RLock getReservationLock(CreateReservationCommand command) {
-		String lockKey =
-			"reservation:lock:" + command.roomTypeId() + ":" + command.checkIn() + ":" + command.checkOut();
+	private RLock getReservationPeriodLock(CreateReservationCommand command) {
+		List<RLock> locks = new ArrayList<>();
 
-		return redisson.getLock(lockKey);
+		for (LocalDate date = command.checkIn(); date.isBefore(command.checkOut()); date = date.plusDays(1)) {
+			String key = "reservation:lock:" + command.roomTypeId() + ":" + date;
+			locks.add(redisson.getLock(key));
+		}
+
+		return new RedissonMultiLock(locks.toArray(new RLock[0]));
 	}
 }
