@@ -32,12 +32,12 @@ public class ReservationController {
 	@PostMapping()
 	@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
 	@Operation(summary = "객실 예약 가계약 생성 API(낙관적 Lock 재시도 5회)", description = "결제 직전 상태의 임시 예약 정보를 생성합니다.")
-	public ApiResponse<CreateReservationResult> pessimisticCreateReservation(
+	public ApiResponse<CreateReservationResult> optimisticCreateReservation(
 		@LoginUserId long memberId,
 		@RequestBody RoomReservationRequest request
 	) {
 		CreateReservationCommand command = request.validateToCreateCommand();
-		CreateReservationResult result = reservationService.pessimisticCreateReservation(memberId, command);
+		CreateReservationResult result = reservationService.optimisticCreateReservation(memberId, command);
 
 		return ok(result);
 	}

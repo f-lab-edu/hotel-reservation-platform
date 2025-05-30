@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.reservation.customer.accommodation.repository.JpaAccommodationRepository;
 import com.reservation.customer.member.repository.JpaMemberRepository;
-import com.reservation.customer.payment.repository.JpaPaymentRepository;
 import com.reservation.customer.reservation.repository.JpaReservationRepository;
 import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
 import com.reservation.customer.reservation.service.dto.CreateReservationResult;
@@ -33,13 +31,21 @@ public class ReservationService {
 	private final JpaMemberRepository memberRepository;
 	private final JpaRoomAvailabilityRepository roomAvailabilityRepository;
 	private final JpaRoomTypeRepository roomTypeRepository;
-	private final JpaAccommodationRepository accommodationRepository;
-	private final JpaPaymentRepository paymentRepository;
+
 	@Value("${iamport.imp-uid}")
 	private String impUid;
 
+	/**
+	 * 낙관적 락을 사용하여 예약 생성
+	 * - 회원 존재 여부 확인
+	 * - 룸 타입 존재 여부 확인
+	 * - 예약 가능 여부 확인
+	 * - 수량 차감 (낙관적 락 기반) 5회 retry
+	 * - 총 숙박 요금 계산
+	 * - 임시 예약(PENDING) 생성
+	 */
 	@Transactional
-	public CreateReservationResult pessimisticCreateReservation(long memberId, CreateReservationCommand command) {
+	public CreateReservationResult optimisticCreateReservation(long memberId, CreateReservationCommand command) {
 		// 0. 회원 존재 여부 확인
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("회원이 존재하지 않습니다."));
