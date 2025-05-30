@@ -1,14 +1,16 @@
 package com.reservation.customer.reservation.service.dto;
 
+import java.time.LocalDate;
+
 import com.reservation.domain.reservation.enums.ReservationStatus;
 
-public record CreateReservationResult(
+public record CompleteReservationResult(
 	Long reservationId,
-	String memberEmail,
-	String memberPhoneNumber,
-	String roomTypeName,
 	ReservationStatus status,
-	int totalPrice,
-	String impUid
+	String accommodationName,
+	String roomTypeName,
+	LocalDate checkIn,
+	LocalDate checkOut,
+	int totalPrice
 ) {
 }
