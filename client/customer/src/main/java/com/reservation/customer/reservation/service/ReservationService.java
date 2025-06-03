@@ -211,11 +211,11 @@ public class ReservationService {
 			log.error(e.getMessage());
 			throw ErrorCode.INTERNAL_SERVER_ERROR.exception("예약 처리 중 오류 발생");
 		} finally {
-			if (isCheckInMonthLock) {
-				checkInMonthLock.unlock();
-			}
 			if (isCheckOutMonthLock) {
 				checkOutMonthLock.unlock();
+			}
+			if (isCheckInMonthLock) {
+				checkInMonthLock.unlock();
 			}
 		}
 	}

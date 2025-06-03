@@ -213,14 +213,14 @@ public class PaymentService {
 			log.error(e.getMessage());
 			throw ErrorCode.CONFLICT.exception("결제 검증 처리 중 오류 발생");
 		} finally {
-			if (isReservationLocked) {
-				reservationLock.unlock();
+			if (isCheckOutMonthLock) {
+				checkOutMonthLock.unlock();
 			}
 			if (isCheckInMonthLock) {
 				checkInMonthLock.unlock();
 			}
-			if (isCheckOutMonthLock) {
-				checkOutMonthLock.unlock();
+			if (isReservationLocked) {
+				reservationLock.unlock();
 			}
 		}
 	}
