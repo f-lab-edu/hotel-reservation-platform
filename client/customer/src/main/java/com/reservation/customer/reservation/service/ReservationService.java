@@ -2,13 +2,11 @@ package com.reservation.customer.reservation.service;
 
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
-import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -154,14 +152,26 @@ public class ReservationService {
 		RoomType roomType = roomTypeRepository.findById(command.roomTypeId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 타입이 존재하지 않습니다."));
 
-		// 2. 비관적 락 처리 시작 (redisson 멀티 락 기반)
-		RLock lock = getReservationPeriodLock(command);
-		boolean isLocked = false;
+		// 혹시 모를 데드락을 줄이기 위해, 멀티락 X -> 순서대로 락을 획득하는 방식으로 변경
+		// 2. 비관적 락 처리 시작 (redisson 락 기반)
+		YearMonth checkInMonth = YearMonth.from(command.checkIn());
+		YearMonth checkOutMonth = YearMonth.from(command.checkOut().minusDays(1));
+		RLock checkInMonthLock = redisson.getLock("reservation:lock:" + command.roomTypeId() + ":" + checkInMonth);
+		boolean isCheckInMonthLock = false;
+		RLock checkOutMonthLock = redisson.getLock("reservation:lock:" + command.roomTypeId() + ":" + checkOutMonth);
+		boolean isCheckOutMonthLock = false;
 		try {
-			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-
-			if (!isLocked) {
+			isCheckInMonthLock =
+				checkInMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isCheckInMonthLock) {
 				throw ErrorCode.CONFLICT.exception("해당 객실은 현재 다른 예약 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+			}
+			if (!checkInMonth.equals(checkOutMonth)) {
+				isCheckOutMonthLock =
+					checkOutMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+				if (!isCheckOutMonthLock) {
+					throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크아웃 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+				}
 			}
 
 			// 3. 예약 가능 여부 확인
@@ -201,20 +211,12 @@ public class ReservationService {
 			log.error(e.getMessage());
 			throw ErrorCode.INTERNAL_SERVER_ERROR.exception("예약 처리 중 오류 발생");
 		} finally {
-			if (isLocked) {
-				lock.unlock();
+			if (isCheckInMonthLock) {
+				checkInMonthLock.unlock();
+			}
+			if (isCheckOutMonthLock) {
+				checkOutMonthLock.unlock();
 			}
 		}
-	}
-
-	private RLock getReservationPeriodLock(CreateReservationCommand command) {
-		List<RLock> locks = new ArrayList<>();
-
-		for (LocalDate date = command.checkIn(); date.isBefore(command.checkOut()); date = date.plusDays(1)) {
-			String key = "reservation:lock:" + command.roomTypeId() + ":" + date;
-			locks.add(redisson.getLock(key));
-		}
-
-		return new RedissonMultiLock(locks.toArray(new RLock[0]));
 	}
 }

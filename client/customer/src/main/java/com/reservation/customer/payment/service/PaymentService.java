@@ -3,12 +3,10 @@ package com.reservation.customer.payment.service;
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -39,6 +37,7 @@ public class PaymentService {
 	private static final long LOCK_WAIT_TIME_SECONDS = 5L;
 
 	private final Iamport iamport;
+
 	private final JpaPaymentRepository paymentRepository;
 	private final JpaReservationRepository reservationRepository;
 	private final JpaRoomAvailabilityRepository roomAvailabilityRepository;
@@ -139,18 +138,40 @@ public class PaymentService {
 			throw ErrorCode.CONFLICT.exception("결제 미완료 상태입니다. 다시 결제해주세요");
 		}
 
+		// 혹시 모를 데드락을 줄이기 위해, 멀티락 X -> 순서대로 락을 획득하는 방식으로 변경
 		// 2. 비관적 락 처리 시작
-		RLock lock = getReservationLock(reservationId);
-		boolean isLocked = false;
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약된 내역이 없습니다."));
+		RLock reservationLock = redisson.getLock("reservation:lock:" + reservationId);
+		boolean isReservationLocked = false;
+
+		// 3. 예약 기간에 대한 락 생성
+		long roomTypeId = reservation.getRoomTypeId();
+		YearMonth checkInMonth = YearMonth.from(reservation.getCheckIn());
+		YearMonth checkOutMonth = YearMonth.from(reservation.getCheckOut().minusDays(1));
+		RLock checkInMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkInMonth);
+		boolean isCheckInMonthLock = false;
+		RLock checkOutMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkOutMonth);
+		boolean isCheckOutMonthLock = false;
+
 		try {
-			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-			if (!isLocked) {
+			isReservationLocked =
+				reservationLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isReservationLocked) {
 				throw ErrorCode.CONFLICT.exception("해당 예약 건은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
 			}
-
-			// 예약 조회
-			Reservation reservation = reservationRepository.findById(reservationId)
-				.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약된 내역이 없습니다."));
+			isCheckInMonthLock =
+				checkInMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isCheckInMonthLock) {
+				throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크인 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+			}
+			if (!checkInMonth.equals(checkOutMonth)) {
+				isCheckOutMonthLock =
+					checkOutMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+				if (!isCheckOutMonthLock) {
+					throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크아웃 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+				}
+			}
 
 			// 결제해야할 예약 금액
 			int reservationTotalPrice = reservation.getTotalPrice();
@@ -192,59 +213,29 @@ public class PaymentService {
 			log.error(e.getMessage());
 			throw ErrorCode.CONFLICT.exception("결제 검증 처리 중 오류 발생");
 		} finally {
-			if (isLocked) {
-				lock.unlock();
+			if (isReservationLocked) {
+				reservationLock.unlock();
+			}
+			if (isCheckInMonthLock) {
+				checkInMonthLock.unlock();
+			}
+			if (isCheckOutMonthLock) {
+				checkOutMonthLock.unlock();
 			}
 		}
 	}
 
-	private RLock getReservationLock(long reservationId) {
-		String lockKey = "reservation:lock:" + reservationId;
-		return redisson.getLock(lockKey);
-	}
-
-	// 아임포트 결제 취소 처리 -> 낙관적 락 기반
+	// 아임포트 결제 취소 처리: 레디슨 락(비관적) 기반이기 때문에 retry 없이 바로 처리
 	private IamportPayment redissonCancelPayment(Reservation reservation, String paymentUid, int amount) {
 		// 1. 예약 취소
 		reservation.markCanceled();
 		reservationRepository.save(reservation);
 
-		// 2. 예약 가능 수량 증가 (redisson 멀티 락 기반)
-		RLock lock = getReservationPeriodLock(reservation);
-		boolean isLocked = false;
-		try {
-			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-			if (!isLocked) {
-				throw ErrorCode.CONFLICT.exception("해당 객실은 현재 다른 예약 중에 있습니다. 잠시 후 다시 시도해 주세요.");
-			}
+		// 2. 예약 가능 수량 증가
+		increaseAvailabilityCount(reservation);
 
-			// 2. 예약 가능 수량 증가
-			increaseAvailabilityCount(reservation);
-
-			// 3. 결제 취소
-			CancelData cancelData = new CancelData(paymentUid, true, new BigDecimal(amount));
-			return new IamportPayment(iamport.cancelPaymentByImpUid(cancelData));
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			throw ErrorCode.CONFLICT.exception("예약 취소 및 가능 수량 증가 중 오류 발생: " + e.getMessage());
-		} finally {
-			if (isLocked) {
-				lock.unlock();
-			}
-		}
-	}
-
-	private RLock getReservationPeriodLock(Reservation reservation) {
-		List<RLock> locks = new ArrayList<>();
-		LocalDate checkIn = reservation.getCheckIn();
-		LocalDate checkOut = reservation.getCheckOut();
-
-		for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(
-			1)) {
-			String key = "reservation:lock:" + reservation.getRoomTypeId() + ":" + date;
-			locks.add(redisson.getLock(key));
-		}
-
-		return new RedissonMultiLock(locks.toArray(new RLock[0]));
+		// 3. 결제 취소
+		CancelData cancelData = new CancelData(paymentUid, true, new BigDecimal(amount));
+		return new IamportPayment(iamport.cancelPaymentByImpUid(cancelData));
 	}
 }
