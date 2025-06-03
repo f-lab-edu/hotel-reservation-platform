@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ReservationAutoCancelTasklet implements Tasklet {
-	private static final long MAX_LOCK_WAIT_TIME_SECONDS = 10L; // 락 대기 최대 시간
+	private static final long MAX_LOCK_WAIT_TIME_SECONDS = 10L;
 	private static final long LOCK_WAIT_TIME_SECONDS = 5L;
 
 	private final RedissonClient redisson;

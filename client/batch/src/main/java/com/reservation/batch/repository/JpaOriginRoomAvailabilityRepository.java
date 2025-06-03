@@ -27,7 +27,7 @@ public interface JpaOriginRoomAvailabilityRepository extends JpaRepository<Origi
 		"WHERE ra.roomTypeId = :roomTypeId " +
 		"AND ra.openDate BETWEEN :startDate AND :endDate")
 	List<OriginRoomAvailability> findExistingDatesByRoomId(
-		@Param("roomTypeIds") Long roomTypeId,
+		@Param("roomTypeId") Long roomTypeId,
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDate endDate);
 }

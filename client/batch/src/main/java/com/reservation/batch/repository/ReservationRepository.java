@@ -29,7 +29,7 @@ public class ReservationRepository {
 
 		List<Reservation> results = em.createQuery(
 				"SELECT r FROM Reservation r " +
-					"WHERE r.status = 'PENDING' AND r.id >= :lastSeenId AND r.createdAt >= :beforeTenMinutes " +
+					"WHERE r.status = 'PENDING' AND r.id >= :lastSeenId AND r.createdAt <= :beforeTenMinutes " +
 					"ORDER BY r.id ASC", Reservation.class)
 			.setParameter("lastSeenId", lastSeenId)
 			.setParameter("beforeTenMinutes", beforeTenMinutes)

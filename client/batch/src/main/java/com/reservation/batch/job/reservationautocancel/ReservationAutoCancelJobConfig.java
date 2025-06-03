@@ -35,7 +35,7 @@ public class ReservationAutoCancelJobConfig {
 		String stepName = "reservationAutoCancelStep";
 
 		return new StepBuilder(stepName, jobRepository)
-			.tasklet(reservationAutoCancelTasklet)
+			.tasklet(reservationAutoCancelTasklet, transactionManager)
 			.build();
 	}
 }
