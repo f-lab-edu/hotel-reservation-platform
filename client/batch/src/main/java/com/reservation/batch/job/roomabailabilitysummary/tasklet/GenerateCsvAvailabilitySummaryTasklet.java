@@ -1,4 +1,4 @@
-package com.reservation.batch.job.openroomavailability.loadinfile.tasklet;
+package com.reservation.batch.job.roomabailabilitysummary.tasklet;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,9 +21,9 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.job.openroomavailability.loadinfile.processor.CsvOpenAvailabilityTaskletProcessor;
-import com.reservation.batch.job.openroomavailability.loadinfile.writer.GenerateCsvOpenAvailabilityWriter;
-import com.reservation.batch.job.openroomavailability.taskletStep.reader.RoomAutoPolicyTaskletReader;
+import com.reservation.batch.job.roomabailabilitysummary.processor.CsvRoomAvailabilitySummaryProcessor;
+import com.reservation.batch.job.roomabailabilitysummary.reader.RoomAutoAvailabilityPolicyReader;
+import com.reservation.batch.job.roomabailabilitysummary.writer.GenerateCsvRoomAvailabilitySummaryWriter;
 import com.reservation.batch.repository.dto.CursorPage;
 import com.reservation.batch.utils.Perf;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
@@ -36,22 +36,22 @@ import lombok.extern.slf4j.Slf4j;
 @StepScope
 @RequiredArgsConstructor
 @Slf4j
-public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
-	private static final int BASE_LINE_WRITE_COUNT = 700000;
-	private static final int MAX_WRITE_COUNT = 800000;
+public class GenerateCsvAvailabilitySummaryTasklet implements Tasklet {
+	private static final int BASE_LINE_WRITE_COUNT = 300000;
+	private static final int MAX_WRITE_COUNT = 400000;
 	private static final String PREFIX_FILE_NAME = "availability";
 	private static final String FILE_EXTENSION = ".csv";
 	public static final String STEP_CSV_ATTRIBUTE_NAME = "csvFilePaths";
 
-	private final RoomAutoPolicyTaskletReader autoPolicyReader;
-	private final CsvOpenAvailabilityTaskletProcessor openAvailabilityProcessor;
-	private final GenerateCsvOpenAvailabilityWriter generateCsvWriter;
+	private final RoomAutoAvailabilityPolicyReader reader;
+	private final CsvRoomAvailabilitySummaryProcessor processor;
+	private final GenerateCsvRoomAvailabilitySummaryWriter writer;
 
 	private final Path basePath = createDirectories();
 	private final Set<String> csvFilePaths = new HashSet<>();
 
 	@Override
-	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
 		// 성능 측정을 위한 시간 로깅
 		Perf perf = new Perf();
 
@@ -62,7 +62,7 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		ReadProcessCombineResult combineResult = combineReaderProcessor(lastSeenId, contribution, perf);
 
 		// Output 결과 CSV 파일로 저장
-		generateCsvAvailabilities(combineResult.outputAvailabilities, perf);
+		generateCsvAvailabilities(combineResult.outputAvailabilitySummaries, perf);
 
 		return handleExecuteResult(combineResult.hasNext, combineResult.lastSeenId, contribution, chunkContext);
 	}
@@ -77,13 +77,6 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		throw ErrorCode.CONFLICT.exception("Invalid lastSeenId type: " + lastSeenId.getClass().getName());
 	}
 
-	private record ReadProcessCombineResult(
-		boolean hasNext,
-		Long lastSeenId,
-		List<String[]> outputAvailabilities
-	) {
-	}
-
 	// Output 임계치까지 [read - processor] 반복 수행
 	private ReadProcessCombineResult combineReaderProcessor(
 		Long lastSeenId,
@@ -95,7 +88,7 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		List<String[]> outputResult = new ArrayList<>(MAX_WRITE_COUNT);
 
 		while (!outputThreshold) {
-			CursorPage<RoomAutoAvailabilityPolicy, Long> autoPolicyCursorPage = autoPolicyReader.read(lastSeenId);
+			CursorPage<RoomAutoAvailabilityPolicy, Long> autoPolicyCursorPage = reader.read(lastSeenId);
 			contribution.incrementReadCount();
 
 			List<RoomAutoAvailabilityPolicy> inputAutoPolicies = autoPolicyCursorPage.content();
@@ -103,10 +96,10 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 
 			lastSeenId = autoPolicyCursorPage.nextCursor();
 
-			List<String[]> outputAvailabilities = openAvailabilityProcessor.process(inputAutoPolicies);
-			perf.log("Output rows", outputAvailabilities.size());
+			List<String[]> outputAvailabilitySummaries = processor.process(inputAutoPolicies);
+			perf.log("Output rows", outputAvailabilitySummaries.size());
 
-			outputResult.addAll(outputAvailabilities);
+			outputResult.addAll(outputAvailabilitySummaries);
 
 			if (!autoPolicyCursorPage.hasNext()) {
 				hasNext = false;
@@ -116,6 +109,13 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		}
 
 		return new ReadProcessCombineResult(hasNext, lastSeenId, outputResult);
+	}
+
+	private record ReadProcessCombineResult(
+		boolean hasNext,
+		Long lastSeenId,
+		List<String[]> outputAvailabilitySummaries
+	) {
 	}
 
 	private void generateCsvAvailabilities(
@@ -140,7 +140,7 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 				String fileName = PREFIX_FILE_NAME + yearMonths.get(i) + FILE_EXTENSION;
 				Path filePath = Path.of(basePath.toString(), fileName);
 
-				generateCsvWriter.write(writeChunk, filePath);
+				writer.write(writeChunk, filePath);
 				perf.log(fileName + " Write rows", writeChunk.size());
 
 				csvFilePaths.add(filePath.toAbsolutePath().toString());
@@ -154,8 +154,8 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		// 디렉토리 형식: 2025-05-14_20:21
 		String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm"));
 
-		// 최종 디렉토리 경로: tmp/batch/openroom/2025-05-14_20:21
-		Path dirPath = Path.of("tmp", "batch", "openroom", timestamp);
+		// 최종 디렉토리 경로: tmp/batch/summary/2025-05-14_20:21
+		Path dirPath = Path.of("tmp", "batch", "summary", timestamp);
 		try {
 			return Files.createDirectories(dirPath);
 		} catch (Exception e) {

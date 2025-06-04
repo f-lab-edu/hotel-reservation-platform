@@ -1,4 +1,4 @@
-package com.reservation.batch.job.openroomavailability.taskletStep.reader;
+package com.reservation.batch.job.roomabailabilitysummary.reader;
 
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -17,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 @StepScope
 @RequiredArgsConstructor
 @Slf4j
-public class RoomAutoPolicyTaskletReader {
-	private static final int READ_SIZE = 5100;
+public class RoomAutoAvailabilityPolicyReader {
+	private static final int READ_SIZE = 1000;
 
-	private final RoomAutoAvailabilityPolicyRepository availabilityRepository;
+	private final RoomAutoAvailabilityPolicyRepository autoPolicyRepository;
 
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;
@@ -31,6 +31,6 @@ public class RoomAutoPolicyTaskletReader {
 			throw ErrorCode.CONFLICT.exception("Job 중단 요청됨 → Reader 중단");
 		}
 
-		return availabilityRepository.fetchNextPage(lastSeenId, READ_SIZE);
+		return autoPolicyRepository.fetchNextPage(lastSeenId, READ_SIZE);
 	}
 }

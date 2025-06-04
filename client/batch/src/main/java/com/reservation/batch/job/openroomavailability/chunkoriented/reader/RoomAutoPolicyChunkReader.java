@@ -8,7 +8,7 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.repository.RoomAvailabilityRepository;
+import com.reservation.batch.repository.RoomAutoAvailabilityPolicyRepository;
 import com.reservation.batch.repository.dto.CursorPage;
 import com.reservation.batch.utils.Perf;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RoomAutoPolicyChunkReader implements ItemReader<List<RoomAutoAvailabilityPolicy>> {
 	private static final int READ_SIZE = 600;
 
-	private final RoomAvailabilityRepository availabilityRepository;
+	private final RoomAutoAvailabilityPolicyRepository availabilityRepository;
 
 	private Long lastSeenId = null;
 	private boolean finished = false;
