@@ -3,8 +3,8 @@ package com.reservation.customer.payment.service;
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.api.RLock;
@@ -16,12 +16,12 @@ import com.reservation.customer.payment.repository.JpaPaymentRepository;
 import com.reservation.customer.payment.service.dto.IamportPayment;
 import com.reservation.customer.payment.service.iamport.Iamport;
 import com.reservation.customer.reservation.repository.JpaReservationRepository;
-import com.reservation.customer.roomavailability.repository.JpaRoomAvailabilityRepository;
+import com.reservation.customer.roomavailabilitysummary.repository.JpaRoomAvailabilitySummaryRepository;
 import com.reservation.domain.payment.Payment;
 import com.reservation.domain.payment.enums.PaymentStatus;
 import com.reservation.domain.reservation.Reservation;
 import com.reservation.domain.reservation.enums.ReservationStatus;
-import com.reservation.domain.roomavailability.OriginRoomAvailability;
+import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 import com.reservation.support.exception.ErrorCode;
 import com.siot.IamportRestClient.request.CancelData;
 
@@ -40,7 +40,8 @@ public class PaymentService {
 
 	private final JpaPaymentRepository paymentRepository;
 	private final JpaReservationRepository reservationRepository;
-	private final JpaRoomAvailabilityRepository roomAvailabilityRepository;
+	private final JpaRoomAvailabilitySummaryRepository jpaAvailabilitySummaryRepository;
+	// private final RoomAvailabilitySummaryRepository availabilitySummaryRepository;
 
 	private final RedissonClient redisson;
 
@@ -112,18 +113,22 @@ public class PaymentService {
 	}
 
 	// 예약 가능 수량 증가
-	private List<OriginRoomAvailability> increaseAvailabilityCount(Reservation reservation) {
-		List<OriginRoomAvailability> availabilities =
-			roomAvailabilityRepository.findAllByRoomTypeIdAndOpenDateBetween(
-				reservation.getRoomTypeId(), reservation.getCheckIn(), reservation.getCheckOut().minusDays(1)
-			);
+	private RoomAvailabilitySummary increaseAvailabilityCount(Reservation reservation) {
 
-		for (OriginRoomAvailability availability : availabilities) {
-			availability.increaseAvailableCount();
-		}
+		long roomTypeId = reservation.getRoomTypeId();
+		LocalDate checkIn = reservation.getCheckIn();
+		LocalDate checkOut = reservation.getCheckOut();
+
+		RoomAvailabilitySummary availabilitySummary =
+			jpaAvailabilitySummaryRepository.findOneByRoomTypeIdAndCheckInDate(roomTypeId, checkIn)
+				.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약 가능 수량이 없습니다."));
+
+		int requiredDayCount = (int)ChronoUnit.DAYS.between(checkIn, checkOut);
+		availabilitySummary.increaseAvailability(requiredDayCount);
+		availabilitySummary.prePersist();
 
 		// 버전 기반 낙관적 락으로 saveAll 시점에 충돌 검증
-		return roomAvailabilityRepository.saveAll(availabilities);
+		return jpaAvailabilitySummaryRepository.save(availabilitySummary);
 	}
 
 	// 결제 검증 과정에서 레디슨 락을 사용하여 예약 가능 수량을 증가시키는 방식
@@ -139,20 +144,15 @@ public class PaymentService {
 		}
 
 		// 혹시 모를 데드락을 줄이기 위해, 멀티락 X -> 순서대로 락을 획득하는 방식으로 변경
-		// 2. 비관적 락 처리 시작
+		// 비관적 락 처리 시작
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약된 내역이 없습니다."));
 		RLock reservationLock = redisson.getLock("reservation:lock:" + reservationId);
 		boolean isReservationLocked = false;
 
-		// 3. 예약 기간에 대한 락 생성
 		long roomTypeId = reservation.getRoomTypeId();
-		YearMonth checkInMonth = YearMonth.from(reservation.getCheckIn());
-		YearMonth checkOutMonth = YearMonth.from(reservation.getCheckOut().minusDays(1));
-		RLock checkInMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkInMonth);
-		boolean isCheckInMonthLock = false;
-		RLock checkOutMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkOutMonth);
-		boolean isCheckOutMonthLock = false;
+		RLock checkInLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + reservation.getCheckIn());
+		boolean isCheckInLock = false;
 
 		try {
 			isReservationLocked =
@@ -160,17 +160,9 @@ public class PaymentService {
 			if (!isReservationLocked) {
 				throw ErrorCode.CONFLICT.exception("해당 예약 건은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
 			}
-			isCheckInMonthLock =
-				checkInMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-			if (!isCheckInMonthLock) {
+			isCheckInLock = checkInLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isCheckInLock) {
 				throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크인 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
-			}
-			if (!checkInMonth.equals(checkOutMonth)) {
-				isCheckOutMonthLock =
-					checkOutMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-				if (!isCheckOutMonthLock) {
-					throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크아웃 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
-				}
 			}
 
 			// 결제해야할 예약 금액
@@ -213,11 +205,8 @@ public class PaymentService {
 			log.error(e.getMessage());
 			throw ErrorCode.CONFLICT.exception("결제 검증 처리 중 오류 발생");
 		} finally {
-			if (isCheckOutMonthLock) {
-				checkOutMonthLock.unlock();
-			}
-			if (isCheckInMonthLock) {
-				checkInMonthLock.unlock();
+			if (isCheckInLock) {
+				checkInLock.unlock();
 			}
 			if (isReservationLocked) {
 				reservationLock.unlock();

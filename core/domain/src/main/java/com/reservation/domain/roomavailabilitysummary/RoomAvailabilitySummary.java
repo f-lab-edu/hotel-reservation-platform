@@ -15,6 +15,7 @@ import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -209,6 +210,10 @@ public class RoomAvailabilitySummary extends BaseEntity {
 	@Column(nullable = true)
 	private Integer totalPrice30;
 
+	@Version
+	@Column(nullable = false)
+	private int version;
+
 	@Transient
 	private List<StayStat> stayStats = new ArrayList<>(30);
 
@@ -312,7 +317,7 @@ public class RoomAvailabilitySummary extends BaseEntity {
 
 	@PrePersist
 	@PreUpdate
-	private void prePersist() {
+	public void prePersist() {
 		for (int i = 1; i <= 30; i++) {
 			StayStat stat = stayStats.get(i - 1);
 			setFieldValue("availableCount" + i, stat.availableCount());
@@ -339,5 +344,38 @@ public class RoomAvailabilitySummary extends BaseEntity {
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	public void decreaseAvailability(int stayDayCount) {
+		if (stayDayCount <= 0 || stayDayCount > 30) {
+			throw ErrorCode.BAD_REQUEST.exception("예약 일수는 1일 이상 30일 이하만 가능합니다.");
+		}
+
+		for (int i = stayDayCount; i <= 30; i++) {
+			StayStat stat = stayStats.get(i - 1);
+			if (stat.availableCount() <= 0) {
+				throw ErrorCode.CONFLICT.exception("해당 기간(" + i + "박)의 남은 수량이 부족합니다.");
+			}
+			stayStats.set(i - 1, stat.decreaseCount());
+		}
+	}
+
+	public void increaseAvailability(int stayDayCount) {
+		if (stayDayCount <= 0 || stayDayCount > 30) {
+			throw ErrorCode.BAD_REQUEST.exception("예약 일수는 1일 이상 30일 이하만 가능합니다.");
+		}
+
+		for (int i = stayDayCount; i <= 30; i++) {
+			stayStats.set(i - 1, stayStats.get(i - 1).increaseCount());
+		}
+	}
+
+	public int getTotalPrice(int stayDayCount) {
+		if (stayDayCount <= 0 || stayDayCount > 30) {
+			throw ErrorCode.BAD_REQUEST.exception("예약 일수는 1일 이상 30일 이하만 가능합니다.");
+		}
+
+		StayStat stat = stayStats.get(stayDayCount - 1);
+		return stat.totalPrice();
 	}
 }

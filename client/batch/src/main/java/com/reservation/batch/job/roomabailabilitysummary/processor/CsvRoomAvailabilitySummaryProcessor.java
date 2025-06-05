@@ -14,7 +14,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.repository.JpaRoomAvailabilitySummary;
+import com.reservation.batch.repository.JpaRoomAvailabilitySummaryRepository;
 import com.reservation.batch.repository.JpaRoomPricingPolicyRepository;
 import com.reservation.batch.repository.JpaRoomTypeRepository;
 import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
@@ -34,7 +34,7 @@ public class CsvRoomAvailabilitySummaryProcessor {
 	private static final int MAX_PLUS_DAYS = 180;
 
 	private final JpaRoomTypeRepository roomTypeRepository;
-	private final JpaRoomAvailabilitySummary availabilitySummaryRepository;
+	private final JpaRoomAvailabilitySummaryRepository availabilitySummaryRepository;
 	private final JpaRoomPricingPolicyRepository pricingPolicyRepository;
 
 	@Value("#{stepExecution.jobExecution}")

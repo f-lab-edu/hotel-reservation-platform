@@ -2,6 +2,7 @@ package com.reservation.batch.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult;
 import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 
-public interface JpaRoomAvailabilitySummary extends JpaRepository<RoomAvailabilitySummary, Long> {
+public interface JpaRoomAvailabilitySummaryRepository extends JpaRepository<RoomAvailabilitySummary, Long> {
 
 	@Query(
 		"SELECT new com.reservation.batch.repository.dto.FindAvailabilityInRoomIdsResult(ra.roomTypeId, ra.checkInDate) "
@@ -22,4 +23,6 @@ public interface JpaRoomAvailabilitySummary extends JpaRepository<RoomAvailabili
 		@Param("roomTypeIds") List<Long> roomTypeIds,
 		@Param("startDate") LocalDate startDate,
 		@Param("endDate") LocalDate endDate);
+
+	Optional<RoomAvailabilitySummary> findOneByRoomTypeIdAndCheckInDate(Long roomTypeId, LocalDate checkInDate);
 }

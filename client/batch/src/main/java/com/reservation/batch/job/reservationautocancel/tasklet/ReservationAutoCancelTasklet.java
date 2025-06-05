@@ -1,8 +1,6 @@
 package com.reservation.batch.job.reservationautocancel.tasklet;
 
-import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.api.RLock;
@@ -15,12 +13,12 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.reservation.batch.repository.JpaOriginRoomAvailabilityRepository;
 import com.reservation.batch.repository.JpaReservationRepository;
+import com.reservation.batch.repository.JpaRoomAvailabilitySummaryRepository;
 import com.reservation.batch.repository.ReservationRepository;
 import com.reservation.batch.repository.dto.Cursor;
 import com.reservation.domain.reservation.Reservation;
-import com.reservation.domain.roomavailability.OriginRoomAvailability;
+import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 import com.reservation.support.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +36,7 @@ public class ReservationAutoCancelTasklet implements Tasklet {
 
 	private final JpaReservationRepository jpaReservationRepository;
 	private final ReservationRepository reservationRepository;
-	private final JpaOriginRoomAvailabilityRepository roomAvailabilityRepository;
+	private final JpaRoomAvailabilitySummaryRepository jpaAvailabilitySummaryRepository;
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
@@ -75,14 +73,9 @@ public class ReservationAutoCancelTasklet implements Tasklet {
 		RLock reservationLock = redisson.getLock("reservation:lock:" + reservation.getId());
 		boolean isReservationLocked = false;
 
-		// 예약 기간에 대한 레디슨 락 생성
 		long roomTypeId = reservation.getRoomTypeId();
-		YearMonth checkInMonth = YearMonth.from(reservation.getCheckIn());
-		YearMonth checkOutMonth = YearMonth.from(reservation.getCheckOut().minusDays(1));
-		RLock checkInMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkInMonth);
-		boolean isCheckInMonthLock = false;
-		RLock checkOutMonthLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + checkOutMonth);
-		boolean isCheckOutMonthLock = false;
+		RLock checkInLock = redisson.getLock("reservation:lock:" + roomTypeId + ":" + reservation.getCheckIn());
+		boolean isCheckInLock = false;
 
 		try {
 			isReservationLocked =
@@ -90,41 +83,30 @@ public class ReservationAutoCancelTasklet implements Tasklet {
 			if (!isReservationLocked) {
 				throw ErrorCode.CONFLICT.exception("해당 예약 건은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
 			}
-			isCheckInMonthLock =
-				checkInMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-			if (!isCheckInMonthLock) {
+			isCheckInLock = checkInLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isCheckInLock) {
 				throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크인 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
 			}
-			if (!checkInMonth.equals(checkOutMonth)) {
-				isCheckOutMonthLock =
-					checkOutMonthLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-				if (!isCheckOutMonthLock) {
-					throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크아웃 월은 현재 다른 결제 처리 중입니다. 잠시 후 다시 시도해 주세요.");
-				}
-			}
+
 			reservation.markCanceled();
 			jpaReservationRepository.save(reservation);
 
-			List<OriginRoomAvailability> availabilities = roomAvailabilityRepository.findExistingDatesByRoomId(
-				roomTypeId, reservation.getCheckIn(), reservation.getCheckOut().minusDays(1));
+			RoomAvailabilitySummary availabilitySummary =
+				jpaAvailabilitySummaryRepository.findOneByRoomTypeIdAndCheckInDate(roomTypeId, reservation.getCheckIn())
+					.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약 가능한 룸 정보가 없습니다."));
 
-			long availableCount = ChronoUnit.DAYS.between(reservation.getCheckIn(), reservation.getCheckOut());
-			if (availabilities.isEmpty() || availabilities.size() < availableCount) {
-				throw ErrorCode.CONFLICT.exception("해당 예약 건의 체크인/체크아웃 날짜에 대한 룸 가용성이 충분하지 않습니다.");
-			}
-			for (OriginRoomAvailability availability : availabilities) {
-				availability.increaseAvailableCount();
-				roomAvailabilityRepository.save(availability);
-			}
+			int requiredDayCount = (int)ChronoUnit.DAYS.between(reservation.getCheckIn(), reservation.getCheckOut());
+
+			availabilitySummary.increaseAvailability(requiredDayCount);
+			availabilitySummary.prePersist();
+
+			jpaAvailabilitySummaryRepository.save(availabilitySummary);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			throw ErrorCode.CONFLICT.exception(e.getMessage());
 		} finally {
-			if (isCheckOutMonthLock) {
-				checkOutMonthLock.unlock();
-			}
-			if (isCheckInMonthLock) {
-				checkInMonthLock.unlock();
+			if (isCheckInLock) {
+				checkInLock.unlock();
 			}
 			if (isReservationLocked) {
 				reservationLock.unlock();
