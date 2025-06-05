@@ -22,8 +22,9 @@ import lombok.NoArgsConstructor;
 		targetClass = RoomAvailabilitySearchResult.class,
 		columns = {
 			@ColumnResult(name = "accommodation_id", type = Long.class),
+			@ColumnResult(name = "room_type_id", type = Long.class),
 			@ColumnResult(name = "accommodation_name", type = String.class),
-			@ColumnResult(name = "average_price", type = Integer.class)
+			@ColumnResult(name = "total_price", type = Integer.class),
 		}
 	)
 )
