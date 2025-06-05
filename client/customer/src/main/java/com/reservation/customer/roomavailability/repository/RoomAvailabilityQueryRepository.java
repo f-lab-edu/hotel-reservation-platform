@@ -21,7 +21,6 @@ public class RoomAvailabilityQueryRepository {
 
 	public PageImpl<RoomAvailabilitySearchResult> searchRoomAvailability(
 		LocalDate checkIn,
-		LocalDate checkOut,
 		long requiredDayCount,
 		int capacity,
 		SearchAvailableRoomSortField sortField,
@@ -32,64 +31,48 @@ public class RoomAvailabilityQueryRepository {
 
 		// 1. 정렬 구문
 		String orderClause = switch (sortField) {
-			case SearchAvailableRoomSortField.LOWEST_PRICE -> "ORDER BY average_price DESC";
-			default -> "ORDER BY average_price ASC";
+			case SearchAvailableRoomSortField.LOWEST_PRICE ->
+				"ORDER BY total_price%d DESC, room_type_id ASC".formatted(requiredDayCount);
+			default -> "ORDER BY total_price%d ASC, room_type_id ASC".formatted(requiredDayCount);
 		};
 
 		// 2. 본문 쿼리
 		String mainSql = """
-			SELECT accommodation_id, accommodation_name, average_price
-			FROM (
-			    SELECT 
-			        acc.id AS accommodation_id,
-			        acc.name AS accommodation_name,
-			        FLOOR(SUM(ra.price) / :requiredDayCount) AS average_price,
-			        ROW_NUMBER() OVER (
-			            PARTITION BY acc.id 
-			            ORDER BY SUM(ra.price) / :requiredDayCount ASC
-			        ) AS row_num
-			    FROM room_availability ra
-			    JOIN room_type rt ON ra.room_type_id = rt.id
-			    JOIN accommodation acc ON rt.accommodation_id = acc.id
-			    WHERE ra.open_date >= :checkIn AND ra.open_date < :checkOut
-			      AND ra.available_count > 0
-			      AND rt.capacity >= :capacity
-			    GROUP BY rt.id, acc.id, acc.name
-			    HAVING COUNT(DISTINCT ra.open_date) = :requiredDayCount
-			) t
-			WHERE row_num = 1
-			""" + orderClause + " LIMIT :limit OFFSET :offset";
+			SELECT
+			    s.room_type_id,
+			    rt.accommodation_id,
+			    acc.name AS accommodation_name,
+			    s.total_price%d AS total_price
+			FROM room_availability_summary s
+			JOIN room_type rt ON s.room_type_id = rt.id
+			JOIN accommodation acc ON rt.accommodation_id = acc.id
+			WHERE s.check_in_date = :checkIn
+			  AND s.available_count%d > 0
+			  AND rt.capacity >= :capacity
+			""".formatted(requiredDayCount, requiredDayCount)
+			+ orderClause + " LIMIT :limit OFFSET :offset";
 
 		// 3. 개수 쿼리
 		String countSql = """
-			SELECT COUNT(*) FROM (
-			    SELECT acc.id
-			    FROM room_availability ra
-			    JOIN room_type rt ON ra.room_type_id = rt.id
-			    JOIN accommodation acc ON rt.accommodation_id = acc.id
-			    WHERE ra.open_date >= :checkIn AND ra.open_date < :checkOut
-			      AND ra.available_count > 0
-			      AND rt.capacity >= :capacity
-			    GROUP BY rt.id, acc.id
-			    HAVING COUNT(DISTINCT ra.open_date) = :requiredDayCount
-			) t
-			""";
+			SELECT COUNT(*)
+			FROM room_availability_summary s
+			JOIN room_type rt ON s.room_type_id = rt.id
+			WHERE s.check_in_date = :checkIn
+			  AND s.available_count%d > 0
+			  AND rt.capacity >= :capacity
+			""".formatted(requiredDayCount);
 
 		// 4. 결과 실행
 		List<RoomAvailabilitySearchResult> results =
 			entityManager.createNativeQuery(mainSql, "RoomAvailabilitySearchResultMapping")
 				.setParameter("checkIn", checkIn)
-				.setParameter("checkOut", checkOut)
-				.setParameter("requiredDayCount", requiredDayCount)
 				.setParameter("capacity", capacity)
 				.setParameter("limit", size)
 				.setParameter("offset", offset)
 				.getResultList();
 
-		Long totalCount = ((Number)entityManager.createNativeQuery(countSql)
+		long totalCount = ((Number)entityManager.createNativeQuery(countSql)
 			.setParameter("checkIn", checkIn)
-			.setParameter("checkOut", checkOut)
-			.setParameter("requiredDayCount", requiredDayCount)
 			.setParameter("capacity", capacity)
 			.getSingleResult()).longValue();
 
@@ -100,36 +83,31 @@ public class RoomAvailabilityQueryRepository {
 	public List<AvailableRoomTypeResult> findAvailableRoomTypes(
 		Long accommodationId,
 		LocalDate checkIn,
-		LocalDate checkOut,
 		int capacity,
 		long requiredDayCount
 	) {
-		String sql = """
-			SELECT 
-			    rt.id AS room_type_id,
+		String mainSql = """
+			SELECT
+			    s.room_type_id,
 			    rt.name,
 			    rt.capacity,
-			    FLOOR(SUM(ra.price) / :requiredDayCount) AS price_per_night,
-			    SUM(ra.price) AS total_price,
+			    s.total_price%d AS total_price,
 			    ri.image_url,
-			    MIN(ra.available_count) AS remaining_count
-			FROM room_availability ra
-			JOIN room_type rt ON ra.room_type_id = rt.id
+			    s.available_count%d
+			FROM room_availability_summary s
+			JOIN room_type rt ON s.room_type_id = rt.id
+			JOIN accommodation acc ON rt.accommodation_id = acc.id
 			LEFT OUTER JOIN room_image ri ON ri.room_type_id = rt.id AND ri.is_main_image = true
 			WHERE rt.accommodation_id = :accommodationId
-			  AND ra.open_date >= :checkIn AND ra.open_date < :checkOut
-			  AND ra.available_count > 0
+			  AND s.check_in_date = :checkIn
+			  AND s.available_count%d > 0
 			  AND rt.capacity >= :capacity
-			GROUP BY rt.id, rt.name, rt.capacity, ri.image_url
-			HAVING COUNT(DISTINCT ra.open_date) = :requiredDayCount
-			""";
+			""".formatted(requiredDayCount, requiredDayCount, requiredDayCount);
 
-		List<Object[]> rows = entityManager.createNativeQuery(sql)
+		List<Object[]> rows = entityManager.createNativeQuery(mainSql)
 			.setParameter("accommodationId", accommodationId)
 			.setParameter("checkIn", checkIn)
-			.setParameter("checkOut", checkOut)
 			.setParameter("capacity", capacity)
-			.setParameter("requiredDayCount", requiredDayCount)
 			.getResultList();
 
 		return rows.stream()
@@ -138,9 +116,8 @@ public class RoomAvailabilityQueryRepository {
 				(String)row[1],
 				((Number)row[2]).intValue(),
 				((Number)row[3]).intValue(),
-				((Number)row[4]).intValue(),
-				(String)row[5],
-				((Number)row[6]).intValue()
+				(String)row[4],
+				((Number)row[5]).intValue()
 			))
 			.toList();
 	}
