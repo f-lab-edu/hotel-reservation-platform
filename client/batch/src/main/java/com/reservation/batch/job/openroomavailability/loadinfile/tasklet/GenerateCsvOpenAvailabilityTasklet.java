@@ -2,12 +2,16 @@ package com.reservation.batch.job.openroomavailability.loadinfile.tasklet;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.batch.core.StepContribution;
@@ -35,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 	private static final int BASE_LINE_WRITE_COUNT = 700000;
 	private static final int MAX_WRITE_COUNT = 800000;
-	private static final int FILE_SIZE = 150000;
 	private static final String PREFIX_FILE_NAME = "availability";
 	private static final String FILE_EXTENSION = ".csv";
 	public static final String STEP_CSV_ATTRIBUTE_NAME = "csvFilePaths";
@@ -122,15 +125,19 @@ public class GenerateCsvOpenAvailabilityTasklet implements Tasklet {
 		if (writeAvailabilities.isEmpty()) {
 			return;
 		}
-		int createFileCount = writeAvailabilities.size() / FILE_SIZE;
-		IntStream.range(0, createFileCount)
+
+		Map<YearMonth, List<String[]>> groupedByMonth = writeAvailabilities.stream()
+			.collect(Collectors.groupingBy(avail -> {
+				String date = avail[1];
+				return YearMonth.from(LocalDate.parse(date));
+			}));
+		List<YearMonth> yearMonths = new ArrayList<>(groupedByMonth.keySet());
+		IntStream.range(0, groupedByMonth.size())
 			.parallel()
 			.forEach(i -> {
-				int startIndex = i * FILE_SIZE;
-				int endIndex = i != createFileCount - 1 ? startIndex + FILE_SIZE : writeAvailabilities.size();
-				List<String[]> writeChunk = writeAvailabilities.subList(startIndex, endIndex);
+				List<String[]> writeChunk = groupedByMonth.get(yearMonths.get(i));
 
-				String fileName = PREFIX_FILE_NAME + (i + 1) + FILE_EXTENSION;
+				String fileName = PREFIX_FILE_NAME + yearMonths.get(i) + FILE_EXTENSION;
 				Path filePath = Path.of(basePath.toString(), fileName);
 
 				generateCsvWriter.write(writeChunk, filePath);

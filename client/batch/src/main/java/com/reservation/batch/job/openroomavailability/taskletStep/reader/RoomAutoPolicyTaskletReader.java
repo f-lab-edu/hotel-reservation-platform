@@ -5,7 +5,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.reservation.batch.repository.RoomAvailabilityRepository;
+import com.reservation.batch.repository.RoomAutoAvailabilityPolicyRepository;
 import com.reservation.batch.repository.dto.CursorPage;
 import com.reservation.domain.roomautoavailabilitypolicy.RoomAutoAvailabilityPolicy;
 import com.reservation.support.exception.ErrorCode;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RoomAutoPolicyTaskletReader {
 	private static final int READ_SIZE = 5100;
 
-	private final RoomAvailabilityRepository availabilityRepository;
+	private final RoomAutoAvailabilityPolicyRepository availabilityRepository;
 
 	@Value("#{stepExecution.jobExecution}")
 	private JobExecution jobExecution;

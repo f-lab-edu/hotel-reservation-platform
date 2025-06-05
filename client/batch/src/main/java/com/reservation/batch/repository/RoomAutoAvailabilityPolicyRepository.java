@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class RoomAvailabilityRepository {
+public class RoomAutoAvailabilityPolicyRepository {
 	private final EntityManager em;
 
 	public CursorPage<RoomAutoAvailabilityPolicy, Long> fetchNextPage(Long lastSeenId, int pageSize) {
