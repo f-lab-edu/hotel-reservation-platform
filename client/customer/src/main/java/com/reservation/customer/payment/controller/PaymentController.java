@@ -26,11 +26,21 @@ public class PaymentController {
 	private final PaymentService paymentService;
 
 	@PostMapping()
-	@Operation(summary = "결제 확인 API", description = "결제가 정상적으로 처리 됐는지 확인합니다.")
+	@Operation(summary = "결제 확인 API (결제 취소 시 낙관적 락 활용)", description = "결제가 정상적으로 처리 됐는지 확인합니다.")
 	@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
-	public ApiResponse<IamportPayment> validationPayment(@RequestBody @Valid PaymentCheckRequest request) {
+	public ApiResponse<IamportPayment> optimisticValidationPayment(@RequestBody @Valid PaymentCheckRequest request) {
 		IamportPayment result =
-			paymentService.validationPayment(request.paymentUid(), request.reservationId());
+			paymentService.optimisticValidationPayment(request.paymentUid(), request.reservationId());
+
+		return ok(result);
+	}
+
+	@PostMapping("redisson")
+	@Operation(summary = "결제 확인 API (결제 취소 시 레디슨 락 활용)", description = "결제가 정상적으로 처리 됐는지 확인합니다.")
+	@CrossOrigin(origins = "http://localhost:63342", allowCredentials = "true")
+	public ApiResponse<IamportPayment> redissonValidationPayment(@RequestBody @Valid PaymentCheckRequest request) {
+		IamportPayment result =
+			paymentService.redissonValidationPayment(request.paymentUid(), request.reservationId());
 
 		return ok(result);
 	}
