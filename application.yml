@@ -87,3 +87,8 @@ decorator:
         log-level: debug
         log-slow-query: true
         slow-query-threshold: 1000
+
+iamport:
+  api-key: ${IAMPORT_API_KEY}
+  api-secret: ${IAMPORT_API_SECRET}
+  imp-uid: ${IMP_ID}

@@ -63,4 +63,8 @@ public class OriginRoomAvailability extends BaseEntity {
 		}
 		this.availableCount -= 1;
 	}
+
+	public void increaseAvailableCount() {
+		this.availableCount += 1;
+	}
 }
