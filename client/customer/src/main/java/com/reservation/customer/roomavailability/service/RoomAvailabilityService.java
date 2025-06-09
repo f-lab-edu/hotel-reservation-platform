@@ -32,7 +32,7 @@ public class RoomAvailabilityService {
 		long requiredDayCount = ChronoUnit.DAYS.between(checkIn, checkOut);
 
 		return availabilityQueryRepository.searchRoomAvailability(
-			checkIn, checkOut, requiredDayCount, capacity, sortField, page, size);
+			checkIn, requiredDayCount, capacity, sortField, page, size);
 	}
 
 	public List<AvailableRoomTypeResult> findAvailableRoomTypes(
@@ -45,6 +45,6 @@ public class RoomAvailabilityService {
 		long requiredDayCount = ChronoUnit.DAYS.between(checkIn, checkOut);
 
 		return availabilityQueryRepository.findAvailableRoomTypes(
-			accommodationId, checkIn, checkOut, capacity, requiredDayCount);
+			accommodationId, checkIn, capacity, requiredDayCount);
 	}
 }

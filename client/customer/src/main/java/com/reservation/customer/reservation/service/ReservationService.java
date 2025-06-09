@@ -2,13 +2,9 @@ package com.reservation.customer.reservation.service;
 
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.RedissonMultiLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +15,13 @@ import com.reservation.customer.member.repository.JpaMemberRepository;
 import com.reservation.customer.reservation.repository.JpaReservationRepository;
 import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
 import com.reservation.customer.reservation.service.dto.CreateReservationResult;
-import com.reservation.customer.roomavailability.repository.JpaRoomAvailabilityRepository;
+import com.reservation.customer.roomavailabilitysummary.repository.JpaRoomAvailabilitySummaryRepository;
+import com.reservation.customer.roomavailabilitysummary.repository.RoomAvailabilitySummaryRepository;
 import com.reservation.customer.roomtype.repository.JpaRoomTypeRepository;
 import com.reservation.domain.member.Member;
 import com.reservation.domain.reservation.Reservation;
 import com.reservation.domain.reservation.enums.ReservationStatus;
-import com.reservation.domain.roomavailability.OriginRoomAvailability;
+import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
 
@@ -41,7 +38,8 @@ public class ReservationService {
 
 	private final JpaReservationRepository reservationRepository;
 	private final JpaMemberRepository memberRepository;
-	private final JpaRoomAvailabilityRepository roomAvailabilityRepository;
+	private final JpaRoomAvailabilitySummaryRepository jpaAvailabilitySummaryRepository;
+	private final RoomAvailabilitySummaryRepository availabilitySummaryRepository;
 	private final JpaRoomTypeRepository roomTypeRepository;
 	private final RedissonClient redisson;
 
@@ -66,14 +64,18 @@ public class ReservationService {
 		// 1. 예약 룸 정보 조회
 		RoomType roomType = roomTypeRepository.findById(command.roomTypeId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 타입이 존재하지 않습니다."));
+
+		int requiredDayCount = (int)ChronoUnit.DAYS.between(command.checkIn(), command.checkOut());
+
 		// 2. 예약 가능 여부 확인
-		validateAvailability(command);
+		validateAvailability(command, requiredDayCount);
 
 		// 3. 수량 차감 (낙관적 락 기반) 5회 retry
-		executeWithRetry(MAX_OPTIMISTIC_RETRY_COUNT, () -> decreaseAvailabilityCount(command));
+		RoomAvailabilitySummary availabilitySummary =
+			executeWithRetry(MAX_OPTIMISTIC_RETRY_COUNT, () -> decreaseAvailabilityCount(command, requiredDayCount));
 
-		// 4. 총 숙박 요금 계산
-		int totalPrice = calculateTotalPrice(command);
+		// 4. 총 숙박 요금
+		int totalPrice = availabilitySummary.getTotalPrice(requiredDayCount);
 
 		// 4. 임시 예약(PENDING) 생성
 		Reservation reservation = reservationRepository.save(
@@ -100,40 +102,25 @@ public class ReservationService {
 		);
 	}
 
-	private void validateAvailability(CreateReservationCommand command) {
-		int requiredDayCount = (int)ChronoUnit.DAYS.between(command.checkIn(), command.checkOut());
-
-		long count = roomAvailabilityRepository.countByRoomTypeIdAndOpenDateBetweenAndAvailableCountGreaterThanEqual(
-			command.roomTypeId(), command.checkIn(), command.checkOut().minusDays(1), 1
+	private void validateAvailability(CreateReservationCommand command, int requiredDayCount) {
+		long count = availabilitySummaryRepository.findRemainAvailabilityCount(
+			command.roomTypeId(), command.checkIn(), command.guestCount(), requiredDayCount
 		);
 
-		if (count < requiredDayCount) {
+		if (count <= 0) {
 			throw ErrorCode.CONFLICT.exception("선택한 날짜에는 객실 예약이 불가능합니다.");
 		}
 	}
 
-	private int calculateTotalPrice(CreateReservationCommand command) {
-		return roomAvailabilityRepository.sumPriceByRoomTypeIdAndDateRange(
-			command.roomTypeId(), command.checkIn(), command.checkOut().minusDays(1)
-		);
-	}
+	private RoomAvailabilitySummary decreaseAvailabilityCount(CreateReservationCommand command, int requiredDayCount) {
+		RoomAvailabilitySummary availabilitySummary =
+			jpaAvailabilitySummaryRepository.findOneByRoomTypeIdAndCheckInDate(command.roomTypeId(), command.checkIn())
+				.orElseThrow(() -> ErrorCode.CONFLICT.exception("예약 가능한 룸 정보가 없습니다."));
 
-	private List<OriginRoomAvailability> decreaseAvailabilityCount(CreateReservationCommand command) {
-		List<OriginRoomAvailability> availabilities =
-			roomAvailabilityRepository.findAllByRoomTypeIdAndOpenDateBetween(
-				command.roomTypeId(), command.checkIn(), command.checkOut().minusDays(1)
-			);
+		availabilitySummary.decreaseAvailability(requiredDayCount);
+		availabilitySummary.prePersist();
 
-		if (availabilities.size() != ChronoUnit.DAYS.between(command.checkIn(), command.checkOut())) {
-			throw ErrorCode.CONFLICT.exception("예약 가능한 날짜 수량이 부족합니다.");
-		}
-
-		for (OriginRoomAvailability availability : availabilities) {
-			availability.decreaseAvailableCount(); // 내부에서 availableCount-- 및 예외 처리
-		}
-
-		// 버전 기반 낙관적 락으로 saveAll 시점에 충돌 검증
-		return roomAvailabilityRepository.saveAll(availabilities);
+		return jpaAvailabilitySummaryRepository.save(availabilitySummary);
 	}
 
 	/**
@@ -145,6 +132,7 @@ public class ReservationService {
 	 * - 총 숙박 요금 계산
 	 * - 임시 예약(PENDING) 생성
 	 */
+	@Transactional
 	public CreateReservationResult redissonCreateReservation(long memberId, CreateReservationCommand command) {
 		// 0. 회원 존재 여부 확인
 		Member member = memberRepository.findById(memberId)
@@ -154,24 +142,26 @@ public class ReservationService {
 		RoomType roomType = roomTypeRepository.findById(command.roomTypeId())
 			.orElseThrow(() -> ErrorCode.NOT_FOUND.exception("룸 타입이 존재하지 않습니다."));
 
-		// 2. 비관적 락 처리 시작 (redisson 멀티 락 기반)
-		RLock lock = getReservationPeriodLock(command);
-		boolean isLocked = false;
+		// 2. 비관적 락 처리 시작 (redisson 락 기반)
+		RLock checkInLock =
+			redisson.getLock("reservation:lock:" + command.roomTypeId() + ":" + command.checkIn());
+		boolean isCheckInLock = false;
 		try {
-			isLocked = lock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
-
-			if (!isLocked) {
+			isCheckInLock = checkInLock.tryLock(MAX_LOCK_WAIT_TIME_SECONDS, LOCK_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
+			if (!isCheckInLock) {
 				throw ErrorCode.CONFLICT.exception("해당 객실은 현재 다른 예약 처리 중입니다. 잠시 후 다시 시도해 주세요.");
 			}
 
+			int requiredDayCount = (int)ChronoUnit.DAYS.between(command.checkIn(), command.checkOut());
+
 			// 3. 예약 가능 여부 확인
-			validateAvailability(command);
+			validateAvailability(command, requiredDayCount);
 
 			// 4. 수량 차감
-			decreaseAvailabilityCount(command);
+			RoomAvailabilitySummary availabilitySummary = decreaseAvailabilityCount(command, requiredDayCount);
 
 			// 5. 총 숙박 요금 계산
-			int totalPrice = calculateTotalPrice(command);
+			int totalPrice = availabilitySummary.getTotalPrice(requiredDayCount);
 
 			// 6. 임시 예약(PENDING) 생성
 			Reservation reservation = reservationRepository.save(
@@ -201,20 +191,9 @@ public class ReservationService {
 			log.error(e.getMessage());
 			throw ErrorCode.INTERNAL_SERVER_ERROR.exception("예약 처리 중 오류 발생");
 		} finally {
-			if (isLocked) {
-				lock.unlock();
+			if (isCheckInLock) {
+				checkInLock.unlock();
 			}
 		}
-	}
-
-	private RLock getReservationPeriodLock(CreateReservationCommand command) {
-		List<RLock> locks = new ArrayList<>();
-
-		for (LocalDate date = command.checkIn(); date.isBefore(command.checkOut()); date = date.plusDays(1)) {
-			String key = "reservation:lock:" + command.roomTypeId() + ":" + date;
-			locks.add(redisson.getLock(key));
-		}
-
-		return new RedissonMultiLock(locks.toArray(new RLock[0]));
 	}
 }
