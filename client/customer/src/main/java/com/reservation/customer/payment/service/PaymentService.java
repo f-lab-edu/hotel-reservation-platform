@@ -16,10 +16,12 @@ import com.reservation.customer.payment.repository.JpaPaymentRepository;
 import com.reservation.customer.payment.service.dto.IamportPayment;
 import com.reservation.customer.payment.service.iamport.Iamport;
 import com.reservation.customer.reservation.repository.JpaReservationRepository;
+import com.reservation.customer.reservation.statemachine.ReservationStateMachineService;
 import com.reservation.customer.roomavailabilitysummary.repository.JpaRoomAvailabilitySummaryRepository;
 import com.reservation.domain.payment.Payment;
 import com.reservation.domain.payment.enums.PaymentStatus;
 import com.reservation.domain.reservation.Reservation;
+import com.reservation.domain.reservation.enums.ReservationEvents;
 import com.reservation.domain.reservation.enums.ReservationStatus;
 import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 import com.reservation.support.exception.ErrorCode;
@@ -38,10 +40,11 @@ public class PaymentService {
 
 	private final Iamport iamport;
 
+	private final ReservationStateMachineService stateMachineService;
+
 	private final JpaPaymentRepository paymentRepository;
 	private final JpaReservationRepository reservationRepository;
 	private final JpaRoomAvailabilitySummaryRepository jpaAvailabilitySummaryRepository;
-	// private final RoomAvailabilitySummaryRepository availabilitySummaryRepository;
 
 	private final RedissonClient redisson;
 
@@ -73,12 +76,15 @@ public class PaymentService {
 			.build();
 
 		// 만약 10분 초과로 이미 예약이 취소된 경우
-		if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
+		if (reservation.getStatus().equals(ReservationStatus.EXPIRED)) {
 			// 이미 취소된 예약 -> 결제금액 취소(아임포트)
 			payment.markCancelled();
 			paymentRepository.save(payment);
 			return optimisticCancelPayment(reservation, iamportPayment.payment().getImpUid(), iamportPrice);
 		}
+
+		Integer iamportAmount = iamportPayment.payment().getAmount().intValue();
+		stateMachineService.sendEvent(reservation, iamportAmount, ReservationEvents.PAYMENT_FAILURE);
 
 		// 만약 10분 초과로 이미 예약이 취소된 경우 또는 결제 금액이 맞지 않는 경우
 		if (iamportPrice != reservationTotalPrice) {
@@ -93,15 +99,15 @@ public class PaymentService {
 		paymentRepository.save(payment);
 
 		// 예약 완료
-		reservation.markConfirmed();
+		reservation.markPaid();
 		reservationRepository.save(reservation);
 		return iamportPayment;
 	}
 
 	// 아임포트 결제 취소 처리 -> 낙관적 락 기반
 	private IamportPayment optimisticCancelPayment(Reservation reservation, String paymentUid, int amount) {
-		// 1. 예약 취소
-		reservation.markCanceled();
+		// 1. 상태머신 이벤트 전송
+		stateMachineService.sendEvent(reservation, ReservationEvents.PAYMENT_FAILURE);
 		reservationRepository.save(reservation);
 
 		// 2. 예약 가능 수량 증가 (낙관적 락 기반)
@@ -177,7 +183,7 @@ public class PaymentService {
 				.build();
 
 			// 10분 초과로 이미 예약이 취소된 경우
-			if (reservation.getStatus().equals(ReservationStatus.CANCELED)) {
+			if (reservation.getStatus().equals(ReservationStatus.EXPIRED)) {
 				// 이미 취소된 예약 -> 결제금액 취소(아임포트)
 				payment.markCancelled();
 				paymentRepository.save(payment);
@@ -198,7 +204,7 @@ public class PaymentService {
 			paymentRepository.save(payment);
 
 			// 예약 완료
-			reservation.markConfirmed();
+			reservation.markPaid();
 			reservationRepository.save(reservation);
 			return iamportPayment;
 		} catch (Exception e) {
@@ -216,8 +222,8 @@ public class PaymentService {
 
 	// 아임포트 결제 취소 처리: 레디슨 락(비관적) 기반이기 때문에 retry 없이 바로 처리
 	private IamportPayment redissonCancelPayment(Reservation reservation, String paymentUid, int amount) {
-		// 1. 예약 취소
-		reservation.markCanceled();
+		// 1. 상태머신 이벤트 전송
+		stateMachineService.sendEvent(reservation, ReservationEvents.PAYMENT_FAILURE);
 		reservationRepository.save(reservation);
 
 		// 2. 예약 가능 수량 증가
