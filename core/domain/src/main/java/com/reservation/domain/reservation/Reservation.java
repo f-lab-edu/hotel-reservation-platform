@@ -95,8 +95,12 @@ public class Reservation extends BaseEntity {
 		this.status = ReservationStatus.CONFIRMED;
 	}
 
-	public void markCanceled() {
-		this.status = ReservationStatus.CANCELED;
+	public void markPaid() {
+		this.status = ReservationStatus.PAID;
+	}
+
+	public void markPaidError() {
+		this.status = ReservationStatus.PAID_ERROR;
 	}
 
 	public void markExpired() {
@@ -105,5 +109,62 @@ public class Reservation extends BaseEntity {
 
 	public boolean isPending() {
 		return this.status == ReservationStatus.PENDING;
+	}
+
+	public void markCustomerCanceled() {
+		if (this.status != ReservationStatus.PAID) {
+			throw ErrorCode.BAD_REQUEST.exception("사용자 취소는 결제 완료 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.CUSTOMER_CANCELED;
+	}
+
+	public void markAdminCanceled() {
+		if (this.status != ReservationStatus.PAID) {
+			throw ErrorCode.BAD_REQUEST.exception("관리자 취소는 결제 완료 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.ADMIN_CANCELED;
+	}
+
+	public void markHostRejected() {
+		if (this.status != ReservationStatus.PAID) {
+			throw ErrorCode.BAD_REQUEST.exception("호스트 거절은 결제 완료 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.HOST_REJECTED;
+	}
+
+	public void markCustomerPaidCanceled() {
+		if (this.status != ReservationStatus.CUSTOMER_CANCELED) {
+			throw ErrorCode.BAD_REQUEST.exception("사용자 결제 취소는 사용자 취소 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.CUSTOMER_PAID_CANCELED;
+	}
+
+	public void markAdminPaidCanceled() {
+		if (this.status != ReservationStatus.ADMIN_CANCELED) {
+			throw ErrorCode.BAD_REQUEST.exception("관리자 결제 취소는 관리자 취소 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.ADMIN_PAID_CANCELED;
+	}
+
+	public void markHostPaidCanceled() {
+		if (this.status != ReservationStatus.HOST_REJECTED) {
+			throw ErrorCode.BAD_REQUEST.exception("호스트 결제 취소는 호스트 거절 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.HOST_PAID_CANCELED;
+	}
+
+	public void markPaidErrorCanceled() {
+		if (this.status != ReservationStatus.PAID_ERROR) {
+			throw ErrorCode.BAD_REQUEST.exception("결제 에러 취소는 결제 에러 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.PAID_ERROR_CANCELED;
+	}
+
+	public void markPgCancelFail() {
+		if (this.status != ReservationStatus.PAID_ERROR && this.status != ReservationStatus.CUSTOMER_CANCELED &&
+			this.status != ReservationStatus.ADMIN_CANCELED && this.status != ReservationStatus.HOST_REJECTED) {
+			throw ErrorCode.BAD_REQUEST.exception("PG 결제 취소 실패는 결제 에러, 사용자 취소, 관리자 취소, 호스트 거절 상태에서만 가능합니다.");
+		}
+		this.status = ReservationStatus.PG_CANCEL_FAIL;
 	}
 }
