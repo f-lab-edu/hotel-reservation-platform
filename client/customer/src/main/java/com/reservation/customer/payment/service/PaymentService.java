@@ -115,6 +115,7 @@ public class PaymentService {
 
 		// 예약 완료
 		reservationRepository.save(optionalTemp.get().toReservation());
+		// Redis 예약 정보 삭제
 		redisTemplate.delete(key);
 
 		return iamportPayment;
@@ -227,8 +228,7 @@ public class PaymentService {
 					.build();
 
 				// 예약 가능 수량 원복
-				return optimisticCancelPayment(paidErrorReservation, iamportPayment.payment().getImpUid(),
-					iamportPrice);
+				return redissonCancelPayment(paidErrorReservation, iamportPayment.payment().getImpUid(), iamportPrice);
 			}
 
 			// 결제 완료
@@ -237,6 +237,7 @@ public class PaymentService {
 
 			// 예약 완료
 			reservationRepository.save(optionalTemp.get().toReservation());
+			// Redis 예약 정보 삭제
 			redisTemplate.delete(key);
 
 			return iamportPayment;

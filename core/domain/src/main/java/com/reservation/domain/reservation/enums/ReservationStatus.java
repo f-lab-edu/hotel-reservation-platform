@@ -4,11 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ReservationStatus {
-	PENDING("결제 대기", "결제 대기 중"),
 	PAID("결제 완료", "결제 및 검증 완료"),
 	CONFIRMED("확정", "예약 확정"),
 
-	EXPIRED("결제 시간 초과", "결제 시간 초과로 자동 무효"),
 	PAID_ERROR("결제 에러", "미결제 혹은 결제 금액 불일치"),
 
 	CANCELED("예약 취소", "취소 요청으로 인한 취소 상태"),
