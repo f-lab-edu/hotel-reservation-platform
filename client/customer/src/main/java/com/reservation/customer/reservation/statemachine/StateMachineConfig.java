@@ -46,14 +46,10 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<Reservatio
 			.state(ReservationStatus.EXPIRED) // 결제 시간 초과 상태
 			.state(ReservationStatus.PAID) // 결제 완료 상태
 			.state(ReservationStatus.PAID_ERROR) // 결제 에러 상태
-			.state(ReservationStatus.CUSTOMER_CANCELED) // 사용자 취소 상태
-			.state(ReservationStatus.HOST_REJECTED) // 호스트 거절 상태
-			.state(ReservationStatus.ADMIN_CANCELED) // 관리자 취소 상태
+			.state(ReservationStatus.CANCELED) // 예약 취소 상태
 			.state(ReservationStatus.CONFIRMED) // 예약 확정 상태
 			.state(ReservationStatus.PAID_ERROR_CANCELED) // 결제 에러로 인한 결제 취소 상태
-			.state(ReservationStatus.CUSTOMER_PAID_CANCELED) // 사용자 취소로 인한 결제 취소 상태
-			.state(ReservationStatus.ADMIN_PAID_CANCELED) // 관리자 취소로 인한 결제 취소 상태
-			.state(ReservationStatus.HOST_PAID_CANCELED) // 호스트 거절로 인한 결제 취소 상태
+			.state(ReservationStatus.PAID_CANCELED) // 결제 취소 상태
 			.state(ReservationStatus.PG_VALIDATE_ERROR) // PG 검증 실패 상태
 			.state(ReservationStatus.PG_CANCEL_FAIL); // PG 결제 취소 실패 상태
 	}
@@ -116,41 +112,41 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<Reservatio
 
 			// PAID → 취소 요청
 			.and()
-			.withExternal().source(PAID).target(CUSTOMER_CANCELED)
+			.withExternal().source(PAID).target(CANCELED)
 			.event(CUSTOMER_PAYMENT_CANCEL)
 			.action(markCustomerCanceledAction)
 			.and()
-			.withExternal().source(PAID).target(ADMIN_CANCELED)
+			.withExternal().source(PAID).target(CANCELED)
 			.event(ADMIN_PAYMENT_CANCEL)
 			.action(markAdminCanceledAction)
 			.and()
-			.withExternal().source(PAID).target(HOST_REJECTED)
+			.withExternal().source(PAID).target(CANCELED)
 			.event(HOST_PAYMENT_CANCEL)
 			.action(markHostRejectedAction)
 
 			// 취소 → 결제 취소 or 실패
 			.and()
-			.withExternal().source(CUSTOMER_CANCELED).target(CUSTOMER_PAID_CANCELED)
+			.withExternal().source(CANCELED).target(PAID_CANCELED)
 			.event(PG_PAID_CANCEL)
 			.action(markCustomerPaidCanceledAction)
 			.and()
-			.withExternal().source(CUSTOMER_CANCELED).target(PG_CANCEL_FAIL)
+			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
 			.event(ReservationEvents.PG_CANCEL_FAIL)
 			.action(markPgCancelFailAction)
 			.and()
-			.withExternal().source(ADMIN_CANCELED).target(ADMIN_PAID_CANCELED)
+			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
 			.event(PG_PAID_CANCEL)
 			.action(markAdminPaidCanceledAction)
 			.and()
-			.withExternal().source(ADMIN_CANCELED).target(PG_CANCEL_FAIL)
+			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
 			.event(ReservationEvents.PG_CANCEL_FAIL)
 			.action(markPgCancelFailAction)
 			.and()
-			.withExternal().source(HOST_REJECTED).target(HOST_PAID_CANCELED)
+			.withExternal().source(CANCELED).target(PAID_CANCELED)
 			.event(PG_PAID_CANCEL)
 			.action(markHostPaidCanceledAction)
 			.and()
-			.withExternal().source(HOST_REJECTED).target(PG_CANCEL_FAIL)
+			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
 			.event(ReservationEvents.PG_CANCEL_FAIL)
 			.action(markPgCancelFailAction);
 	}

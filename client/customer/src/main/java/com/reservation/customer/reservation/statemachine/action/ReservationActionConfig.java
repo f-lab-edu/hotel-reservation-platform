@@ -118,7 +118,7 @@ public class ReservationActionConfig {
 	}
 
 	@Bean
-	public Action<ReservationStatus, ReservationEvents> markCustomerCanceledAction() {
+	public Action<ReservationStatus, ReservationEvents> markCanceledAction() {
 		return context -> {
 			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
 			if (reservation == null) {
@@ -127,8 +127,8 @@ public class ReservationActionConfig {
 			}
 			ReservationStatus from = reservation.getStatus();
 
-			reservation.markCustomerCanceled();
-			log.info("예약 [{}] 상태를 'markCustomerCanceled'로 전환합니다.", reservation.getId());
+			reservation.markCanceled();
+			log.info("예약 [{}] 상태를 'markCanceled'로 전환합니다.", reservation.getId());
 
 			ReservationStatus to = reservation.getStatus();
 
@@ -141,7 +141,7 @@ public class ReservationActionConfig {
 	}
 
 	@Bean
-	public Action<ReservationStatus, ReservationEvents> markAdminCanceledAction() {
+	public Action<ReservationStatus, ReservationEvents> markPaidCanceledAction() {
 		return context -> {
 			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
 			if (reservation == null) {
@@ -150,100 +150,8 @@ public class ReservationActionConfig {
 			}
 			ReservationStatus from = reservation.getStatus();
 
-			reservation.markAdminCanceled();
-			log.info("예약 [{}] 상태를 'markAdminCanceled'로 전환합니다.", reservation.getId());
-
-			ReservationStatus to = reservation.getStatus();
-
-			historyRepository.save(ReservationStatusHistory.builder()
-				.reservationId(reservation.getId())
-				.fromStatus(from)
-				.toStatus(to)
-				.build());
-		};
-	}
-
-	@Bean
-	public Action<ReservationStatus, ReservationEvents> markHostRejectedAction() {
-		return context -> {
-			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
-			if (reservation == null) {
-				log.error("Reservation 객체가 Action에 전달되지 않았습니다.");
-				return;
-			}
-			ReservationStatus from = reservation.getStatus();
-
-			reservation.markHostRejected();
-			log.info("예약 [{}] 상태를 'markHostRejected'로 전환합니다.", reservation.getId());
-
-			ReservationStatus to = reservation.getStatus();
-
-			historyRepository.save(ReservationStatusHistory.builder()
-				.reservationId(reservation.getId())
-				.fromStatus(from)
-				.toStatus(to)
-				.build());
-		};
-	}
-
-	@Bean
-	public Action<ReservationStatus, ReservationEvents> markCustomerPaidCanceledAction() {
-		return context -> {
-			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
-			if (reservation == null) {
-				log.error("Reservation 객체가 Action에 전달되지 않았습니다.");
-				return;
-			}
-			ReservationStatus from = reservation.getStatus();
-
-			reservation.markCustomerPaidCanceled();
-			log.info("예약 [{}] 상태를 'markCustomerPaidCanceled'로 전환합니다.", reservation.getId());
-
-			ReservationStatus to = reservation.getStatus();
-
-			historyRepository.save(ReservationStatusHistory.builder()
-				.reservationId(reservation.getId())
-				.fromStatus(from)
-				.toStatus(to)
-				.build());
-		};
-	}
-
-	@Bean
-	public Action<ReservationStatus, ReservationEvents> markAdminPaidCanceledAction() {
-		return context -> {
-			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
-			if (reservation == null) {
-				log.error("Reservation 객체가 Action에 전달되지 않았습니다.");
-				return;
-			}
-			ReservationStatus from = reservation.getStatus();
-
-			reservation.markAdminPaidCanceled();
-			log.info("예약 [{}] 상태를 'markAdminPaidCanceled'로 전환합니다.", reservation.getId());
-
-			ReservationStatus to = reservation.getStatus();
-
-			historyRepository.save(ReservationStatusHistory.builder()
-				.reservationId(reservation.getId())
-				.fromStatus(from)
-				.toStatus(to)
-				.build());
-		};
-	}
-
-	@Bean
-	public Action<ReservationStatus, ReservationEvents> markHostPaidCanceledAction() {
-		return context -> {
-			Reservation reservation = (Reservation)context.getMessageHeader("reservation");
-			if (reservation == null) {
-				log.error("Reservation 객체가 Action에 전달되지 않았습니다.");
-				return;
-			}
-			ReservationStatus from = reservation.getStatus();
-
-			reservation.markHostPaidCanceled();
-			log.info("예약 [{}] 상태를 'markHostPaidCanceled'로 전환합니다.", reservation.getId());
+			reservation.markPaidCanceled();
+			log.info("예약 [{}] 상태를 'markPaidCanceled'로 전환합니다.", reservation.getId());
 
 			ReservationStatus to = reservation.getStatus();
 
