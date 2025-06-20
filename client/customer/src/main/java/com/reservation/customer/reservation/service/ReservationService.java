@@ -2,6 +2,7 @@ package com.reservation.customer.reservation.service;
 
 import static com.reservation.support.utils.retry.OptimisticLockingFailureRetryUtils.*;
 
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
@@ -12,15 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.reservation.customer.member.repository.JpaMemberRepository;
-import com.reservation.customer.reservation.repository.JpaReservationRepository;
 import com.reservation.customer.reservation.service.dto.CreateReservationCommand;
 import com.reservation.customer.reservation.service.dto.CreateReservationResult;
+import com.reservation.customer.reservation.service.dto.TemporaryReservation;
 import com.reservation.customer.roomavailabilitysummary.repository.JpaRoomAvailabilitySummaryRepository;
 import com.reservation.customer.roomavailabilitysummary.repository.RoomAvailabilitySummaryRepository;
 import com.reservation.customer.roomtype.repository.JpaRoomTypeRepository;
 import com.reservation.domain.member.Member;
-import com.reservation.domain.reservation.Reservation;
-import com.reservation.domain.reservation.enums.ReservationStatus;
 import com.reservation.domain.roomavailabilitysummary.RoomAvailabilitySummary;
 import com.reservation.domain.roomtype.RoomType;
 import com.reservation.support.exception.ErrorCode;
@@ -36,12 +35,14 @@ public class ReservationService {
 	private static final long MAX_LOCK_WAIT_TIME_SECONDS = 10L; // 락 대기 최대 시간
 	private static final long LOCK_WAIT_TIME_SECONDS = 5L;
 
-	private final JpaReservationRepository reservationRepository;
+	private static final int MAX_REDIS_RESERVATION_TTL_MINUTES = 10;
+
 	private final JpaMemberRepository memberRepository;
 	private final JpaRoomAvailabilitySummaryRepository jpaAvailabilitySummaryRepository;
 	private final RoomAvailabilitySummaryRepository availabilitySummaryRepository;
 	private final JpaRoomTypeRepository roomTypeRepository;
 	private final RedissonClient redisson;
+	private final RedisReservationStore redisReservationStore;
 
 	@Value("${iamport.imp-uid}")
 	private String impUid;
@@ -77,27 +78,25 @@ public class ReservationService {
 		// 4. 총 숙박 요금
 		int totalPrice = availabilitySummary.getTotalPrice(requiredDayCount);
 
-		// 4. 임시 예약(PENDING) 생성
-		Reservation reservation = reservationRepository.save(
-			Reservation.builder()
-				.roomTypeId(command.roomTypeId())
-				.memberId(member.getId())
-				.checkIn(command.checkIn())
-				.checkOut(command.checkOut())
-				.guestCount(command.guestCount())
-				.phoneNumber(member.getPhoneNumber())
-				.totalPrice(totalPrice)
-				.status(ReservationStatus.PENDING)
-				.build()
+		// Reservation 저장 대신 Redis TTL 저장
+		TemporaryReservation temp = new TemporaryReservation(
+			memberId,
+			command.roomTypeId(),
+			command.checkIn(),
+			command.checkOut(),
+			command.guestCount(),
+			member.getPhoneNumber(),
+			totalPrice
 		);
 
+		redisReservationStore.save(temp, Duration.ofMinutes(MAX_REDIS_RESERVATION_TTL_MINUTES));
+		log.info("임시 예약 저장 완료 - Redis key: {}", temp.redisKey());
+
 		return new CreateReservationResult(
-			reservation.getId(),
 			member.getEmail(),
 			member.getPhoneNumber(),
 			roomType.getName(),
-			reservation.getStatus(),
-			reservation.getTotalPrice(),
+			totalPrice,
 			impUid
 		);
 	}
@@ -163,27 +162,25 @@ public class ReservationService {
 			// 5. 총 숙박 요금 계산
 			int totalPrice = availabilitySummary.getTotalPrice(requiredDayCount);
 
-			// 6. 임시 예약(PENDING) 생성
-			Reservation reservation = reservationRepository.save(
-				Reservation.builder()
-					.roomTypeId(command.roomTypeId())
-					.memberId(member.getId())
-					.checkIn(command.checkIn())
-					.checkOut(command.checkOut())
-					.guestCount(command.guestCount())
-					.phoneNumber(member.getPhoneNumber())
-					.totalPrice(totalPrice)
-					.status(ReservationStatus.PENDING)
-					.build()
+			// Reservation 저장 대신 Redis TTL 저장
+			TemporaryReservation temp = new TemporaryReservation(
+				memberId,
+				command.roomTypeId(),
+				command.checkIn(),
+				command.checkOut(),
+				command.guestCount(),
+				member.getPhoneNumber(),
+				totalPrice
 			);
 
+			redisReservationStore.save(temp, Duration.ofMinutes(MAX_REDIS_RESERVATION_TTL_MINUTES));
+			log.info("임시 예약 저장 완료 - Redis key: {}", temp.redisKey());
+
 			return new CreateReservationResult(
-				reservation.getId(),
 				member.getEmail(),
 				member.getPhoneNumber(),
 				roomType.getName(),
-				reservation.getStatus(),
-				reservation.getTotalPrice(),
+				totalPrice,
 				impUid
 			);
 
