@@ -4,7 +4,9 @@ import static com.reservation.support.response.ApiResponse.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,5 +55,16 @@ public class ReservationController {
 		CreateReservationResult result = reservationService.redissonCreateReservation(memberId, command);
 
 		return ok(result);
+	}
+
+	@PutMapping("/{reservationId}/cancel")
+	@Operation(summary = "예약 취소 API", description = "결제 완료된 예약을 고객이 직접 취소합니다.")
+	public ApiResponse<Long> cancelReservation(
+		@LoginUserId long memberId,
+		@PathVariable Long reservationId
+	) {
+		reservationService.cancelReservation(memberId, reservationId);
+
+		return ok(reservationId);
 	}
 }

@@ -24,6 +24,9 @@ public class Payment extends BaseEntity {
 	@Column(nullable = false)
 	private String paymentUid;
 
+	@Column(nullable = false)
+	private Long reservationId;
+
 	@Builder
 	public Payment(Integer price, PaymentStatus status, String paymentUid) {
 		if (price == null || price < 0) {
