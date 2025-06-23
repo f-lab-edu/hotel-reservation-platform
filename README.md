@@ -2,14 +2,14 @@
 
 > Java/Spring 기반의 숙소 예약 플랫폼 백엔드 프로젝트입니다.  
 > 고객, 업체(호스트), 관리자 세 가지 사용자 유형에 맞춘 멀티 모듈 아키텍처를 설계하고,  
-**도메인 중심 설계와 인증/인가 기능, 커서 기반 페이징 등** 실전 감각을 기르기 위한 사이드 프로젝트입니다.
+**도메인 중심 설계와 인증/인가 기능, 대용량 Batch 설계, PG 연동을 통한 결제 프로세스 구현 등 등** 실전 감각을 기르기 위한 사이드 프로젝트입니다.
 
 <br>
 
 ## 🛠️ 기술 스택
 
 - Java 21
-- Spring Boot, Spring Security
+- Spring Boot, Spring Batch, Spring Security
 - JPA, MySQL
 - Redis, JWT
 - Gradle (멀티 모듈)
@@ -17,6 +17,61 @@
 - QueryDSL
 
 ---
+
+## 🔗주요 아티클
+
+### Batch 설계 관련
+
+- [매일 수백만 건의 예약 가능 객실, 어떻게 만들까? - 객실 가용성 배치 도입기](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-1-%EB%A7%A4%EC%9D%BC-%EC%88%98%EB%B0%B1%EB%A7%8C-%EA%B1%B4%EC%9D%98-%EC%98%88%EC%95%BD-%EA%B0%80%EB%8A%A5-%EA%B0%9D%EC%8B%A4-%EC%96%B4%EB%96%BB%EA%B2%8C-%EB%A7%8C%EB%93%A4%EA%B9%8C-%EA%B0%9D%EC%8B%A4-%EA%B0%80%EC%9A%A9%EC%84%B1-%EB%B0%B0%EC%B9%98-%EB%8F%84%EC%9E%85%EA%B8%B0)
+- [Chunk vs Tasklet, 상황에 맞는 최적의 도구는?](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-2-Chunk-%EB%B0%A9%EC%8B%9D-%EC%95%84%EB%8B%88-Tasklet%EC%9C%BC%EB%A1%9C-%EA%B0%84%EB%8B%A4)
+- [성능 측정과 병목점 찾기: Tasklet의 한계, 그리고 Processor 최적화](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-3-%EC%84%B1%EB%8A%A5-%EC%B8%A1%EC%A0%95%EA%B3%BC-%EB%B3%91%EB%AA%A9%EC%A0%90-%EC%B0%BE%EA%B8%B0-Tasklet%EC%9D%98-%ED%95%9C%EA%B3%84-%EA%B7%B8%EB%A6%AC%EA%B3%A0-Processor-%EC%B5%9C%EC%A0%81%ED%99%94)
+- [Insert 성능 최적화: PreparedStatement, 그리고 클러스터드 인덱스의 함정](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-4-DB-Insert-%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0-PreparedStatement-%EA%B7%B8%EB%A6%AC%EA%B3%A0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EA%B3%BC-Lock-%EC%9E%91%EC%84%B1-%EC%A4%91)
+- [클러스터드 인덱스를 넘어서: PK 실험과 LOAD DATA INFILE의 만남](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-5-PK-%EC%9E%AC%EC%84%A4%EA%B3%84-%ED%81%B4%EB%9F%AC%EC%8A%A4%ED%84%B0%EB%93%9C-%EC%9D%B8%EB%8D%B1%EC%8A%A4%EC%99%80%EC%9D%98-%EB%8F%99%ED%96%89)
+- [MySQL 옵션 튜닝의 실패, 구조를 향한 시작](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-6-MySQL-%EC%98%B5%EC%85%98-%ED%8A%9C%EB%8B%9D%EC%9D%98-%EC%8B%A4%ED%8C%A8-%EA%B5%AC%EC%A1%B0%EB%A5%BC-%ED%96%A5%ED%95%9C-%EC%8B%9C%EC%9E%91)
+- [MySQL 튜닝 재도전: 구조적 이해로 옵션을 바라보기](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-7-MySQL-%ED%8A%9C%EB%8B%9D-%EC%9E%AC%EB%8F%84%EC%A0%84-%EA%B5%AC%EC%A1%B0%EC%A0%81-%EC%9D%B4%ED%95%B4%EB%A1%9C-OLAPOLTP-%EA%B7%A0%ED%98%95-%EC%B0%BE%EA%B8%B0)
+- [연박 정책 기반 집계 구조: 성능 병목을 해결하기 위한 데이터 리모델링](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-8-%EC%97%B0%EB%B0%95-%EC%A0%95%EC%B1%85-%EA%B8%B0%EB%B0%98-%EC%A7%91%EA%B3%84-%EA%B5%AC%EC%A1%B0-%EC%84%B1%EB%8A%A5-%EB%B3%91%EB%AA%A9%EC%9D%84-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EB%A6%AC%EB%AA%A8%EB%8D%B8%EB%A7%81)
+
+### JPA/QueryDSL 유틸 설계 관련
+
+- [QueryDSL과 타입 안정성을 고려한 커서 설계기](https://pablo7.tistory.com/entry/%EC%82%AC%EC%9D%B4%EB%93%9C-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-QueryDSL%EA%B3%BC-%ED%83%80%EC%9E%85-%EC%95%88%EC%A0%95%EC%84%B1%EC%9D%84-%EA%B3%A0%EB%A0%A4%ED%95%9C-%EC%BB%A4%EC%84%9C-%EC%84%A4%EA%B3%84%EA%B8%B0)
+- [JPA Pagable 변환 유틸 설계기](https://pablo7.tistory.com/entry/%EC%82%AC%EC%9D%B4%EB%93%9C-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%A0%95%EB%A0%AC-%ED%95%98%EB%82%98%EC%97%90%EB%8F%84-%EC%84%A4%EA%B3%84%EA%B0%80-%EB%93%A4%EC%96%B4%EA%B0%84%EB%8B%A4)
+
+### 기술에 대한 고찰
+
+- [객체 생성에 관한 고찰](https://pablo7.tistory.com/entry/%EA%B0%9D%EC%B2%B4-%EC%83%9D%EC%84%B1%EC%97%90-%EA%B4%80%ED%95%B4)
+- [필요한 기능만 의존하게 하자 (Feat: ISP)](https://pablo7.tistory.com/entry/%EA%B3%A0%EC%B0%B0%ED%95%98%EA%B8%B0-%ED%95%84%EC%9A%94%ED%95%9C-%EA%B8%B0%EB%8A%A5%EB%A7%8C-%EC%9D%98%EC%A1%B4%ED%95%98%EA%B2%8C-%ED%95%98%EC%9E%90)
+- [Lock 전략을 결정하는 건 기술이 아니라 도메인이다](https://pablo7.tistory.com/entry/%EA%B3%A0%EC%B0%B0%ED%95%98%EA%B8%B0-Lock-%EC%A0%84%EB%9E%B5%EC%9D%84-%EA%B2%B0%EC%A0%95%ED%95%98%EB%8A%94-%EA%B1%B4-%EA%B8%B0%EC%88%A0%EC%9D%B4-%EC%95%84%EB%8B%88%EB%9D%BC-%EB%8F%84%EB%A9%94%EC%9D%B8%EC%9D%B4%EB%8B%A4)
+- [Redis는 TTL 때문에 쓰면 과한가?](https://pablo7.tistory.com/entry/%EC%82%AC%EC%9D%B4%EB%93%9C-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-Redis%EB%8A%94-TTL-%EB%95%8C%EB%AC%B8%EC%97%90-%EC%93%B0%EB%A9%B4-%EA%B3%BC%ED%95%9C%EA%B0%80)
+
+## ✅ 구현 기능 요약
+
+### 📌 아키텍처/인프라
+
+- 멀티 모듈 설계 (core, client, batch, file-upload 등)
+- [모듈 간 의존 역전 원칙 (core ↔ client 단방향)](https://github.com/f-lab-edu/hotel-reservation-platform/pull/69)
+- [Docker 기반 개발/운영 환경 구성](https://github.com/f-lab-edu/hotel-reservation-platform/pull/35)
+
+### 🔐 인증/인가
+
+- [JWT 기반 인증](https://github.com/f-lab-edu/hotel-reservation-platform/pull/43)
+- [Spring Security + 필터 체인 커스터마이징](https://github.com/f-lab-edu/hotel-reservation-platform/pull/64)
+- [OAuth 기반 소셜 로그인 연동 구현 (Retry 및 CircuitBreaker 적용 )](https://github.com/f-lab-edu/hotel-reservation-platform/pull/66)
+
+### 💳 예약 + 결제 흐름
+
+- [예약 가계약 생성 구조 도입](https://github.com/f-lab-edu/hotel-reservation-platform/pull/87)
+- [PG 연동을 통한 결제 프로세스 구현](https://github.com/f-lab-edu/hotel-reservation-platform/pull/89)
+
+### ⚙️ Batch 처리
+
+- [대용량 예약 가능 수량 적재 (Tasklet 기반)](https://github.com/f-lab-edu/hotel-reservation-platform/pull/76)
+- [DB 성능 테스트 및 LOAD DATA INFILE 활용 Batch 구조 설계](https://github.com/f-lab-edu/hotel-reservation-platform/pull/81)
+- [성능 튜닝: Redo Log, Buffer Pool, Checkpoint 최적화 실험](https://pablo7.tistory.com/entry/Batch-%EC%8B%9C%EB%A6%AC%EC%A6%88-7-MySQL-%ED%8A%9C%EB%8B%9D-%EC%9E%AC%EB%8F%84%EC%A0%84-%EA%B5%AC%EC%A1%B0%EC%A0%81-%EC%9D%B4%ED%95%B4%EB%A1%9C-OLAPOLTP-%EA%B7%A0%ED%98%95-%EC%B0%BE%EA%B8%B0)
+
+### 🧠 트러블슈팅/실험 기반 개선
+
+- [쿼리 성능 병목 추적(Batch 선집계 반영)](https://github.com/f-lab-edu/hotel-reservation-platform/pull/97)
+- [동시성 고려 (Lock 전략, Redis RLock 등)](https://github.com/f-lab-edu/hotel-reservation-platform/pull/93)
 
 ## 🗺️ 모듈 설계
 
@@ -86,61 +141,3 @@
 1. Entity → core-domain
 2. 필요한 비즈니스 쿼리 → 해당 client- 모듈에서 Repository 구현
 3. 공통 상수·Enum이 필요하면 core-support 에서 관리
-
-<br>
-
-#### 🔐 보안 설정 확장
-
-- 새로운 skipUrls 가 필요하면 JwtProperties.skipUrls(yaml) → SecurityConfig 자동 반영
-- 외부 API 호출 시 CircuitBreaker + Retry 디자인은 core-auth → 공통 유틸 제공 예정
-
-## 💡 주요 기능 및 설계
-
-### ✅ 1. 약관 도메인 설계 및 커서 기반 페이징
-
-- 고객 대상 약관 동의 기능 구현
-- 정렬 필드를 Enum + Generic 구조로 추상화하여 QueryDSL 기반 Keyset 페이징 지원
-
-### ✅ 2. 회원가입 및 인증 / 인가
-
-- 인증번호 발송 및 검증 (Redis TTL 기반)
-- JWT Access/Refresh Token 발급 및 보안 처리
-- `@LoginMember` ArgumentResolver 직접 구현하여 유저 컨텍스트 주입 처리
-
-### ✅ 3. Security 커스터마이징
-
-- JwtFilter 등록 및 인가 처리 로직 명확화
-- CustomAuthenticationEntryPoint 구현 및 AuthErrorType 설계
-- 권한 기반 접근 제어 적용
-
-### ✅ 4. 업체 숙박 정보 관리 - 숙소 등록 / 객실 정보 관리
-
-- 숙소 등록 및 객실 정보 관리 기능 구현
-- 숙소 이미지 업로드 -> 파일 업로드 모듈 분리
-- 예약 가능한 기간 설정 및 예약 가능 여부 체크
-
-<br />
-
-## 🔗블로그
-
-- [Blog Link](https://pablo7.tistory.com/)
-
----
-
-## 📌 진행 상황
-
-- ✅ 핵심 인증/인가 기능 구현 완료
-- ✅ 약관 관리 기능 + Keyset 페이징 구현 완료
-- ✅ 업체 숙소 등록 / 객실 관리 기능 구현 완료
-- ⏳ 숙박 가용 정보 자동화 Batch 구현 진행 중
-- ⏳ 일반 고객 숙소 검색 및 예약 구현 예정
-- 🔄 커밋 이력 및 설계 과정은 GitHub + 블로그로 지속 기록 중입니다
-
----
-
-## 🙋‍♂️ 프로젝트 목표
-
-- 도메인 중심 아키텍처와 구조적 책임 분리를 직접 경험
-- 사용자 유형에 따라 API를 분리하고, 공통 기능은 모듈화하여 의존 흐름을 명확하게 설계
-- **대규모 트래픽을 고려한 실전 설계 훈련**
-- **지속 가능한 설계 → 확장 가능한 코드**를 고민하며 성장 중입니다

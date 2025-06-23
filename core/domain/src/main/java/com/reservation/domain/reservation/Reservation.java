@@ -88,7 +88,7 @@ public class Reservation extends BaseEntity {
 		this.guestCount = guestCount;
 		this.phoneNumber = phoneNumber;
 		this.totalPrice = totalPrice;
-		this.status = status != null ? status : ReservationStatus.PENDING;
+		this.status = status != null ? status : ReservationStatus.CANCELED;
 	}
 
 	public void markConfirmed() {
@@ -101,14 +101,6 @@ public class Reservation extends BaseEntity {
 
 	public void markPaidError() {
 		this.status = ReservationStatus.PAID_ERROR;
-	}
-
-	public void markExpired() {
-		this.status = ReservationStatus.EXPIRED;
-	}
-
-	public boolean isPending() {
-		return this.status == ReservationStatus.PENDING;
 	}
 
 	public void markCanceled() {
