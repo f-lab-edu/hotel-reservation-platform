@@ -31,20 +31,12 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<Reservatio
 	private final Action<ReservationStatus, ReservationEvents> markConfirmedAction;
 	private final Action<ReservationStatus, ReservationEvents> markPaidErrorCanceledAction;
 	private final Action<ReservationStatus, ReservationEvents> markPgCancelFailAction;
-	private final Action<ReservationStatus, ReservationEvents> markCustomerCanceledAction;
-	private final Action<ReservationStatus, ReservationEvents> markAdminCanceledAction;
-	private final Action<ReservationStatus, ReservationEvents> markHostRejectedAction;
-	private final Action<ReservationStatus, ReservationEvents> markCustomerPaidCanceledAction;
-	private final Action<ReservationStatus, ReservationEvents> markAdminPaidCanceledAction;
-	private final Action<ReservationStatus, ReservationEvents> markHostPaidCanceledAction;
 
 	@Override
 	public void configure(StateMachineStateConfigurer<ReservationStatus, ReservationEvents> states) throws Exception {
 		states
 			.withStates()
-			.initial(PENDING) // 초기 상태
-			.state(ReservationStatus.EXPIRED) // 결제 시간 초과 상태
-			.state(ReservationStatus.PAID) // 결제 완료 상태
+			.initial(ReservationStatus.PAID) // 초기 상태
 			.state(ReservationStatus.PAID_ERROR) // 결제 에러 상태
 			.state(ReservationStatus.CANCELED) // 예약 취소 상태
 			.state(ReservationStatus.CONFIRMED) // 예약 확정 상태
@@ -59,31 +51,7 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<Reservatio
 		StateMachineTransitionConfigurer<ReservationStatus, ReservationEvents> transitions
 	) throws Exception {
 		transitions
-			// PENDING → 결제 성공/실패 분기
-			.withExternal()
-			.source(PENDING).target(PAID) // 펜딩에서 -> 결제 완료로
-			.event(VALIDATE_PAYMENT) // 이벤트: 결제 검증
-			.guard(isPaymentAmountValidGuard) // 가드: 결제 금액이 일치하면
-			.action(markPaidAction) // 액션: 결제 완료로 상태 변경
-
-			.and()
-			.withExternal()
-			.source(PENDING).target(PAID_ERROR) // 펜딩에서 -> 결제 에러로
-			.event(VALIDATE_PAYMENT) // 이벤트: 결제 검증
-			.guard(isPaymentAmountInvalidGuard) // 가드: 결제 금액이 불일치하면
-			.action(markPaidErrorAction) // 액션: 결제 에러로 상태 변경
-
-			.and()
-			.withExternal().source(PENDING).target(PG_VALIDATE_ERROR) // 펜딩에서 -> PG 검증 에러로
-			.event(PAYMENT_VALIDATE_ERROR)
-			.action(markPaidErrorAction)
-			.and()
-			.withExternal().source(PENDING).target(EXPIRED)
-			.event(PAYMENT_EXPIRED)
-			.action(markExpiredAction)
-
 			// PG_VALIDATE_ERROR → 재검증
-			.and()
 			.withExternal().source(PG_VALIDATE_ERROR).target(PAID)
 			.event(PAYMENT_SUCCESS)
 			.guard(isPaymentAmountValidGuard)
@@ -107,46 +75,6 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<Reservatio
 			.action(markPaidErrorCanceledAction)
 			.and()
 			.withExternal().source(PAID_ERROR).target(PG_CANCEL_FAIL)
-			.event(ReservationEvents.PG_CANCEL_FAIL)
-			.action(markPgCancelFailAction)
-
-			// PAID → 취소 요청
-			.and()
-			.withExternal().source(PAID).target(CANCELED)
-			.event(CUSTOMER_PAYMENT_CANCEL)
-			.action(markCustomerCanceledAction)
-			.and()
-			.withExternal().source(PAID).target(CANCELED)
-			.event(ADMIN_PAYMENT_CANCEL)
-			.action(markAdminCanceledAction)
-			.and()
-			.withExternal().source(PAID).target(CANCELED)
-			.event(HOST_PAYMENT_CANCEL)
-			.action(markHostRejectedAction)
-
-			// 취소 → 결제 취소 or 실패
-			.and()
-			.withExternal().source(CANCELED).target(PAID_CANCELED)
-			.event(PG_PAID_CANCEL)
-			.action(markCustomerPaidCanceledAction)
-			.and()
-			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
-			.event(ReservationEvents.PG_CANCEL_FAIL)
-			.action(markPgCancelFailAction)
-			.and()
-			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
-			.event(PG_PAID_CANCEL)
-			.action(markAdminPaidCanceledAction)
-			.and()
-			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
-			.event(ReservationEvents.PG_CANCEL_FAIL)
-			.action(markPgCancelFailAction)
-			.and()
-			.withExternal().source(CANCELED).target(PAID_CANCELED)
-			.event(PG_PAID_CANCEL)
-			.action(markHostPaidCanceledAction)
-			.and()
-			.withExternal().source(CANCELED).target(PG_CANCEL_FAIL)
 			.event(ReservationEvents.PG_CANCEL_FAIL)
 			.action(markPgCancelFailAction);
 	}
