@@ -88,7 +88,7 @@
 
 <br>
 
-#### Core 모듈 내부
+#### Core 모듈 관계
 
 <img width="500" alt="image" src="etc/img/core-module-relation.png"/>
 
