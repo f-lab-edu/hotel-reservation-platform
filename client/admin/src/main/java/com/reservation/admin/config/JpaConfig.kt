@@ -9,4 +9,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaAuditing
 @EntityScan(basePackages = ["com.reservation.domain", "com.reservation.admin"])
 @EnableJpaRepositories(basePackages = ["com.reservation.admin"])
-open class JpaConfig
+class JpaConfig

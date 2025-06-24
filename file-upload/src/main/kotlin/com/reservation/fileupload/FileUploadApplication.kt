@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
     scanBasePackages = ["com.reservation.auth", "com.reservation.domain", "com.reservation.fileupload"
     ]
 )
-open class FileUploadApplication {
+class FileUploadApplication {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {

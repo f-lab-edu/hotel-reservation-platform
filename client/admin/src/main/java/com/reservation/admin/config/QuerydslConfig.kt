@@ -7,12 +7,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-open class QuerydslConfig {
+class QuerydslConfig {
     @PersistenceContext
     private val entityManager: EntityManager? = null
 
     @Bean
-    open fun jpaQueryFactory(): JPAQueryFactory {
+    fun jpaQueryFactory(): JPAQueryFactory {
         return JPAQueryFactory(entityManager)
     }
 }

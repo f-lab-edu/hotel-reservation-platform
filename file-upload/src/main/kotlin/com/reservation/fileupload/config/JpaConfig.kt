@@ -9,4 +9,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaAuditing
 @EntityScan(basePackages = ["com.reservation.domain"])
 @EnableJpaRepositories(basePackages = ["com.reservation.fileupload"])
-open class JpaConfig
+class JpaConfig

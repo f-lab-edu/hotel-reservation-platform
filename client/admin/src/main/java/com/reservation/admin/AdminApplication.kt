@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 @SpringBootApplication(
     scanBasePackages = ["com.reservation.admin", "com.reservation.domain", "com.reservation.querysupport", "com.reservation.support"]
 )
-open class AdminApplication {
+class AdminApplication {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
