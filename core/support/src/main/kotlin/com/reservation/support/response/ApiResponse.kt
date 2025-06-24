@@ -6,6 +6,7 @@ data class ApiResponse<T>(
     val data: T
 ) {
     companion object {
+        @JvmStatic
         fun <T> ok(data: T): ApiResponse<T> {
             return ApiResponse(true, data)
         }

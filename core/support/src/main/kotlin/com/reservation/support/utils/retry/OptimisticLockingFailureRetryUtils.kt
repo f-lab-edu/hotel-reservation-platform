@@ -9,6 +9,7 @@ import org.springframework.dao.OptimisticLockingFailureException
 object OptimisticLockingFailureRetryUtils {
     private val log: Logger = LoggerFactory.getLogger(OptimisticLockingFailureRetryUtils::class.java)
 
+    @JvmStatic
     fun <T> executeWithRetry(maxRetryCount: Int, operation: RetryableOperation<T>): T {
         return executeWithRetry(maxRetryCount, operation, 0)
     }
