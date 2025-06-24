@@ -1,6 +1,7 @@
+server:
+  port: 8200
+
 spring:
-  mvc:
-    throw-exception-if-no-handler-found: true
   web:
     resources:
       add-mappings: false
@@ -16,9 +17,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  batch:
-    job:
-      enabled: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    net.ttddyy.dsproxy.listener: DEBUG
+    com.github.gavlyukovskiy.boot.jdbc.decorator: DEBUG
+
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
@@ -70,25 +76,3 @@ resilience4j:
         waitDuration: 500ms   # 각 재시도 간 지연
         retryExceptions:
           - com.reservation.support.exception.BusinessException
-
-#logging:
-#  level:
-#    org.hibernate.SQL: debug
-#    org.hibernate.orm.jdbc.bind: trace
-#    net.ttddyy.dsproxy.listener: DEBUG
-#    com.github.gavlyukovskiy.boot.jdbc.decorator: DEBUG
-
-decorator:
-  datasource:
-    proxy:
-      enabled: true
-      logging: true
-      query:
-        log-level: debug
-        log-slow-query: true
-        slow-query-threshold: 1000
-
-iamport:
-  api-key: ${IAMPORT_API_KEY}
-  api-secret: ${IAMPORT_API_SECRET}
-  imp-uid: ${IMP_ID}
