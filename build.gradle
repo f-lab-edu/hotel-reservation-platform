@@ -5,19 +5,17 @@ plugins {
 }
 
 allprojects {
-    repositories {
-        mavenCentral()
-        // 아임포트 관련
-        maven { url 'https://jitpack.io' }
-    }
-}
-
-subprojects {
     apply plugin: 'java'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'checkstyle'
+
+    repositories {
+        mavenCentral()
+        // 아임포트 관련
+        maven { url 'https://jitpack.io' }
+    }
 
     java {
         toolchain {
@@ -28,9 +26,15 @@ subprojects {
     dependencies {
         implementation 'org.jetbrains.kotlin:kotlin-stdlib'
         implementation 'org.jetbrains.kotlin:kotlin-reflect'
-        implementation 'org.springframework.boot:spring-boot-starter-web'
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
+
+        implementation 'org.springframework.boot:spring-boot-starter-web'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+        compileOnly 'org.projectlombok:lombok:1.18.36'
+        annotationProcessor 'org.projectlombok:lombok:1.18.36'
+        testCompileOnly 'org.projectlombok:lombok:1.18.36'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
     }
 
     checkstyle {
