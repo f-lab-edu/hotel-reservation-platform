@@ -1,0 +1,26 @@
+server:
+  port: 9000
+
+spring:
+  web:
+    resources:
+      add-mappings: false
+  profiles:
+    active: local # 기본 실행 프로파일
+  config:
+    import: optional:file:.env[.properties]
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    net.ttddyy.dsproxy.listener: DEBUG
+    com.github.gavlyukovskiy.boot.jdbc.decorator: DEBUG
