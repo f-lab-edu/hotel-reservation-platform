@@ -13,7 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.reservation.domain.roomimage.QRoomImage;
 import com.reservation.domain.roomtype.QRoomType;
 import com.reservation.domain.roomtype.RoomType;
-import com.reservation.host.roomtype.service.dto.QSearchRoomResult;
+import com.reservation.host.roomtype.service.dto.QSearchRoomTypeResult;
 import com.reservation.host.roomtype.service.dto.SearchRoomTypeResult;
 import com.reservation.querysupport.sort.SortUtils;
 
@@ -48,7 +48,7 @@ public class RoomTypeQueryRepository {
 		// 데이터 조회
 
 		List<SearchRoomTypeResult> content = queryFactory
-			.select(new QSearchRoomResult(
+			.select(new QSearchRoomTypeResult(
 				roomType.id,
 				roomType.accommodationId,
 				roomType.name,

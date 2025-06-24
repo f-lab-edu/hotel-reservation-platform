@@ -81,7 +81,7 @@ public class ReservationActionConfig {
 			}
 			ReservationStatus from = reservation.getStatus();
 
-			reservation.markExpired();
+			// reservation.markExpired();
 			log.info("예약 [{}] 상태를 'markExpired'로 전환합니다.", reservation.getId());
 
 			ReservationStatus to = reservation.getStatus();

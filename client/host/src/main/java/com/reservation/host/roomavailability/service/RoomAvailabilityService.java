@@ -32,7 +32,7 @@ public class RoomAvailabilityService {
 
 		OriginRoomAvailability newOriginRoomAvailability = OriginRoomAvailability.builder()
 			.roomTypeId(createRoomAvailabilityInfo.roomTypeId())
-			.date(createRoomAvailabilityInfo.date())
+			.openDate(createRoomAvailabilityInfo.date())
 			.price(createRoomAvailabilityInfo.price())
 			.availableCount(createRoomAvailabilityInfo.availableCount())
 			.build();
@@ -60,7 +60,7 @@ public class RoomAvailabilityService {
 		OriginRoomAvailability updateOriginRoomAvailability = OriginRoomAvailability.builder()
 			.id(updateRoomAvailabilityId)
 			.roomTypeId(updateRoomAvailabilityInfo.roomTypeId())
-			.date(updateRoomAvailabilityInfo.date())
+			.openDate(updateRoomAvailabilityInfo.date())
 			.price(updateRoomAvailabilityInfo.price())
 			.availableCount(updateRoomAvailabilityInfo.availableCount())
 			.build();
@@ -86,6 +86,6 @@ public class RoomAvailabilityService {
 
 		checkRoomType(roomTypeId, hostId);
 
-		return jpaRoomAvailabilityRepository.findByRoomTypeIdAndDateBetween(roomTypeId, startDate, endDate);
+		return jpaRoomAvailabilityRepository.findByRoomTypeIdAndOpenDateBetween(roomTypeId, startDate, endDate);
 	}
 }
