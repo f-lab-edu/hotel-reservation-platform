@@ -1,0 +1,38 @@
+# --- 1. Deployment: Gateway 컨테이너를 실행하고 설정을 주입하는 역할 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      serviceAccountName: gateway-sa
+      containers:
+        - name: gateway-container
+          # 로컬에서 빌드한 이미지를 사용합니다.
+          image: gateway-service:1.0.0
+          # imagePullPolicy: Never는 로컬 이미지를 우선 사용하도록 합니다.
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+
+---
+# --- 2. Service: Gateway를 외부에 노출하고 내부 주소를 만드는 역할 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+spec:
+  type: ClusterIP
+  selector:
+    app: gateway
+  ports:
+    - port: 8000
+      targetPort: 8000

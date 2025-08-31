@@ -1,0 +1,43 @@
+# --- 1. Deployment: 그라파나 컨테이너를 실행하고 관리하는 역할 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana-container
+          image: grafana/grafana-oss:latest
+          ports:
+            - containerPort: 3000
+
+---
+# --- 2. Service: 그라파나를 외부에 노출하고 내부 주소를 만드는 역할 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+spec:
+  type: ClusterIP
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+# $ kubectl port-forward svc/zipkin-service 9411:9411
+
+## 실행 및 접속 방법
+# 1. 실행: 터미널에서 MSA-Study 최상위 폴더 기준으로 아래 명령어를 실행합니다.
+# $ kubectl apply -f k8s/monitoring/grafana-deploy.yml
+# 2. 확인: 잠시 후, 아래 명령어로 grafana-deployment Pod가 Running 상태인지 확인합니다.
+# $ kubectl get pods
+# 3. 접속: 이제 웹 브라우저에서 NodePort로 지정한 포트를 사용하여 접속할 수 있습니다.
+# URL: http://localhost:30000

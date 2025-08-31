@@ -1,0 +1,38 @@
+# k8s/gateway/gateway-rbac.yml
+
+# --- 1. ServiceAccount: Gateway Pod가 사용할 전용 신분증 생성 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  # 이 ServiceAccount의 이름을 'gateway-sa'로 지정합니다.
+  name: gateway-sa
+
+---
+# --- 2. Role: 필요한 권한 목록 정의 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  # 이 권한 목록의 이름을 'gateway-role'로 지정합니다.
+  name: gateway-role
+rules:
+  - apiGroups: [""]
+    # Spring Cloud Kubernetes LoadBalancer가 다른 서비스를 찾기 위해
+    # 'services', 'endpoints', 'pods' 정보를 조회할 수 있도록 허용합니다.
+    resources: ["services", "endpoints", "pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+# --- 3. RoleBinding: 위에서 만든 신분증과 권한 목록을 연결 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gateway-rb
+subjects:
+  # 'gateway-sa'라는 신분증을 가진 주체에게,
+  - kind: ServiceAccount
+    name: gateway-sa
+roleRef:
+  # 'gateway-role'이라는 권한을 부여합니다.
+  kind: Role
+  name: gateway-role
+  apiGroup: rbac.authorization.k8s.io

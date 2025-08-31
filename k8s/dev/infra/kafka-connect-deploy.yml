@@ -1,0 +1,60 @@
+# --- 1. Deployment: Kafka Connect 컨테이너 실행 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-connect-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-connect
+  template:
+    metadata:
+      labels:
+        app: kafka-connect
+    spec:
+      containers:
+        - name: kafka-connect-container
+          image: kafka-connect-custom:1.0 # 빌드한 로컬 이미지 사용
+          imagePullPolicy: IfNotPresent # 로컬에 이미지가 있으면 사용
+          ports:
+            - containerPort: 8083
+          env:
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              # 쿠버네티스 내부 Kafka 주소를 사용합니다.
+              value: "kafka-service:29092"
+            - name: CONNECT_GROUP_ID
+              value: "connect-cluster"
+            - name: CONNECT_CONFIG_STORAGE_TOPIC
+              value: "_connect-configs"
+            - name: CONNECT_OFFSET_STORAGE_TOPIC
+              value: "_connect-offsets"
+            - name: CONNECT_STATUS_STORAGE_TOPIC
+              value: "_connect-status"
+            - name: CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR
+              value: "1"
+            - name: CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR
+              value: "1"
+            - name: CONNECT_STATUS_STORAGE_REPLICATION_FACTOR
+              value: "1"
+            - name: CONNECT_KEY_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: CONNECT_VALUE_CONVERTER
+              value: "org.apache.kafka.connect.json.JsonConverter"
+            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+              # 쿠버네티스 내부 서비스 이름을 사용합니다.
+              value: "kafka-connect-service"
+
+---
+# --- 2. Service: Kafka Connect를 노출하고 내부 주소를 만드는 역할 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-connect-service
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-connect
+  ports:
+    - port: 8083
+      targetPort: 8083

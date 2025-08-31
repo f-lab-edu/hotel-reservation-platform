@@ -1,0 +1,100 @@
+# --- 1. PersistentVolumeClaim: Kafka 데이터를 저장할 디스크 공간 요청 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # 하나의 노드에서만 마운트 가능
+  resources:
+    requests:
+      storage: 1Gi # 1기가바이트의 저장 공간 요청
+
+---
+# --- 2. Service (ClusterIP): Pod 내부 통신용 서비스 ---
+# 다른 서비스들(kafka-connect, kafka-ui, MSA 앱 등)이 사용할 내부 주소입니다.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka
+  ports:
+    - name: internal
+      port: 29092
+      targetPort: 29092
+    - name: controller
+      port: 29093
+      targetPort: 29093
+    - name: external
+      port: 9092
+      targetPort: 9092
+---
+
+---
+# --- 4. StatefulSet: Kafka (KRaft 모드) 실행 ---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  replicas: 1
+  serviceName: "kafka-service"
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka-container
+          image: apache/kafka:latest
+          ports:
+            - containerPort: 9092 # 외부용
+            - containerPort: 29092 # 내부용
+            - containerPort: 29093 # 컨트롤러용
+          env:
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: 'broker,controller'
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              # StatefulSet의 Pod 이름은 'statefulset이름-순번' (kafka-0)이 됩니다.
+              value: '1@kafka-0.kafka-service:29093'
+            - name: KAFKA_LISTENERS
+              value: 'CONTROLLER://:29093,EXTERNAL://:9092,INTERNAL://:29092'
+            - name: KAFKA_ADVERTISED_LISTENERS
+              # 외부에서는 kafka-service:30092로, 내부에서는 kafka-service:29092로 접속하라고 알려줍니다.
+              value: 'EXTERNAL://kafka-service:9092, INTERNAL://kafka-service:29092'
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: 'CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT'
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: 'CONTROLLER'
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: 'INTERNAL'
+            - name: CLUSTER_ID
+              # 이 ID는 고유해야 합니다. docker run --rm apache/kafka:latest kafka-storage.sh random-uuid
+              value: '4L6g3nShT-eMCtK--X86sw'
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_LOG_DIRS
+              value: '/var/lib/kafka/data'
+          volumeMounts:
+            - name: kafka-storage
+              mountPath: /var/lib/kafka/data
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

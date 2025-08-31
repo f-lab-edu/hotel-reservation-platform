@@ -1,0 +1,87 @@
+# --- 1. Secret: MySQL 비밀번호를 안전하게 저장 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  # Root 사용자의 비밀번호
+  # echo -n 'root' | base64 -> cm9vdA==
+  mysql-root-password: cm9vdA==
+  # 'msa' 일반 사용자의 비밀번호
+  # echo -n 'study' | base64 -> c3R1ZHk=
+  mysql-password: c3R1ZHk=
+
+---
+# --- 2. PersistentVolumeClaim (PVC): 데이터 보존을 위한 디스크 공간 요청 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# --- 3. Deployment: MySQL 컨테이너를 실행 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql-container
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: "msa-study"
+            # --- 여기가 수정된 부분입니다 ---
+            - name: MYSQL_USER
+              # 'root'가 아닌, 일반 사용자 'msa'를 생성합니다.
+              value: "msa"
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  # 'msa' 사용자의 비밀번호('study')를 참조합니다.
+                  key: mysql-password
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+
+---
+# --- 4. Service: 'mysql-service'라는 고정된 내부 주소 생성 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306

@@ -1,0 +1,45 @@
+# --- 1. Deployment: Kafka UI 컨테이너 실행 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-ui
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui-container
+          image: provectuslabs/kafka-ui:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "local-k8s"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              # 쿠버네티스 내부 Kafka 주소를 사용합니다.
+              value: "kafka-service:29092"
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME
+              value: "connect"
+            - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS
+              # 쿠버네티스 내부 Kafka Connect 주소를 사용합니다.
+              value: "http://kafka-connect-service:8083"
+
+---
+# --- 2. Service: Kafka UI를 노출하고 내부 주소를 만드는 역할 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui-service
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka-ui
+  ports:
+    - port: 8080
+      targetPort: 8080

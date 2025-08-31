@@ -1,0 +1,88 @@
+# --- 1. ConfigMap: prometheus.yml 설정 파일을 쿠버네티스에 저장하는 역할 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config   # 이 ConfigMap의 이름입니다.
+data:
+  prometheus.yml: |   # 'prometheus.yml'이라는 이름의 키(파일 이름)로, 아래 내용을 저장합니다.
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+      - job_name: 'prometheus-service'
+        static_configs:
+          - targets: ['prometheus-service:9090']
+
+      - job_name: 'gateway-service'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['gateway-service:8000']
+
+      - job_name: 'catalog-service'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['catalog-service:8095']
+
+      - job_name: 'user-service'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['user-service:8090']
+
+      - job_name: 'order-service'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['order-service:8085']
+
+---
+# --- 2. Deployment: 프로메테우스 컨테이너를 실행하고 ConfigMap을 연결하는 역할 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus-container
+          image: prom/prometheus:latest
+          ports:
+            - containerPort: 9090
+          args: # docker-compose의 command와 동일한 설정
+            - '--config.file=/etc/prometheus/prometheus.yml'
+          volumeMounts: # docker-compose의 volumes와 동일한 설정: ConfigMap을 컨테이너의 특정 경로에 파일처럼 연결
+            - name: config-volume
+              mountPath: /etc/prometheus/
+      volumes: # 이 Pod에서 사용할 볼륨을 정의합니다.
+        - name: config-volume
+          configMap:
+            name: prometheus-config # 'prometheus-config'라는 이름의 ConfigMap을 볼륨으로 사용합니다.
+
+---
+# --- 3. Service: 프로메테우스를 외부에 노출하고 내부 주소를 만드는 역할 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service # 다른 서비스들은 'prometheus-service'라는 이름으로 이 Pod에 접근할 수 있습니다.
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+# $ kubectl port-forward svc/prometheus-service 9090:9090
+
+## 실행 및 접속 방법
+# 1. 실행: 터미널에서 MSA-Study 최상위 폴더 기준으로 아래 명령어를 실행합니다.
+# $ kubectl apply -f k8s/monitoring/prometheus-deploy.yml
+# 2. 확인: 잠시 후, 아래 명령어로 prometheus-deployment Pod가 Running 상태인지 확인합니다.
+# $ kubectl get pods
+# 접속: 이제 웹 브라우저에서 NodePort로 지정한 포트로 접속할 수 있습니다.
+# URL: http://localhost:30090
