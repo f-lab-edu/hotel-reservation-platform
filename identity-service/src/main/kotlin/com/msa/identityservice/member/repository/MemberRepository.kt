@@ -20,15 +20,15 @@ class MemberRepository(
             .execute()
     }
 
-    fun findActiveMemberByEmail(email: String): Member? {
-        return dsl.selectFrom(MEMBER)
-            .where(MEMBER.EMAIL.eq(email).and(MEMBER.STATUS.eq(MemberStatus.ACTIVE)))
-            .fetchOneInto(Member::class.java)
-    }
-
     fun findById(id: Long): Member? {
         return dsl.selectFrom(MEMBER)
             .where(MEMBER.ID.eq(id))
+            .fetchOneInto(Member::class.java)
+    }
+
+    fun findActiveMemberByEmail(email: String): Member? {
+        return dsl.selectFrom(MEMBER)
+            .where(MEMBER.EMAIL.eq(email).and(MEMBER.STATUS.eq(MemberStatus.ACTIVE)))
             .fetchOneInto(Member::class.java)
     }
 }
