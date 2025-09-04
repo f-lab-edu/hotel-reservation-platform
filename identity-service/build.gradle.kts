@@ -25,6 +25,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-jooq")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -32,11 +33,16 @@ dependencies {
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.flywaydb:flyway-mysql")
 
+	implementation("com.github.f4b6a3:tsid-creator:5.2.6")
+
 	runtimeOnly("com.mysql:mysql-connector-j")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+	testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 
 	jooqGenerator("com.mysql:mysql-connector-j")
 }
@@ -90,6 +96,7 @@ jooq { // jOOQ 코드 생성 설정
 						isPojos = true // POJO 클래스 생성
 						isFluentSetters = true // Fluent Setter 생성
 						isJavaTimeTypes = true // 날짜/시간 타입을 Java 8+ Time API로 매핑
+						isKotlinNotNullPojoAttributes = true // Kotlin POJO에서 NotNull 속성을 non-nullable 타입으로 생성
 					}
 				}
 			}
