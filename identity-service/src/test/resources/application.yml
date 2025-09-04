@@ -1,19 +1,17 @@
-server:
-  port: ${SERVER_PORT:8081}
-
 spring:
   application:
     name: identity-service
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:30306/identity-db}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:root}
+    url: ${TEST_DB_URL:jdbc:mysql://localhost:30306/identity-test-db}
+    username: ${TEST_DB_USER:root}
+    password: ${TEST_DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jooq:
     sql-dialect: MYSQL
   flyway:
     enabled: true
     baseline-on-migrate: true # 기존에 테이블이 있는 DB에 처음 적용할 때, 현재 상태를 기준으로 삼는 설정
+    schemas: identity-test-db
 
 logging:
   level:
