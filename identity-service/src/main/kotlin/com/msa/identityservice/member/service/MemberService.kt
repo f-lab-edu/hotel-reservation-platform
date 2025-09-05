@@ -1,5 +1,6 @@
 package com.msa.identityservice.member.service
 
+import com.msa.identityservice.exception.BusinessErrorCode
 import com.msa.identityservice.infrastructure.IdGenerator
 import com.msa.identityservice.jooq.tables.pojos.Member
 import com.msa.identityservice.member.repository.MemberRepository
@@ -28,7 +29,7 @@ class MemberService(
 
     fun checkEmailDuplicateThrow(email: String) {
         memberRepository.findActiveMemberByEmail(email)?.let {
-            throw IllegalStateException("이미 사용 중인 이메일입니다.")
+            throw BusinessErrorCode.CONFLICT.exception("이미 사용 중인 이메일입니다.")
         }
     }
 }
