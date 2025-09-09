@@ -17,20 +17,20 @@ class RequestContext(
 
     fun getRefreshToken(): String {
         if (request.cookies == null) {
-            throw BusinessErrorCode.UNAUTHORIZED.exception(UNAUTHORIZED_MESSAGE)
+            throw BusinessErrorCode.UNAUTHORIZED.exception(NOT_FOUND_TOKEN_MESSAGE)
         }
 
         return Arrays.stream(request.cookies)
             .filter { c -> c.name.equals(REFRESH_COOKIE_NAME) }
             .map { obj: Cookie -> obj.value }
             .findFirst()
-            .orElseThrow { BusinessErrorCode.UNAUTHORIZED.exception(UNAUTHORIZED_MESSAGE) }
+            .orElseThrow { BusinessErrorCode.UNAUTHORIZED.exception(NOT_FOUND_TOKEN_MESSAGE) }
     }
 
     fun getAccessToken(): String {
         val authHeader = request.getHeader(AUTH_HEADER_NAME)
         if (authHeader == null || !authHeader.startsWith(AUTH_HEADER_PREFIX)) {
-            throw BusinessErrorCode.UNAUTHORIZED.exception(UNAUTHORIZED_MESSAGE)
+            throw BusinessErrorCode.UNAUTHORIZED.exception(NOT_FOUND_TOKEN_MESSAGE)
         }
 
         return authHeader.substring(AUTH_HEADER_PREFIX.length)
@@ -40,7 +40,7 @@ class RequestContext(
         const val REFRESH_COOKIE_NAME = "refreshToken"
         const val AUTH_HEADER_NAME = "Authorization"
         const val AUTH_HEADER_PREFIX = "Bearer "
-        const val UNAUTHORIZED_MESSAGE = "인증 정보가 존재하지 않습니다."
+        const val NOT_FOUND_TOKEN_MESSAGE = "인증 정보가 존재하지 않습니다."
     }
 
 }
