@@ -2,6 +2,7 @@ package com.msa.identityservice.member.service
 
 import com.msa.identityservice.exception.BusinessErrorCode
 import com.msa.identityservice.infrastructure.IdGenerator
+import com.msa.identityservice.jooq.enums.MemberStatus
 import com.msa.identityservice.jooq.tables.pojos.Member
 import com.msa.identityservice.member.repository.MemberRepository
 import com.msa.identityservice.member.service.dto.RegisterMemberDto
@@ -14,6 +15,7 @@ class MemberService(
     private val idGenerator: IdGenerator,
     private val passwordEncoder: PasswordEncoder
 ) {
+
     fun register(registerMemberDto: RegisterMemberDto): Member {
         checkEmailDuplicateThrow(registerMemberDto.email)
 
@@ -22,14 +24,21 @@ class MemberService(
             encoderPassword = passwordEncoder.encode(registerMemberDto.password)
         )
 
-        memberRepository.save(newMember)
+        memberRepository.insert(newMember)
 
         return newMember
     }
 
     fun checkEmailDuplicateThrow(email: String) {
-        memberRepository.findActiveMemberByEmail(email)?.let {
+        val emailLowercase = email.trim().lowercase()
+        val findMember: Member? = memberRepository.findByStatusAndEmail(
+            status = MemberStatus.ACTIVE,
+            email = emailLowercase
+        )
+        
+        if (findMember != null) {
             throw BusinessErrorCode.CONFLICT.exception("이미 사용 중인 이메일입니다.")
         }
     }
+
 }

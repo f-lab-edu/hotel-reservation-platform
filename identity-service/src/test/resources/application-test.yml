@@ -1,6 +1,9 @@
 spring:
-  application:
-    name: identity-service
+  data:
+    redis:
+      host: ${TEST_REDIS_HOST:localhost}
+      port: ${TEST_REDIS_PORT:30079}
+      password: ${TEST_REDIS_PASSWORD:your-redis-password}
   datasource:
     url: ${TEST_DB_URL:jdbc:mysql://localhost:30306/identity-test-db}
     username: ${TEST_DB_USER:root}
@@ -12,7 +15,3 @@ spring:
     enabled: true
     baseline-on-migrate: true # 기존에 테이블이 있는 DB에 처음 적용할 때, 현재 상태를 기준으로 삼는 설정
     schemas: identity-test-db
-
-logging:
-  level:
-    org.jooq.tools.LoggerListener: TRACE

@@ -9,4 +9,5 @@ class IdGenerator {
     fun generate(): Long {
         return TsidCreator.getTsid().toLong()
     }
+    
 }

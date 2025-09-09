@@ -14,12 +14,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @AutoConfigureMockMvc // MockMvc를 실제 서버처럼 사용하기 위한 설정
+@ActiveProfiles("test")
 @Transactional
 class MemberControllerIntegrationTest @Autowired constructor(
     private val mockMvc: MockMvc,
@@ -70,11 +72,15 @@ class MemberControllerIntegrationTest @Autowired constructor(
             email = existingEmail,
             password = "password",
             phoneNumber = "010-1234-5678",
-            status = MemberStatus.ACTIVE,
         )
-        memberRepository.save(existingMember)
 
-        val request = MemberRegistrationRequest(existingEmail, "Password123!", "010-1111-2222")
+        memberRepository.insert(existingMember)
+
+        val request = MemberRegistrationRequest(
+            email = existingEmail,
+            password = "Password123!",
+            phoneNumber = "010-1111-2222"
+        )
 
         // When & Then
         mockMvc.post("/members") {
@@ -88,4 +94,5 @@ class MemberControllerIntegrationTest @Autowired constructor(
             jsonPath("$.message") { value("이미 사용 중인 이메일입니다.") }
         }
     }
+    
 }
