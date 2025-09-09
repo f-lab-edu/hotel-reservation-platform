@@ -55,9 +55,11 @@ spec:
             requests:
               memory: "128Mi"
               cpu: "100m" # 0.1 vCPU
+              ephemeral-storage: "1Gi"
             limits:
               memory: "256Mi"
               cpu: "200m" # 0.2 vCPU
+              ephemeral-storage: "2Gi"
 
           volumeMounts:
             - name: redis-persistent-storage
