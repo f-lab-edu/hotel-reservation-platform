@@ -39,11 +39,15 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: redis-container
-          image: redis:7-alpine
+          image: redislabs/rejson:latest
           ports:
             - containerPort: 6379
           command: [ "redis-server" ]
-          args: [ "--requirepass", "$(REDIS_PASSWORD)" ]
+          args:
+            - "--loadmodule"
+            - "/usr/lib/redis/modules/rejson.so"
+            - "--requirepass"
+            - "$(REDIS_PASSWORD)"
           env:
             - name: REDIS_PASSWORD
               valueFrom:
