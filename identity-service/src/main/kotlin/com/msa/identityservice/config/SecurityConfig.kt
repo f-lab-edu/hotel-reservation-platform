@@ -21,9 +21,11 @@ class SecurityConfig {
         http.csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers(HttpMethod.POST, "/members").permitAll()
+                    .requestMatchers("/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
 
         return http.build()
     }
+
 }

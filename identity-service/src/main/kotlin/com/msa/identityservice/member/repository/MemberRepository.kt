@@ -10,13 +10,13 @@ import org.springframework.stereotype.Repository
 class MemberRepository(
     private val dsl: DSLContext
 ) {
-    fun save(member: Member) {
+
+    fun insert(member: Member) {
         dsl.insertInto(MEMBER)
             .set(MEMBER.ID, member.id)
             .set(MEMBER.EMAIL, member.email)
             .set(MEMBER.PASSWORD, member.password)
             .set(MEMBER.PHONE_NUMBER, member.phoneNumber)
-            .set(MEMBER.STATUS, member.status)
             .execute()
     }
 
@@ -26,9 +26,12 @@ class MemberRepository(
             .fetchOneInto(Member::class.java)
     }
 
-    fun findActiveMemberByEmail(email: String): Member? {
+    fun findByStatusAndEmail(status: MemberStatus, email: String): Member? {
         return dsl.selectFrom(MEMBER)
-            .where(MEMBER.EMAIL.eq(email).and(MEMBER.STATUS.eq(MemberStatus.ACTIVE)))
+            .where(
+                MEMBER.STATUS.eq(status).and(MEMBER.EMAIL.eq(email))
+            )
             .fetchOneInto(Member::class.java)
     }
+
 }

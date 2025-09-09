@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: identity-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:30079}
+      password: ${REDIS_PASSWORD:your-redis-password}
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:30306/identity-db}
     username: ${DB_USER:root}
@@ -14,7 +19,17 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true # 기존에 테이블이 있는 DB에 처음 적용할 때, 현재 상태를 기준으로 삼는 설정
+  jackson:
+    deserialization:
+      read-unknown-enum-values-as-null: true
 
 logging:
   level:
     org.jooq.tools.LoggerListener: TRACE
+    org.springframework.data.redis: DEBUG
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY:this-is-a-very-long-and-secure-secret-key-for-hs256-algorithm}
+  access-token-expiration-hours: 1
+  refresh-token-expiration-hours: 24
+  max-device-count: 5

@@ -1,0 +1,81 @@
+# redis-deploy.yml
+
+# --- 1. Secret: Redis 비밀번호를 안전하게 저장 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-secret
+type: Opaque
+data:
+  # Redis 접속 비밀번호
+  # echo -n 'your-redis-password' | base64 -> eW91ci1yZWRpcy1wYXNzd29yZA==
+  # 실제 프로덕션에서는 더 강력한 비밀번호를 사용하세요.
+  redis-password: eW91ci1yZWRpcy1wYXNzd29yZA==
+
+---
+# --- 2. PersistentVolumeClaim (PVC): 데이터 보존을 위한 디스크 공간 요청 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # 볼륨은 한 번에 하나의 노드에서만 읽기/쓰기 가능
+  resources:
+    requests:
+      storage: 1Gi # 1GB의 저장 공간 요청
+
+---
+# --- 3. Deployment: Redis 컨테이너를 실행 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis-container
+          # 가벼운 Alpine Linux 기반의 Redis 이미지를 사용합니다.
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379 # Redis 기본 포트
+          # Redis는 환경변수가 아닌, 실행 인자로 비밀번호를 설정합니다.
+          command: ["redis-server"]
+          args: ["--requirepass", "$(REDIS_PASSWORD)"]
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+          volumeMounts:
+            # PVC를 컨테이너의 /data 디렉토리에 마운트하여 데이터를 보존합니다.
+            - name: redis-persistent-storage
+              mountPath: /data
+      volumes:
+        - name: redis-persistent-storage
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+---
+# --- 4. Service: 'redis-service'라는 고정된 내부 주소 생성 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  type: NodePort # 클러스터 내부에서만 접근 가능한 고정 IP 할당
+  selector:
+    app: redis # 'app=redis' 레이블을 가진 Pod를 대상으로 함
+  ports:
+    - port: 6379
+      targetPort: 6379
+      nodePort: 30079 # 외부에서 접근할 포트 (30000-32767 범위 내)
