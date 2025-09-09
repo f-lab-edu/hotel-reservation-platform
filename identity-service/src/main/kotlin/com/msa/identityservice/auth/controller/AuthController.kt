@@ -23,14 +23,14 @@ class AuthController(
     fun login(
         @Valid @RequestBody
         request: LoginRequest
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         val loginRequestInfo = request.toLoginRequestInfo()
         val loginSettingToken = authService.login(loginRequestInfo)
 
         return setTokenHeaders(loginSettingToken)
     }
 
-    private fun setTokenHeaders(loginAuthToken: LoginAuthToken): ResponseEntity<Void> {
+    private fun setTokenHeaders(loginAuthToken: LoginAuthToken): ResponseEntity<Unit> {
         val (accessTokenHeader, refreshTokenCookie) = loginAuthToken
         val responseCookie: ResponseCookie = ResponseCookie.from(refreshTokenCookie.name, refreshTokenCookie.value)
             .httpOnly(true)
@@ -47,7 +47,7 @@ class AuthController(
     }
 
     @GetMapping("/refresh")
-    fun tokenReissue(): ResponseEntity<Void> {
+    fun tokenReissue(): ResponseEntity<Unit> {
         val loginSettingToken = authService.tokenReissue()
 
         return setTokenHeaders(loginSettingToken)

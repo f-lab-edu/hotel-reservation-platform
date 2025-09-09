@@ -39,13 +39,14 @@ class AuthControllerIntegrationTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>
 ) {
     lateinit var testMember: Member
+    val testPassword = "testPassword1!"
 
     @BeforeEach
     fun setup() {
         testMember = Member(
             id = 1L,
             email = "test@example.com",
-            password = passwordEncoder.encode("password1!"),
+            password = passwordEncoder.encode(testPassword),
             status = MemberStatus.ACTIVE,
         )
         memberRepository.insert(testMember)
@@ -56,8 +57,8 @@ class AuthControllerIntegrationTest @Autowired constructor(
         // Given
         val deviceId = "test-device-1"
         val request = LoginRequest(
-            email = "test@example.com",
-            password = "password1!",
+            email = testMember.email,
+            password = testPassword,
             role = Role.MEMBER,
             deviceId = deviceId
         )
@@ -132,7 +133,12 @@ class AuthControllerIntegrationTest @Autowired constructor(
 
     // 테스트 코드 중복을 줄이기 위한 헬퍼 함수
     private fun performLoginAndGetTokens(deviceId: String): Pair<String, Cookie> {
-        val request = LoginRequest(testMember.email, "password1!", Role.MEMBER, deviceId)
+        val request = LoginRequest(
+            email = testMember.email,
+            password = testPassword,
+            role = Role.MEMBER,
+            deviceId = deviceId
+        )
         val result = mockMvc.post("/auth/login") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
