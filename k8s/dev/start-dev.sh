@@ -40,11 +40,7 @@ echo -e "\n🔥 Starting all port-forwards in the background..."
 PIDS=() # 프로세스 ID를 저장할 배열 초기화
 
 # --- 여기에 포트 포워딩할 서비스들을 추가/수정하면 됩니다 ---
-start_port_forward "default" "mysql-service" "3306:3306"
 start_port_forward "default" "gateway-service" "8000:8000"
-start_port_forward "default" "user-service" "8090:8090"
-start_port_forward "default" "order-service" "8085:8085"
-start_port_forward "default" "catalog-service" "8095:8095"
 start_port_forward "default" "prometheus-service" "9090:9090"
 start_port_forward "default" "grafana-service" "3000:3000"
 start_port_forward "default" "zipkin-service" "9411:9411"
@@ -54,14 +50,11 @@ start_port_forward "kubernetes-dashboard" "kubernetes-dashboard" "8443:443"
 
 echo -e "\n🎉 All services are now accessible from localhost!"
 echo "   - Gateway: http://localhost:8000/actuator/info"
-echo "   - User Service (Direct): http://localhost:8090/actuator/info"
-echo "   - Order Service (Direct): http://localhost:8085/actuator/info"
-echo "   - Catalog Service (Direct): http://localhost:8095/actuator/info"
 echo "   - Prometheus: http://localhost:9090"
 echo "   - Grafana: http://localhost:3000"
 echo "   - Zipkin: http://localhost:9411"
 echo "   - Kafka-ui: http://localhost:8080"
-echo "   - Dashboard: https://localhost:8443"
+echo "   - Kubernetes Dashboard: https://localhost:8443"
 echo -e "\n(Press Ctrl+C to stop all port-forwarding processes)"
 
 # 백그라운드 프로세스들이 종료될 때까지 대기

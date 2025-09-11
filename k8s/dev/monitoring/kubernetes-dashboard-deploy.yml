@@ -33,6 +33,7 @@ spec:
     - port: 443
       protocol: TCP
       targetPort: 8443
+      nodePort: 30443
   selector:
     k8s-app: kubernetes-dashboard
 
@@ -87,22 +88,22 @@ metadata:
   name: kubernetes-dashboard
   namespace: kubernetes-dashboard
 rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    resourceNames: ["kubernetes-dashboard-key-holder", "kubernetes-dashboard-certs", "kubernetes-dashboard-csrf"]
-    verbs: ["get", "update", "delete"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    resourceNames: ["kubernetes-dashboard-settings"]
-    verbs: ["get", "update"]
-  - apiGroups: [""]
-    resources: ["services"]
-    resourceNames: ["heapster", "dashboard-metrics-scraper"]
-    verbs: ["proxy"]
-  - apiGroups: [""]
-    resources: ["services/proxy"]
-    resourceNames: ["heapster", "dashboard-metrics-scraper"]
-    verbs: ["get"]
+  - apiGroups: [ "" ]
+    resources: [ "secrets" ]
+    resourceNames: [ "kubernetes-dashboard-key-holder", "kubernetes-dashboard-certs", "kubernetes-dashboard-csrf" ]
+    verbs: [ "get", "update", "delete" ]
+  - apiGroups: [ "" ]
+    resources: [ "configmaps" ]
+    resourceNames: [ "kubernetes-dashboard-settings" ]
+    verbs: [ "get", "update" ]
+  - apiGroups: [ "" ]
+    resources: [ "services" ]
+    resourceNames: [ "heapster", "dashboard-metrics-scraper" ]
+    verbs: [ "" ]
+  - apiGroups: [ "" ]
+    resources: [ "services/proxy" ]
+    resourceNames: [ "heapster", "dashboard-metrics-scraper" ]
+    verbs: [ "get" ]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -112,9 +113,9 @@ metadata:
     k8s-app: kubernetes-dashboard
   name: kubernetes-dashboard
 rules:
-  - apiGroups: ["metrics.k8s.io"]
-    resources: ["pods", "nodes"]
-    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "metrics.k8s.io" ]
+    resources: [ "pods", "nodes" ]
+    verbs: [ "get", "list", "watch" ]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -190,7 +191,7 @@ spec:
           secret:
             secretName: kubernetes-dashboard-certs
         - name: tmp-volume
-          emptyDir: {}
+          emptyDir: { }
       serviceAccountName: kubernetes-dashboard
       nodeSelector:
         "kubernetes.io/os": linux

@@ -43,9 +43,25 @@ class RedisConfig(
     }
 
     @Bean
-    fun evictAndAddSessionScript(): DefaultRedisScript<Long> {
+    fun loginScript(): DefaultRedisScript<Long> {
         val script = DefaultRedisScript<Long>()
-        script.setLocation(ClassPathResource("scripts/atomic-login.lua"))
+        script.setLocation(ClassPathResource("scripts/login.lua"))
+        script.resultType = Long::class.java
+        return script
+    }
+
+    @Bean
+    fun logoutScript(): DefaultRedisScript<Long> {
+        val script = DefaultRedisScript<Long>()
+        script.setLocation(ClassPathResource("scripts/logout.lua"))
+        script.resultType = Long::class.java
+        return script
+    }
+
+    @Bean
+    fun logoutAllScript(): DefaultRedisScript<Long> {
+        val script = DefaultRedisScript<Long>()
+        script.setLocation(ClassPathResource("scripts/logout-all.lua"))
         script.resultType = Long::class.java
         return script
     }
