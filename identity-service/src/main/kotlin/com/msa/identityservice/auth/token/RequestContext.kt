@@ -1,5 +1,9 @@
 package com.msa.identityservice.auth.token
 
+import com.msa.identityservice.auth.consts.AuthConstants.AUTH_HEADER_NAME
+import com.msa.identityservice.auth.consts.AuthConstants.AUTH_HEADER_PREFIX
+import com.msa.identityservice.auth.consts.AuthConstants.CONTEXT_NOT_FOUND_MESSAGE
+import com.msa.identityservice.auth.consts.AuthConstants.REFRESH_COOKIE_NAME
 import com.msa.identityservice.exception.BusinessErrorCode
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -34,13 +38,6 @@ class RequestContext(
         }
 
         return authHeader.substring(AUTH_HEADER_PREFIX.length)
-    }
-
-    companion object {
-        const val REFRESH_COOKIE_NAME = "refreshToken"
-        const val AUTH_HEADER_NAME = "Authorization"
-        const val AUTH_HEADER_PREFIX = "Bearer "
-        const val CONTEXT_NOT_FOUND_MESSAGE = "인증 정보가 존재하지 않습니다."
     }
 
 }

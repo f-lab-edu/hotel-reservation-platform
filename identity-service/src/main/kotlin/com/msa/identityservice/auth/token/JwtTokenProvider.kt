@@ -6,7 +6,6 @@ import com.msa.identityservice.config.properties.JwtProperties
 import com.msa.identityservice.exception.BusinessErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.stereotype.Component
@@ -22,6 +21,7 @@ class JwtTokenProvider(
 ) {
 
     fun generateJsonWebToken(
+        jti: String,
         issuedAt: Date,
         expiration: Date,
         userId: Long,
@@ -34,6 +34,7 @@ class JwtTokenProvider(
         return Jwts.builder()
             .header()
             .and()
+            .id(jti)
             .issuer("identity-service")
             .issuedAt(issuedAt)
             .expiration(expiration)
@@ -45,18 +46,7 @@ class JwtTokenProvider(
             .compact()
     }
 
-    fun extractAuthInfo(token: String): TokenAuthInfo {
-        try {
-            val claims = getClaims(token)
-
-            return extractAuthInfo(claims)
-        } catch (e: Exception) {
-            logger.error { "Extract AuthInfo exception: $e" }
-            throw BusinessErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.")
-        }
-    }
-
-    private fun getClaims(token: String): Claims {
+    fun getClaims(token: String): Claims {
         val key = Keys.hmacShaKeyFor(jwtProperties.secretKey.toByteArray(StandardCharsets.UTF_8))
 
         return Jwts.parser()
@@ -66,30 +56,38 @@ class JwtTokenProvider(
             .payload
     }
 
-    private fun extractAuthInfo(claims: Claims): TokenAuthInfo {
-        val userId = claims.subject.toLong()
-        val role = claims.get("role", String::class.java)
-        val email = claims.get("email", String::class.java)
-        val expiration = claims.expiration
-        val deviceId = claims.get("deviceId", String::class.java)
-
-        return TokenAuthInfo(
-            userId = userId,
-            email = email,
-            role = Role.valueOf(role),
-            expiresAt = expiration,
-            deviceId = deviceId
-        )
-    }
-
-    fun extractAuthInfo(expiredJwtException: ExpiredJwtException): TokenAuthInfo {
+    fun extractAuthInfo(token: String): TokenAuthInfo {
         try {
-            val claims = expiredJwtException.claims
+            val claims = getClaims(token)
 
             return extractAuthInfo(claims)
         } catch (e: Exception) {
-            logger.error { "Extract AuthInfo exception (ExpiredJwtException): $e" }
+            logger.error { "Extract AuthInfo exception (token): $e" }
             throw BusinessErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.")
         }
     }
+
+    fun extractAuthInfo(claims: Claims): TokenAuthInfo {
+        try {
+            val jti = claims.id
+            val userId = claims.subject.toLong()
+            val role = claims.get("role", String::class.java)
+            val email = claims.get("email", String::class.java)
+            val expiration = claims.expiration
+            val deviceId = claims.get("deviceId", String::class.java)
+
+            return TokenAuthInfo(
+                jti = jti,
+                userId = userId,
+                email = email,
+                role = Role.valueOf(role),
+                expiresAt = expiration,
+                deviceId = deviceId
+            )
+        } catch (e: Exception) {
+            logger.error { "Extract AuthInfo exception (Claims): $e" }
+            throw BusinessErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.")
+        }
+    }
+
 }

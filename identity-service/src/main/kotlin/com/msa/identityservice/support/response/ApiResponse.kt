@@ -20,6 +20,10 @@ data class ApiResponse<T>(
             return ApiResponse(true, "update", message, data)
         }
 
+        fun <T> delete(message: String, data: T): ApiResponse<T> {
+            return ApiResponse(true, "delete", message, data)
+        }
+
         fun noContent(message: String): ApiResponse<Nothing> {
             return ApiResponse(true, "noContent", message, null)
         }
@@ -28,5 +32,5 @@ data class ApiResponse<T>(
             return ApiResponse(false, code, message, null)
         }
     }
-    
+
 }

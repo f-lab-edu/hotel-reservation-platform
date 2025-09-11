@@ -5,6 +5,7 @@ import java.util.*
 
 
 data class TokenAuthInfo(
+    val jti: String,
     val userId: Long,
     val role: Role,
     val email: String,
