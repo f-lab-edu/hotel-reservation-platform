@@ -2,6 +2,7 @@ package com.msa.identityservice.auth.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.msa.identityservice.auth.consts.AuthConstants.ASIA_TIME_ZONE
 import com.msa.identityservice.auth.consts.AuthConstants.getActiveJtiKey
 import com.msa.identityservice.auth.consts.AuthConstants.getRefreshTokenKey
 import com.msa.identityservice.auth.consts.AuthConstants.getSessionKey
@@ -261,8 +262,8 @@ class AuthService(
                 validSessions.add(
                     SessionInfo(
                         deviceId = deviceId,
-                        loginDateTime = refreshTokenInfo.loginAt.atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime(),
-                        lastActivityDateTime = refreshTokenInfo.lastActivityAt.atZone(ZoneId.of("Asia/Seoul"))
+                        loginDateTime = refreshTokenInfo.loginAt.atZone(ZoneId.of(ASIA_TIME_ZONE)).toLocalDateTime(),
+                        lastActivityDateTime = refreshTokenInfo.lastActivityAt.atZone(ZoneId.of(ASIA_TIME_ZONE))
                             .toLocalDateTime()
                     )
                 )
@@ -295,7 +296,6 @@ class AuthService(
     }
 
     fun logout(deviceId: String? = null): SessionInfo {
-        val now = Instant.now()
         // 1. AccessToken 유효성 검사
         val accessToken = requestContext.getAccessToken()
         val claims = try {
@@ -338,8 +338,8 @@ class AuthService(
 
         return SessionInfo(
             deviceId = logoutDeviceId,
-            loginDateTime = refreshTokenInfo.loginAt.atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime(),
-            lastActivityDateTime = refreshTokenInfo.lastActivityAt.atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime(),
+            loginDateTime = refreshTokenInfo.loginAt.atZone(ZoneId.of(ASIA_TIME_ZONE)).toLocalDateTime(),
+            lastActivityDateTime = refreshTokenInfo.lastActivityAt.atZone(ZoneId.of(ASIA_TIME_ZONE)).toLocalDateTime(),
         )
     }
 

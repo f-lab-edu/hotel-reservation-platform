@@ -252,7 +252,7 @@ class AuthControllerIntegrationTest @Autowired constructor(
         val (accessToken, _) = performLoginAndGetTokens(deviceId)
 
         // When & Then
-        val result = mockMvc.get("/auth/me") {
+        mockMvc.get("/auth/me") {
             header(AUTH_HEADER_NAME, getAccessTokenHeaderValue(accessToken))
         }.andExpect {
             status { isOk() }

@@ -8,6 +8,8 @@ object AuthConstants {
     const val AUTH_HEADER_PREFIX = "Bearer "
     const val CONTEXT_NOT_FOUND_MESSAGE = "인증 정보가 존재하지 않습니다."
 
+    const val ASIA_TIME_ZONE = "Asia/Seoul"
+
     private const val SESSIONS_AGES_PREFIX = "sessions_ages"
     private const val ACTIVE_JTI_KEY_PREFIX = "active_jti"
     private const val REFRESH_TOKEN_PREFIX = "refresh_token"
