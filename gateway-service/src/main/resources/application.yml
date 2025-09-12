@@ -1,3 +1,41 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:30079}
+      password: ${REDIS_PASSWORD:your-redis-password}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: identity-service-auth
+              uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/identity-service/auth/**
+              filters:
+                - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
+
+            - id: identity-service-member-create
+              uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/identity-service/member
+                - Method=POST
+              filters:
+                - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
+
+            - id: identity-service
+              uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/identity-service/**
+              filters:
+                - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
+                - Authentication
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY:this-is-a-very-long-and-secure-secret-key-for-hs256-algorithm}
