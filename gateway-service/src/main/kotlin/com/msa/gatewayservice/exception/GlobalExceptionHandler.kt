@@ -1,17 +1,15 @@
-package com.msa.identityservice.exception
+package com.msa.gatewayservice.exception
 
-import com.msa.identityservice.support.response.ApiResponse
+import com.msa.gatewayservice.support.response.ApiResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
-import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.springframework.web.servlet.NoHandlerFoundException
-import org.springframework.web.servlet.resource.NoResourceFoundException
+import org.springframework.web.reactive.resource.NoResourceFoundException
 import java.util.stream.Collectors
 
 
@@ -20,11 +18,7 @@ private val logger = KotlinLogging.logger {}
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
-    @ExceptionHandler(
-        NoHandlerFoundException::class,
-        NoResourceFoundException::class,
-        HttpRequestMethodNotSupportedException::class
-    )
+    @ExceptionHandler(NoResourceFoundException::class)
     fun handleNotFound(exception: Exception): ResponseEntity<ApiResponse<Nothing>> {
         logger.error { exception }
 
@@ -102,7 +96,7 @@ class GlobalExceptionHandler {
     }
 
     companion object {
-        private const val NOT_FOUND_ERROR_MESSAGE = "지원하지 않는 API 유형입니다"
+        private const val NOT_FOUND_ERROR_MESSAGE = "존재하지 않는 URL입니다"
         private const val DEFAULT_ERROR_MESSAGE = "서버 내부 오류로 인한 작업 실패"
     }
 
