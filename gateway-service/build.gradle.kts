@@ -22,6 +22,7 @@ repositories {
 extra["springCloudVersion"] = "2025.0.0"
 
 val jjwtVersion = "0.12.6"
+val kotestVersion = "5.9.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -45,7 +46,10 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 dependencyManagement {
