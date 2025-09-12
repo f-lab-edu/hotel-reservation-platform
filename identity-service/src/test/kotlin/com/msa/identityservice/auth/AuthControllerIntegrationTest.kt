@@ -15,7 +15,6 @@ import com.msa.identityservice.auth.token.enums.Role
 import com.msa.identityservice.config.properties.JwtProperties
 import com.msa.identityservice.member.service.MemberService
 import com.msa.identityservice.member.service.dto.RegisterMemberDto
-import io.kotest.core.spec.KotestTestScope
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -38,7 +37,6 @@ import java.lang.Thread.sleep
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@KotestTestScope
 class AuthControllerIntegrationTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,

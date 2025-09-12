@@ -5,7 +5,6 @@ import com.msa.identityservice.exception.BusinessErrorCode
 import com.msa.identityservice.jooq.enums.MemberStatus
 import com.msa.identityservice.member.controller.request.MemberRegistrationRequest
 import com.msa.identityservice.member.repository.MemberRepository
-import io.kotest.core.spec.KotestTestScope
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -24,7 +23,6 @@ import java.util.*
 @AutoConfigureMockMvc // MockMvc를 실제 서버처럼 사용하기 위한 설정
 @ActiveProfiles("test")
 @Transactional
-@KotestTestScope
 class MemberControllerIntegrationTest @Autowired constructor(
     val mockMvc: MockMvc,
     val objectMapper: ObjectMapper,
