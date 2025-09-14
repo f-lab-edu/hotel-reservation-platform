@@ -1,6 +1,7 @@
 package com.msa.identityservice.member.service.dto
 
-import com.msa.identityservice.jooq.tables.pojos.Member
+import com.msa.identityservice.domain.member.Member
+import com.msa.identityservice.domain.member.MemberStatus
 
 
 data class RegisterMemberDto(
@@ -14,7 +15,8 @@ data class RegisterMemberDto(
             id = newId,
             email = email.lowercase(),
             password = encoderPassword,
-            phoneNumber = phoneNumber
+            phoneNumber = phoneNumber,
+            status = MemberStatus.ACTIVE
         )
     }
 

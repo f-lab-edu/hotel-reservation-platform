@@ -20,7 +20,7 @@ class SecurityConfig {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers(HttpMethod.POST, "/members").permitAll()
+                it.requestMatchers(HttpMethod.POST, "/members", "/hosts").permitAll()
                     .requestMatchers("/auth/**").permitAll()
                     .anyRequest().authenticated()
             }

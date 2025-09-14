@@ -1,20 +1,20 @@
 package com.msa.identityservice.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.msa.identityservice.auth.consts.AuthConstants.AUTH_HEADER_NAME
-import com.msa.identityservice.auth.consts.AuthConstants.AUTH_HEADER_PREFIX
-import com.msa.identityservice.auth.consts.AuthConstants.REFRESH_COOKIE_NAME
-import com.msa.identityservice.auth.consts.AuthConstants.getAccessTokenHeaderValue
-import com.msa.identityservice.auth.consts.AuthConstants.getActiveJtiKey
-import com.msa.identityservice.auth.consts.AuthConstants.getRefreshTokenKey
-import com.msa.identityservice.auth.consts.AuthConstants.getSessionKey
 import com.msa.identityservice.auth.controller.request.LoginRequest
 import com.msa.identityservice.auth.controller.request.LogoutRequest
 import com.msa.identityservice.auth.token.JwtTokenProvider
-import com.msa.identityservice.auth.token.enums.Role
 import com.msa.identityservice.config.properties.JwtProperties
 import com.msa.identityservice.member.service.MemberService
 import com.msa.identityservice.member.service.dto.RegisterMemberDto
+import com.msa.supportmodule.auth.consts.AuthConstants.AUTH_HEADER_NAME
+import com.msa.supportmodule.auth.consts.AuthConstants.AUTH_HEADER_PREFIX
+import com.msa.supportmodule.auth.consts.AuthConstants.REFRESH_COOKIE_NAME
+import com.msa.supportmodule.auth.consts.AuthConstants.getAccessTokenHeaderValue
+import com.msa.supportmodule.auth.consts.AuthConstants.getActiveJtiKey
+import com.msa.supportmodule.auth.consts.AuthConstants.getRefreshTokenKey
+import com.msa.supportmodule.auth.consts.AuthConstants.getSessionKey
+import com.msa.supportmodule.auth.token.enums.Role
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 import java.lang.Thread.sleep
+
 
 @SpringBootTest
 @AutoConfigureMockMvc

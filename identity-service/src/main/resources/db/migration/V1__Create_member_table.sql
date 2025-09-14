@@ -3,7 +3,7 @@ CREATE TABLE `member`
     `id`           BIGINT                     NOT NULL,
     `email`        VARCHAR(255)               NOT NULL COMMENT '로그인 이메일',
     `password`     VARCHAR(255)               NOT NULL COMMENT '해싱된 비밀번호',
-    `phone_number` VARCHAR(20)                NULL COMMENT '휴대폰 번호',
+    `phone_number` VARCHAR(20)                NOT NULL COMMENT '휴대폰 번호',
     `status`       ENUM ('ACTIVE', 'DELETED') NOT NULL DEFAULT 'ACTIVE',
     `created_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

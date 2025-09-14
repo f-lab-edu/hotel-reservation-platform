@@ -25,6 +25,8 @@ val jjwtVersion = "0.12.6"
 val kotestVersion = "5.9.1"
 
 dependencies {
+    implementation("com.msa:support-module")
+    
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")

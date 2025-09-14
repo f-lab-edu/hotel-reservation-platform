@@ -38,3 +38,9 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Jooq ###
+src/main/generated
+
+# Gradle properties
+gradle.properties

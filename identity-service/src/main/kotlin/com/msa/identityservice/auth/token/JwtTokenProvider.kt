@@ -1,9 +1,9 @@
 package com.msa.identityservice.auth.token
 
-import com.msa.identityservice.auth.token.dto.TokenAuthInfo
-import com.msa.identityservice.auth.token.enums.Role
 import com.msa.identityservice.config.properties.JwtProperties
-import com.msa.identityservice.exception.BusinessErrorCode
+import com.msa.supportmodule.auth.token.dto.TokenAuthInfo
+import com.msa.supportmodule.auth.token.enums.Role
+import com.msa.supportmodule.exception.BusinessErrorCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

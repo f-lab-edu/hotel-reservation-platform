@@ -1,18 +1,18 @@
 package com.msa.identityservice.auth.controller
 
 import com.msa.identityservice.annotation.LoginUser
-import com.msa.identityservice.auth.consts.AuthConstants.AUTH_HEADER_NAME
-import com.msa.identityservice.auth.consts.AuthConstants.REFRESH_COOKIE_NAME
-import com.msa.identityservice.auth.consts.AuthConstants.getAccessTokenHeaderValue
 import com.msa.identityservice.auth.controller.request.LoginRequest
 import com.msa.identityservice.auth.controller.request.LogoutRequest
 import com.msa.identityservice.auth.controller.response.LogoutAllResponse
 import com.msa.identityservice.auth.controller.response.SessionInfoResponse
 import com.msa.identityservice.auth.controller.response.SessionInfosResponse
 import com.msa.identityservice.auth.service.AuthService
-import com.msa.identityservice.auth.token.dto.LoginAuthToken
-import com.msa.identityservice.auth.token.dto.TokenAuthInfo
-import com.msa.identityservice.support.response.ApiResponse
+import com.msa.supportmodule.auth.consts.AuthConstants.AUTH_HEADER_NAME
+import com.msa.supportmodule.auth.consts.AuthConstants.REFRESH_COOKIE_NAME
+import com.msa.supportmodule.auth.consts.AuthConstants.getAccessTokenHeaderValue
+import com.msa.supportmodule.auth.token.dto.LoginAuthToken
+import com.msa.supportmodule.auth.token.dto.TokenAuthInfo
+import com.msa.supportmodule.response.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie

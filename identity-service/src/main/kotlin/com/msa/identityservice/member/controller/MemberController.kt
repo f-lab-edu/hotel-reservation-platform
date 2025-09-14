@@ -3,10 +3,11 @@ package com.msa.identityservice.member.controller
 import com.msa.identityservice.member.controller.request.MemberRegistrationRequest
 import com.msa.identityservice.member.controller.response.MemberRegistrationResponse
 import com.msa.identityservice.member.service.MemberService
-import com.msa.identityservice.support.response.ApiResponse
+import com.msa.supportmodule.response.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+
 
 @RestController
 @RequestMapping("/members")

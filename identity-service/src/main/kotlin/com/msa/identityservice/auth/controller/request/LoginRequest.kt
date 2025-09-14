@@ -1,7 +1,7 @@
 package com.msa.identityservice.auth.controller.request
 
 import com.msa.identityservice.auth.service.dto.LoginRequestInfo
-import com.msa.identityservice.auth.token.enums.Role
+import com.msa.supportmodule.auth.token.enums.Role
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

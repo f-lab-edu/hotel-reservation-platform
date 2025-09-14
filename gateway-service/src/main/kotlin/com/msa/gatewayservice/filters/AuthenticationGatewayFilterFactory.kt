@@ -1,10 +1,10 @@
 package com.msa.gatewayservice.filters
 
-import com.msa.gatewayservice.auth.consts.AuthConstants.AUTH_HEADER_PREFIX
-import com.msa.gatewayservice.auth.consts.AuthConstants.CONTEXT_NOT_FOUND_MESSAGE
-import com.msa.gatewayservice.auth.consts.AuthConstants.getActiveJtiKey
 import com.msa.gatewayservice.auth.token.JwtTokenDecoder
-import com.msa.gatewayservice.exception.BusinessErrorCode
+import com.msa.supportmodule.auth.consts.AuthConstants.AUTH_HEADER_PREFIX
+import com.msa.supportmodule.auth.consts.AuthConstants.CONTEXT_NOT_FOUND_MESSAGE
+import com.msa.supportmodule.auth.consts.AuthConstants.getActiveJtiKey
+import com.msa.supportmodule.exception.BusinessErrorCode
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory
 import org.springframework.data.redis.core.RedisTemplate

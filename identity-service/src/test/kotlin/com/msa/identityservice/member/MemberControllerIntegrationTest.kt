@@ -1,10 +1,10 @@
 package com.msa.identityservice.member
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.msa.identityservice.exception.BusinessErrorCode
-import com.msa.identityservice.jooq.enums.MemberStatus
+import com.msa.identityservice.domain.member.MemberStatus
 import com.msa.identityservice.member.controller.request.MemberRegistrationRequest
 import com.msa.identityservice.member.repository.MemberRepository
+import com.msa.supportmodule.exception.BusinessErrorCode
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+
 @SpringBootTest
 @AutoConfigureMockMvc // MockMvc를 실제 서버처럼 사용하기 위한 설정
 @ActiveProfiles("test")
@@ -30,7 +31,7 @@ class MemberControllerIntegrationTest @Autowired constructor(
     val passwordEncoder: PasswordEncoder,
 ) : BehaviorSpec({
 
-    Given("신규 멤버 정보") {
+    Given("신규 멤버 정보 Registration") {
         val request = MemberRegistrationRequest(
             email = "${UUID.randomUUID()}@example.com",
             password = "Password123!",

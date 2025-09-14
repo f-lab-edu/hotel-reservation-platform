@@ -1,9 +1,9 @@
 package com.msa.gatewayservice
 
-import com.msa.gatewayservice.auth.consts.AuthConstants.getActiveJtiKey
 import com.msa.gatewayservice.auth.token.JwtTokenDecoder
-import com.msa.gatewayservice.auth.token.dto.TokenAuthInfo
-import com.msa.identityservice.auth.token.enums.Role
+import com.msa.supportmodule.auth.consts.AuthConstants.getActiveJtiKey
+import com.msa.supportmodule.auth.token.dto.TokenAuthInfo
+import com.msa.supportmodule.auth.token.enums.Role
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -99,7 +99,7 @@ class GatewayIntegrationTest(
     }
 
 }) {
-    
+
     // 테스트 환경에서 실제 JwtTokenProvider 대신 Mock Bean을 사용하도록 설정
     @TestConfiguration
     class TestJwtConfig {

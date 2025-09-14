@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: gateway-service
+  main:
+    web-application-type: reactive
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -21,10 +23,10 @@ spring:
               filters:
                 - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
 
-            - id: identity-service-member-create
+            - id: identity-service-user-create
               uri: ${IDENTITY_SERVICE_URI:http://localhost:8081}
               predicates:
-                - Path=/identity-service/member
+                - Path=/identity-service/members, /identity-service/hosts
                 - Method=POST
               filters:
                 - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
@@ -35,6 +37,14 @@ spring:
                 - Path=/identity-service/**
               filters:
                 - RewritePath=/identity-service/(?<segment>.*), /$\{segment}
+                - Authentication
+
+            - id: accommodation-service
+              uri: ${ACCOMMODATION_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/accommodation-service/**
+              filters:
+                - RewritePath=/accommodation-service/(?<segment>.*), /$\{segment}
                 - Authentication
 
 jwt:
