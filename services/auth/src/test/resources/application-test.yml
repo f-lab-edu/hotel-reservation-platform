@@ -1,0 +1,17 @@
+spring:
+  data:
+    redis:
+      host: ${TEST_REDIS_HOST:localhost}
+      port: ${TEST_REDIS_PORT:30079}
+      password: ${TEST_REDIS_PASSWORD:your-redis-password}
+  datasource:
+    url: ${TEST_DB_URL:jdbc:mysql://localhost:30306/test-auth-db}
+    username: ${TEST_DB_USER:root}
+    password: ${TEST_DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jooq:
+    sql-dialect: MYSQL
+  flyway:
+    enabled: true
+    baseline-on-migrate: true # 기존에 테이블이 있는 DB에 처음 적용할 때, 현재 상태를 기준으로 삼는 설정
+    schemas: test-auth-db

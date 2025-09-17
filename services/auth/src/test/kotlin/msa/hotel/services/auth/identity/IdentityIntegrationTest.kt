@@ -1,0 +1,97 @@
+package msa.hotel.services.auth.identity
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.extensions.spring.SpringTestExtension
+import io.kotest.extensions.spring.SpringTestLifecycleMode
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import msa.hotel.modules.web.response.Response
+import msa.hotel.modules.web.support.toResponse
+import msa.hotel.services.auth.domain.identity.model.IdentityId
+import msa.hotel.services.auth.domain.identity.model.Role
+import msa.hotel.services.auth.domain.identity.port.IdentityRepository
+import msa.hotel.services.auth.infrastructure.web.identity.request.RegisterIdentityRequest
+import msa.hotel.services.auth.infrastructure.web.identity.response.RegisterIdentityResponse
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.post
+import org.springframework.transaction.annotation.Transactional
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@ActiveProfiles("test")
+class IdentityIntegrationTest(
+    private val mockMvc: MockMvc,
+    private val om: ObjectMapper,
+    private val repo: IdentityRepository,
+    private val passwordEncoder: PasswordEncoder,
+) : BehaviorSpec({
+        Given("정상적인 신규 Identity 등록 정보") {
+            val request =
+                RegisterIdentityRequest(
+                    email = "test@email.com",
+                    password = "password1234!",
+                    role = Role.MEMBER,
+                )
+
+            When("처음 등록('register') API 요청") {
+                val apiResult =
+                    mockMvc
+                        .post("/identity") {
+                            contentType = MediaType.APPLICATION_JSON
+                            content = om.writeValueAsString(request)
+                        }.andExpect {
+                            status { isCreated() }
+                        }.andReturn()
+
+                Then("성공 응답 및 신규 등록 정보 DB에 저장(비밀번호 암호화)") {
+                    val response: Response<RegisterIdentityResponse> = apiResult.toResponse(om)
+                    response.success shouldBe true
+                    response.code shouldBe "CREATED"
+                    response.message shouldBe "Identity 정보를 등록 했습니다."
+
+                    val data = response.data!!
+                    val identityId = IdentityId(data.id)
+                    val identity = repo.findById(identityId)
+                    identity shouldNotBe null
+                    data.email shouldBe request.email
+                    data.email shouldBe identity!!.email
+                    data.role shouldBe request.role!!.name
+                    data.role shouldBe identity.role.name
+
+                    passwordEncoder.matches(request.password!!, identity.passwordHash) shouldBe true
+                }
+            }
+
+            When("이미 등록된 이후 등록('register') API 재요청") {
+                val apiResult =
+                    mockMvc
+                        .post("/identity") {
+                            contentType = MediaType.APPLICATION_JSON
+                            content = om.writeValueAsString(request)
+                        }.andExpect {
+                            status { isConflict() }
+                        }.andReturn()
+
+                Then("중복 이메일 정보로 Identity 등록 실패 응답") {
+                    val response: Response<RegisterIdentityResponse> = apiResult.toResponse(om)
+                    response.success shouldBe false
+                    response.code shouldBe "CONFLICT"
+                    response.message shouldBe "이미 사용 중인 이메일입니다. 다른 이메일로 등록해주세요."
+                }
+            }
+        }
+    }) {
+    // MockMvc는 기본적으로 같은 스레드에서 동기 실행되므로 테스트 트랜잭션에 참여함
+    // Kotest BehaviorSpec에서 각 Then은 독립 테스트(leaf)지만,
+    // 본 스펙은 첫 번째 요청의 DB 변경을 두 번째 요청 검증에서도 활용하는 시나리오형 흐름을 의도함.
+    // SpringTestLifecycleMode.Root를 사용해 스펙 전체를 하나의 Spring TestContext/트랜잭션으로 유지하여
+    // 각 Then 사이에 상태를 공유하고, 스펙 종료 시점에 한 번에 롤백되도록 한다.
+    override fun extensions() = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
+}

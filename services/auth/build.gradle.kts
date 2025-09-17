@@ -1,21 +1,28 @@
-import org.jooq.meta.jaxb.ForcedType
-
 dependencies {
+    implementation(project(":modules:web"))
     implementation(project(":modules:id-generator"))
     implementation(project(":modules:jwt"))
 
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    testImplementation(testFixtures(project(":modules:web")))
+
     jooqGenerator("com.mysql:mysql-connector-j")
 }
+
+group = "msa.hotel.services"
 
 val dbSchema = "auth-db"
 val dbUrl = project.findProperty("db.url") as? String ?: "jdbc:mysql://localhost:30306/$dbSchema"
 val dbUser = project.findProperty("db.user") as? String ?: "root"
 val dbPassword = project.findProperty("db.password") as? String ?: "root"
 
-jooq { // jOOQ 코드 생성 설정
+val jooqPackagePath = "msa.hotel.services.auth.jooq"
+val jooqGeneratorOutputDir = "src/main/generated"
+
+// jOOQ 코드 생성 설정
+jooq {
     version.set(dependencyManagement.importedProperties["jooq.version"]) // SpringBoot 관리하는 jOOQ 버전을 사용
 
     configurations.create("main").apply {
@@ -36,30 +43,26 @@ jooq { // jOOQ 코드 생성 설정
                     name = "org.jooq.meta.mysql.MySQLDatabase"
                     inputSchema = dbSchema // 생성할 스키마 지정
                     excludes = "flyway_schema_history|batch_.*" // 생성에서 제외할 테이블 (정규식 사용 가능)
-
-                    // unsigned 타입을 강제로 Long으로 매핑
-                    forcedTypes = listOf(
-                        ForcedType()
-                            .withUserType("java.lang.Long")
-                            .withIncludeExpression(".*\\.UNSIGNED")
-                            .withIncludeTypes("BIGINT")
-                    )
                 }
 
                 target.apply {
-                    // 생성될 코드의 패키지 경로
-                    packageName = "com.msa.identityservice.jooq"
-                    // 생성될 코드의 디렉토리 경로
-                    directory = "src/main/generated"
+                    packageName = jooqPackagePath
+                    directory = jooqGeneratorOutputDir
                 }
 
                 generate.apply {
-                    isRecords = true // Record 클래스 생성
-                    isDaos = false // DAO 클래스는 생성하지 않음 (선택 사항)
-                    isPojos = true // POJO 클래스 생성
-                    isFluentSetters = true // Fluent Setter 생성
+                    isRecords = true
+                    isDaos = false // DAO 클래스는 생성하지 않음
+                    isPojos = true
+                    isFluentSetters = true
                     isJavaTimeTypes = true // 날짜/시간 타입을 Java 8+ Time API로 매핑
-                    isKotlinNotNullPojoAttributes = true // Kotlin POJO에서 NotNull 속성을 non-nullable 타입으로 생성
+
+                    // Kotlin NotNull 속성을 non-nullable 타입으로 생성
+                    isKotlinNotNullPojoAttributes = true
+                    isKotlinNotNullRecordAttributes = true
+                    isKotlinNotNullInterfaceAttributes = true
+
+                    isPojosAsKotlinDataClasses = true
                 }
             }
         }

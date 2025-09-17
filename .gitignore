@@ -37,3 +37,7 @@ out/
 .vscode/
 
 .DS_Store
+
+### JOOQ ###
+services/auth/src/main/generated
+services/auth/gradle.properties
