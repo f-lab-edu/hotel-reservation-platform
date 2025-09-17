@@ -22,6 +22,8 @@ spring:
   jackson:
     deserialization:
       read-unknown-enum-values-as-null: true
+    mapper:
+      accept-case-insensitive-enums: true
 
 logging:
   level:

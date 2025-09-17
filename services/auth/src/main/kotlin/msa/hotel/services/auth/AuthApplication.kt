@@ -4,8 +4,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 
-@SpringBootApplication(scanBasePackages = ["msa.hotel.services.auth", "msa.hotel.modules.jwt"])
-@ConfigurationPropertiesScan(basePackages = ["msa.hotel.modules.jwt.config.properties"])
+@SpringBootApplication(
+    scanBasePackages = [
+        "msa.hotel.services.auth",
+        "msa.hotel.modules.web",
+    ],
+)
+@ConfigurationPropertiesScan(
+    basePackages = [
+        "msa.hotel.services.auth.config.properties,",
+        " msa.hotel.modules.jwt.config.properties",
+    ],
+)
 class AuthApplication
 
 fun main(args: Array<String>) {
