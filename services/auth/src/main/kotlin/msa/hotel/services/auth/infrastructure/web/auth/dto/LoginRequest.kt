@@ -19,7 +19,7 @@ data class LoginRequest(
     val role: Role?,
 
     @field:NotBlank(message = "로그인 기기 ID는 필수입니다.")
-    val deviceId: String?, // TODO: Device Fingerprinting
+    val deviceId: String?, // 추후 deviceId -> Fingerprinting
 ) {
     fun toLoginCommand() =
         LoginCommand(
