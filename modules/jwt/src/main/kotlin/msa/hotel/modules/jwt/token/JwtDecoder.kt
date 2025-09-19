@@ -31,14 +31,14 @@ class JwtDecoder(
 
     fun extractAuthInfoCathExpired(token: String): Pair<TokenAuthInfo, Boolean> {
         var isExpired = false
-        var claims: Claims? = null
-        try {
-            claims = getClaims(token)
-        } catch (expiredJwtException: ExpiredJwtException) {
-            // AccessToken 만료된 경우에도 토큰 재발급을 위해 예외에서 정보 추출claims
-            claims = expiredJwtException.claims
-            isExpired = true
-        }
+        val claims: Claims =
+            try {
+                getClaims(token)
+            } catch (expiredJwtException: ExpiredJwtException) {
+                // AccessToken 만료된 경우에도 토큰 재발급을 위해 예외에서 정보 추출claims
+                isExpired = true
+                expiredJwtException.claims
+            }
 
         return Pair(extractAuthInfo(claims), isExpired)
     }
