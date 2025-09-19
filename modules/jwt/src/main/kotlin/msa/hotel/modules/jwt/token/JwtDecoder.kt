@@ -2,6 +2,7 @@ package msa.hotel.modules.jwt.token
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import msa.hotel.modules.jwt.config.properties.JwtProperties
@@ -26,6 +27,20 @@ class JwtDecoder(
             .build()
             .parseSignedClaims(token)
             .payload
+    }
+
+    fun extractAuthInfoCathExpired(token: String): Pair<TokenAuthInfo, Boolean> {
+        var isExpired = false
+        val claims: Claims =
+            try {
+                getClaims(token)
+            } catch (expiredJwtException: ExpiredJwtException) {
+                // AccessToken 만료된 경우에도 토큰 재발급을 위해 예외에서 정보 추출claims
+                isExpired = true
+                expiredJwtException.claims
+            }
+
+        return Pair(extractAuthInfo(claims), isExpired)
     }
 
     fun extractAuthInfo(token: String): TokenAuthInfo {

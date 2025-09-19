@@ -5,6 +5,7 @@ import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_PREFIX
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_REFRESH_COOKIE_NAME
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import java.time.Duration
@@ -21,11 +22,11 @@ fun setAuthTokenHeaders(authToken: AuthTokenDto): ResponseEntity<Unit> {
             .build()
 
     return ResponseEntity
-        .ok()
-        .header(T_ACCESS_HEADER_NAME, getAccessTokenHeaderValue(authToken.accessToken))
+        .status(HttpStatus.CREATED)
+        .header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(authToken.accessToken))
         .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
         .header("Access-Control-Expose-Headers", T_ACCESS_HEADER_NAME)
         .build()
 }
 
-private fun getAccessTokenHeaderValue(accessToken: String): String = "$T_ACCESS_HEADER_PREFIX$accessToken"
+fun makeAccessTokenHeaderValue(accessToken: String): String = "$T_ACCESS_HEADER_PREFIX$accessToken"

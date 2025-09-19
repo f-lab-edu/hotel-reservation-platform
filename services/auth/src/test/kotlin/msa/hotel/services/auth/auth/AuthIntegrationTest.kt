@@ -18,6 +18,7 @@ import msa.hotel.services.auth.infrastructure.web.auth.dto.LoginRequest
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_PREFIX
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_REFRESH_COOKIE_NAME
+import msa.hotel.services.auth.infrastructure.web.auth.header.makeAccessTokenHeaderValue
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
@@ -41,7 +42,6 @@ class AuthIntegrationTest(
     private val jwtDecoder: JwtDecoder,
     private val redisTemplate: RedisTemplate<String, String>,
 ) : BehaviorSpec({
-
         fun performLoginAndGetTokens(request: LoginRequest): Pair<String, Cookie> {
             val result =
                 mockMvc
@@ -84,7 +84,7 @@ class AuthIntegrationTest(
                             contentType = MediaType.APPLICATION_JSON
                             content = om.writeValueAsString(request)
                         }.andExpect {
-                            status { isOk() }
+                            status { isCreated() }
                         }.andReturn()
 
                 Then("인증 토큰 발급 및 리프레시 토큰 정보 Redis 저장") {
@@ -137,6 +137,50 @@ class AuthIntegrationTest(
                     // 3. 가장 마지막 로그인한 세션(newDeviceId) 토큰은 존재해야 함
                     val lastRefreshToken = redisTemplate.opsForHash<String, String>().get(refreshTokensKey, newDeviceId)
                     lastRefreshToken shouldNotBe null
+                }
+            }
+
+            When("로그인 이후 인증 토큰 재발급 API 요청") {
+                val request = createLoginRequest(registerCommand, loginDeviceId)
+                val (pastAccessToken, pastRefreshTokenCookie) = performLoginAndGetTokens(request)
+                val pastRefreshToken = pastRefreshTokenCookie.value
+
+                val result =
+                    mockMvc
+                        .post("/auth/reissue") {
+                            cookie(pastRefreshTokenCookie)
+                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(pastAccessToken)) // 재발급 시에도 AccessToken 확인
+                        }.andExpect {
+                            status { isCreated() }
+                        }.andReturn()
+
+                Then("인증 토큰 재발급 및 기존 인증 토큰 무효화") {
+                    // AccessToken Header 재발급 확인
+                    val accessTokenHeader = result.response.getHeader(T_ACCESS_HEADER_NAME)
+                    accessTokenHeader shouldNotBe null
+                    val reissueAccessToken = accessTokenHeader!!.substring(T_ACCESS_HEADER_PREFIX.length)
+                    reissueAccessToken shouldNotBe pastAccessToken
+
+                    // RefreshToken Cookie 재발급 확인
+                    val refreshTokenCookie = result.response.getCookie(T_REFRESH_COOKIE_NAME)
+                    refreshTokenCookie shouldNotBe null
+                    val reissueRefreshToken = refreshTokenCookie?.value
+                    reissueRefreshToken shouldNotBe pastRefreshToken
+
+                    // 재발급된 리프레시 토큰 저장 확인 & 기존 인증 토큰 무효화 확인
+                    val tokenAuthInfo = jwtDecoder.extractAuthInfo(pastAccessToken)
+                    val savedRefreshTokenInfo = repo.findRefreshTokenInfo(tokenAuthInfo.tokenUserInfo)
+                    savedRefreshTokenInfo shouldNotBe null
+                    val storedRefreshToken = savedRefreshTokenInfo!!.token
+                    storedRefreshToken shouldNotBe pastRefreshToken
+
+                    // 재발급된 토큰 유효성 검증
+                    storedRefreshToken shouldBe reissueRefreshToken
+                    val reissueTokenAuthInfo = jwtDecoder.extractAuthInfo(reissueAccessToken)
+                    val reissueUserInfo = reissueTokenAuthInfo.tokenUserInfo
+                    reissueUserInfo.userId shouldBe registeredIdentity.id.value
+                    reissueUserInfo.role shouldBe registeredIdentity.role.name
+                    reissueUserInfo.deviceId shouldBe loginDeviceId
                 }
             }
         }

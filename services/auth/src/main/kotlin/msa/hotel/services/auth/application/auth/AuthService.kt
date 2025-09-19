@@ -4,6 +4,7 @@ import msa.hotel.modules.jwt.token.JwtDecoder
 import msa.hotel.modules.jwt.token.JwtProvider
 import msa.hotel.modules.jwt.token.dto.Token
 import msa.hotel.modules.jwt.token.dto.TokenUserInfo
+import msa.hotel.modules.web.exception.ErrorCode
 import msa.hotel.services.auth.application.auth.command.LoginCommand
 import msa.hotel.services.auth.application.auth.dto.AuthTokenDto
 import msa.hotel.services.auth.domain.auth.model.RefreshTokenInfo
@@ -99,6 +100,34 @@ class AuthService(
             refreshToken = refreshToken.value,
             refreshTokenIssuedAt = issuedAt,
             refreshTokenExpiration = refreshTokenExpiration,
+        )
+    }
+
+    fun reissueToken(
+        accessToken: String,
+        refreshToken: String,
+    ): AuthTokenDto {
+        // 1. AccessToken 유효성 검사
+        val (tokenAuthInfo, isExpired) = jwtDecoder.extractAuthInfoCathExpired(accessToken)
+
+        // 2. 만료된 AccessToken 토큰이 아닌 경우, 토큰 JTI가 유효해야함
+        if (!isExpired && !tokenRepo.existActiveJti(tokenAuthInfo.jti)) {
+            throw ErrorCode.UNAUTHORIZED.exception("로그아웃 처리 된 인증 정보입니다. 다시 로그인 해주세요.")
+        }
+
+        // 3. RefreshToken 유효성 검사
+        val refreshTokenInfo =
+            tokenRepo.findRefreshTokenInfo(tokenAuthInfo.tokenUserInfo) ?: throw ErrorCode.UNAUTHORIZED.exception("인증 세션 정보가 존재하지 않습니다.")
+
+        if (refreshTokenInfo.token != refreshToken) {
+            throw ErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.")
+        }
+
+        // 4. 인증 토큰 재발급
+        return generateAuthToken(
+            tokenAuthInfo.tokenUserInfo,
+            refreshTokenInfo.loginAt,
+            pastActiveJti = tokenAuthInfo.jti,
         )
     }
 }

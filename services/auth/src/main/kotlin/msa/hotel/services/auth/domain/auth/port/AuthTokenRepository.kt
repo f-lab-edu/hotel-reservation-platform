@@ -16,4 +16,6 @@ interface AuthTokenRepository {
         maxLoginClient: UInt,
         pastActiveJti: String? = null,
     )
+
+    fun existActiveJti(jti: String): Boolean
 }
