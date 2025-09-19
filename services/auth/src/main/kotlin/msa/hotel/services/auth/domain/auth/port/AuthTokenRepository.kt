@@ -9,7 +9,6 @@ interface AuthTokenRepository {
 
     fun saveAuthTokens(
         userInfo: TokenUserInfo,
-        accessTokenJti: String,
         refreshTokenInfo: RefreshTokenInfo,
         issuedAt: Instant,
         accessTokenExpiration: Instant,

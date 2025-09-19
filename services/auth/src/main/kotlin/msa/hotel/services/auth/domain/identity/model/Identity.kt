@@ -11,6 +11,7 @@ class Identity(
     failedLoginCount: UInt = 0u,
     lockedUntil: Instant? = null,
     passwordUpdatedAt: Instant,
+    lastLoginAt: Instant? = null,
     deletedAt: Instant? = null,
     val createdAt: Instant,
 ) {
@@ -32,6 +33,9 @@ class Identity(
     var deletedAt = deletedAt
         private set
 
+    var lastLoginAt = lastLoginAt
+        private set
+
     fun lock(until: Instant) {
         status = Status.LOCKED
         lockedUntil = until
@@ -50,5 +54,10 @@ class Identity(
         lockedUntil = null
         failedLoginCount = 0u
         status = Status.ACTIVE
+    }
+
+    fun loginSuccess(loginAt: Instant = Instant.now()) {
+        failedLoginCount = 0u
+        lastLoginAt = loginAt
     }
 }

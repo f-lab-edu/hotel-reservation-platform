@@ -8,6 +8,7 @@ CREATE TABLE identities
     failed_login_count  INT UNSIGNED                            NOT NULL DEFAULT 0,
     locked_until        DATETIME(3)                             NULL,
     password_updated_at DATETIME(3)                             NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    last_login_at       DATETIME(3)                             NULL,
     deleted_at          DATETIME(3)                             NULL,
     is_active           TINYINT(1) AS (IF(deleted_at IS NULL, 1, 0)) STORED,
     created_at          DATETIME(3)                             NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

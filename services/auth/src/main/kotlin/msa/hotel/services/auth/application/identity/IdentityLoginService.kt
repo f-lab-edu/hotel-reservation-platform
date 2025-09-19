@@ -36,6 +36,14 @@ class IdentityLoginService(
         return identity
     }
 
+    override fun updateLoginSuccess(
+        identity: Identity,
+        loginAt: Instant,
+    ) {
+        identity.loginSuccess(loginAt)
+        repo.save(identity)
+    }
+
     private fun checkLockedLogin(identity: Identity) {
         val now = Instant.now()
         val lockedUntil: Instant? = identity.lockedUntil

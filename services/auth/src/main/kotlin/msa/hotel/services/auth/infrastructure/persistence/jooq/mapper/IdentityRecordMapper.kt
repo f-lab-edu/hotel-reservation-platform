@@ -34,6 +34,7 @@ internal fun Identity.toRecord(): IdentitiesRecord =
         failedLoginCount = UInteger.valueOf(this.failedLoginCount.toInt()),
         lockedUntil = this.lockedUntil?.atZone(ZoneOffset.UTC)?.toLocalDateTime(),
         passwordUpdatedAt = this.passwordUpdatedAt.atZone(ZoneOffset.UTC).toLocalDateTime(),
+        lastLoginAt = this.lastLoginAt?.atZone(ZoneOffset.UTC)?.toLocalDateTime(),
         deletedAt = this.deletedAt?.atZone(ZoneOffset.UTC)?.toLocalDateTime(),
         createdAt = this.createdAt.atZone(ZoneOffset.UTC).toLocalDateTime(),
         updatedAt = LocalDateTime.now(),

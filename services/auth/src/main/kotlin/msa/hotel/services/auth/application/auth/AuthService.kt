@@ -29,18 +29,20 @@ class AuthService(
         val userInfo =
             TokenUserInfo(
                 role = command.role.name,
-                deviceId = command.deviceId,
                 userId = identity.id.value,
+                deviceId = command.deviceId,
             )
 
         // 2. 같은 기기 중복 로그인 체크
         val pastLoginJti: String? = checkDuplicateDeviceLogin(userInfo)
 
         // 3. 인증 토큰 생성 및 저장
-        return generateAuthToken(
-            userInfo = userInfo,
-            pastActiveJti = pastLoginJti,
-        )
+        val authToken = generateAuthToken(userInfo, pastActiveJti = pastLoginJti)
+
+        // 4. identity 로그인 성공 업데이트
+        authIdentityService.updateLoginSuccess(identity, loginAt = authToken.refreshTokenIssuedAt)
+
+        return authToken
     }
 
     private fun checkDuplicateDeviceLogin(userInfo: TokenUserInfo): String? {
@@ -59,18 +61,18 @@ class AuthService(
         val accessTokenExpiration = issuedAt.plus(Duration.ofHours(ACCESS_TOKEN_EXPIRATION_IN_HOURS))
         val accessToken: Token =
             jwtProvider.generate(
-                userInfo = userInfo,
                 issuedAt = Date.from(issuedAt),
                 expiration = Date.from(accessTokenExpiration),
+                userInfo,
             )
 
         // 2. RefreshToken 생성
         val refreshTokenExpiration = issuedAt.plus(Duration.ofHours(REFRESH_TOKEN_EXPIRATION_IN_HOURS))
         val refreshToken: Token =
             jwtProvider.generate(
-                userInfo = userInfo,
                 issuedAt = Date.from(issuedAt),
                 expiration = Date.from(refreshTokenExpiration),
+                userInfo,
             )
         val refreshTokenInfo =
             RefreshTokenInfo(
@@ -85,7 +87,6 @@ class AuthService(
         tokenRepo.saveAuthTokens(
             userInfo = userInfo,
             issuedAt = issuedAt,
-            accessTokenJti = accessToken.jti,
             accessTokenExpiration = accessTokenExpiration,
             refreshTokenInfo = refreshTokenInfo,
             refreshTokenExpiration = refreshTokenExpiration,

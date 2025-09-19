@@ -29,7 +29,6 @@ class AuthTokenRepositoryImpl(
 
     override fun saveAuthTokens(
         userInfo: TokenUserInfo,
-        accessTokenJti: String,
         refreshTokenInfo: RefreshTokenInfo,
         issuedAt: Instant,
         accessTokenExpiration: Instant,
@@ -38,7 +37,7 @@ class AuthTokenRepositoryImpl(
         pastActiveJti: String?,
     ) {
         // Lua 스크립트 실행을 위한 파라미터 준비 (최대 동시 접속 가능 기기 5개로 세션 정보 관리)
-        val activeJtiKey = makeActiveJtiKey(accessTokenJti)
+        val activeJtiKey = makeActiveJtiKey(refreshTokenInfo.accessTokenJti)
         val sessionAgesKey = makeSessionKey(role = userInfo.role, userId = userInfo.userId)
         val refreshTokensKey = makeRefreshTokenKey(role = userInfo.role, userId = userInfo.userId)
 
