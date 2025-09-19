@@ -28,4 +28,14 @@ class AuthController(
 
         return setAuthTokenHeaders(authToken)
     }
+
+    @PostMapping("/reissue")
+    fun reissueToken(): ResponseEntity<Unit> {
+        val accessToken = tokenExtractor.getAccessToken()
+        val refreshToken = tokenExtractor.getRefreshToken()
+
+        val authToken: AuthTokenDto = authService.reissueToken(accessToken, refreshToken)
+
+        return setAuthTokenHeaders(authToken)
+    }
 }

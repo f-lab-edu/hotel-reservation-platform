@@ -46,9 +46,11 @@ class AuthTokenRepositoryImpl(
         val refreshTokenTtl = Duration.between(issuedAt, refreshTokenExpiration).seconds
         val sessionInfoJson = ObjectMapper().registerModule(JavaTimeModule()).writeValueAsString(refreshTokenInfo)
 
+        val pastActiveJtiKey: String? = if (pastActiveJti != null) makeActiveJtiKey(pastActiveJti) else null
+
         rt.execute(
             loginScript,
-            listOf(sessionAgesKey, refreshTokensKey, activeJtiKey, pastActiveJti),
+            listOf(sessionAgesKey, refreshTokensKey, activeJtiKey, pastActiveJtiKey),
             maxLoginClient.toString(),
             userInfo.deviceId,
             refreshTokenExpiresAt,
@@ -57,5 +59,13 @@ class AuthTokenRepositoryImpl(
             accessTokenTtl.toString(),
             refreshTokenTtl.toString(),
         )
+    }
+
+    override fun existActiveJti(jti: String): Boolean {
+        val activeJtiKey = makeActiveJtiKey(jti)
+
+        rt.opsForValue().get(activeJtiKey) ?: return false
+
+        return true
     }
 }
