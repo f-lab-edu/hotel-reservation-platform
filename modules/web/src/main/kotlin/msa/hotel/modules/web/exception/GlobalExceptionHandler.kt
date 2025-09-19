@@ -18,59 +18,60 @@ private val logger = KotlinLogging.logger {}
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
     @ExceptionHandler(
         NoHandlerFoundException::class,
         NoResourceFoundException::class,
-        HttpRequestMethodNotSupportedException::class
+        HttpRequestMethodNotSupportedException::class,
     )
     fun handleNotFound(exception: Exception): ResponseEntity<Response<Nothing>> {
         logger.error { exception }
 
-        val response = Response.error(
-            code = ErrorCode.NOT_FOUND.name,
-            message = NOT_FOUND_ERROR_MESSAGE
-        )
+        val response =
+            Response.error(
+                code = ErrorCode.NOT_FOUND.name,
+                message = NOT_FOUND_ERROR_MESSAGE,
+            )
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(
-        methodArgumentNotValidException: MethodArgumentNotValidException
-    ): ResponseEntity<Response<Nothing>> {
+    fun handleValidationException(methodArgumentNotValidException: MethodArgumentNotValidException): ResponseEntity<Response<Nothing>> {
         logger.error { methodArgumentNotValidException }
 
         val fieldErrors = methodArgumentNotValidException.bindingResult.fieldErrors
-        val message = fieldErrors.stream()
-            .map { error: FieldError -> String.format("[%s] %s", error.field, error.defaultMessage) }
-            .collect(Collectors.joining(" | "))
+        val message =
+            fieldErrors
+                .stream()
+                .map { error: FieldError -> String.format("[%s] %s", error.field, error.defaultMessage) }
+                .collect(Collectors.joining(" | "))
 
-        val response = Response.error(
-            code = ErrorCode.VALIDATION_ERROR.name,
-            message = message
-        )
+        val response =
+            Response.error(
+                code = ErrorCode.VALIDATION_ERROR.name,
+                message = message,
+            )
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
-    fun handleConstraintViolationException(
-        constraintViolationException: ConstraintViolationException
-    ): ResponseEntity<Response<Nothing>> {
+    fun handleConstraintViolationException(constraintViolationException: ConstraintViolationException): ResponseEntity<Response<Nothing>> {
         logger.error { constraintViolationException }
 
-        val message = constraintViolationException.constraintViolations.joinToString(" | ") {
-            // ConstraintViolation에서 필드명과 메시지를 추출합니다.
-            val propertyPath = it.propertyPath.toString()
-            val fieldName = propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
-            "[$fieldName] ${it.message}"
-        }
+        val message =
+            constraintViolationException.constraintViolations.joinToString(" | ") {
+                // ConstraintViolation에서 필드명과 메시지를 추출합니다.
+                val propertyPath = it.propertyPath.toString()
+                val fieldName = propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
+                "[$fieldName] ${it.message}"
+            }
 
-        val response = Response.error(
-            code = ErrorCode.VALIDATION_ERROR.name,
-            message = message
-        )
+        val response =
+            Response.error(
+                code = ErrorCode.VALIDATION_ERROR.name,
+                message = message,
+            )
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
@@ -80,10 +81,11 @@ class GlobalExceptionHandler {
         val status: HttpStatus = businessException.errorCode.httpStatus
         val responseCode = businessException.errorCode.name
 
-        val response = Response.error(
-            code = responseCode,
-            message = businessException.message
-        )
+        val response =
+            Response.error(
+                code = responseCode,
+                message = businessException.message,
+            )
 
         return ResponseEntity.status(status).body(response)
     }
@@ -92,10 +94,11 @@ class GlobalExceptionHandler {
     fun handleUnexpectedException(exception: Exception): ResponseEntity<Response<Nothing>> {
         logger.error { exception }
 
-        val response = Response.error(
-            code = ErrorCode.INTERNAL_SERVER_ERROR.name,
-            message = DEFAULT_ERROR_MESSAGE
-        )
+        val response =
+            Response.error(
+                code = ErrorCode.INTERNAL_SERVER_ERROR.name,
+                message = DEFAULT_ERROR_MESSAGE,
+            )
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
     }
@@ -104,5 +107,4 @@ class GlobalExceptionHandler {
         private const val NOT_FOUND_ERROR_MESSAGE = "지원하지 않는 API 유형입니다"
         private const val DEFAULT_ERROR_MESSAGE = "서버 내부 오류로 인한 작업 실패"
     }
-
 }

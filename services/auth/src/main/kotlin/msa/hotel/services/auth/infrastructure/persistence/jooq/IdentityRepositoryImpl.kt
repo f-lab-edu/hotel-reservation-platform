@@ -4,6 +4,8 @@ import msa.hotel.services.auth.domain.identity.model.Identity
 import msa.hotel.services.auth.domain.identity.model.IdentityId
 import msa.hotel.services.auth.domain.identity.model.Status
 import msa.hotel.services.auth.domain.identity.port.IdentityRepository
+import msa.hotel.services.auth.infrastructure.persistence.jooq.mapper.toDomain
+import msa.hotel.services.auth.infrastructure.persistence.jooq.mapper.toRecord
 import msa.hotel.services.auth.jooq.tables.references.IDENTITIES
 import org.jooq.DSLContext
 import org.jooq.types.ULong

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.validation.annotation.Validated
 
+@Suppress("ktlint:standard:no-blank-line-in-list")
 @Validated
 @ConfigurationProperties(prefix = "spring.data.redis")
 data class RedisProperties(

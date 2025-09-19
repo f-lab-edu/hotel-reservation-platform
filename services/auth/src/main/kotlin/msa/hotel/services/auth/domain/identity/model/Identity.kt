@@ -5,30 +5,59 @@ import java.time.Instant
 class Identity(
     val id: IdentityId,
     val email: String,
-    val passwordHash: String,
+    passwordHash: String,
     val role: Role,
-    status: Status = Status.PENDING,
-    val emailVerifiedAt: Instant? = null,
-    val failedLoginCount: UInt = 0u,
-    val lockedUntil: Instant? = null,
-    val passwordUpdatedAt: Instant,
-    val deletedAt: Instant? = null,
+    status: Status = Status.ACTIVE,
+    failedLoginCount: UInt = 0u,
+    lockedUntil: Instant? = null,
+    passwordUpdatedAt: Instant,
+    lastLoginAt: Instant? = null,
+    deletedAt: Instant? = null,
     val createdAt: Instant,
-    val updatedAt: Instant,
 ) {
+    var passwordHash = passwordHash
+        private set
+
+    var passwordUpdatedAt = passwordUpdatedAt
+        private set
+
     var status: Status = status
         private set
 
-    fun activate() {
-        check(status == Status.PENDING) { "Only PENDING can be activated" }
-        status = Status.ACTIVE
-    }
+    var failedLoginCount = failedLoginCount
+        private set
+
+    var lockedUntil = lockedUntil
+        private set
+
+    var deletedAt = deletedAt
+        private set
+
+    var lastLoginAt = lastLoginAt
+        private set
 
     fun lock(until: Instant) {
         status = Status.LOCKED
+        lockedUntil = until
     }
 
     fun disable() {
         status = Status.DISABLED
+        deletedAt = Instant.now()
+    }
+
+    fun incrementFailedLoginCount() {
+        failedLoginCount++
+    }
+
+    fun unLock() {
+        lockedUntil = null
+        failedLoginCount = 0u
+        status = Status.ACTIVE
+    }
+
+    fun loginSuccess(loginAt: Instant = Instant.now()) {
+        failedLoginCount = 0u
+        lastLoginAt = loginAt
     }
 }
