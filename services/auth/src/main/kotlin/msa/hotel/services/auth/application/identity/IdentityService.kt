@@ -17,13 +17,13 @@ import java.time.Instant
 class IdentityService(
     private val ids: IdGenerator = IdGenerator(),
     private val repo: IdentityRepository,
-    private val passwordEncoder: PasswordEncoder,
+    private val pwEncoder: PasswordEncoder,
 ) {
     @Transactional
     fun register(command: RegisterIdentityCommand): IdentityDto {
-        val pwValidation = PasswordPolicy.validate(command.password)
-        if (!pwValidation.isValid) {
-            throw ErrorCode.VALIDATION_ERROR.exception(pwValidation.error ?: "Password 정책 위반")
+        val pwValidResult = PasswordPolicy.validate(command.password)
+        if (!pwValidResult.isValid) {
+            throw ErrorCode.VALIDATION_ERROR.exception(pwValidResult.errorCause ?: "비밀번호 정책 위반")
         }
 
         val email = command.email.trim().lowercase()
@@ -33,7 +33,7 @@ class IdentityService(
         }
 
         val id = IdentityId(ids.generate())
-        val passwordHash = passwordEncoder.encode(command.password)
+        val passwordHash = pwEncoder.encode(command.password)
         val now = Instant.now()
         val identity =
             Identity(
@@ -43,7 +43,6 @@ class IdentityService(
                 role = command.role,
                 passwordUpdatedAt = now,
                 createdAt = now,
-                updatedAt = now,
             )
 
         val saved = repo.save(identity)

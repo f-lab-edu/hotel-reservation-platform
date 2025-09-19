@@ -8,12 +8,13 @@ import org.springframework.boot.runApplication
     scanBasePackages = [
         "msa.hotel.services.auth",
         "msa.hotel.modules.web",
+        "msa.hotel.modules.jwt",
     ],
 )
 @ConfigurationPropertiesScan(
     basePackages = [
-        "msa.hotel.services.auth.config.properties,",
-        " msa.hotel.modules.jwt.config.properties",
+        "msa.hotel.services.auth.config.properties",
+        "msa.hotel.modules.jwt.config.properties",
     ],
 )
 class AuthApplication

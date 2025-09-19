@@ -4,11 +4,7 @@ import org.springframework.http.HttpStatus
 
 class BusinessException(
     val errorCode: ErrorCode,
-    override val message: String
+    override val message: String,
 ) : RuntimeException(message) {
-
-    fun httpStatus(): HttpStatus {
-        return errorCode.httpStatus
-    }
-
+    fun httpStatus(): HttpStatus = errorCode.httpStatus
 }

@@ -11,8 +11,8 @@ import msa.hotel.modules.web.support.toResponse
 import msa.hotel.services.auth.domain.identity.model.IdentityId
 import msa.hotel.services.auth.domain.identity.model.Role
 import msa.hotel.services.auth.domain.identity.port.IdentityRepository
-import msa.hotel.services.auth.infrastructure.web.identity.request.RegisterIdentityRequest
-import msa.hotel.services.auth.infrastructure.web.identity.response.RegisterIdentityResponse
+import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityRequest
+import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityResponse
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType

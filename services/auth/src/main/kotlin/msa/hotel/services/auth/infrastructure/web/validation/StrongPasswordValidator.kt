@@ -17,7 +17,7 @@ class StrongPasswordValidator : ConstraintValidator<StrongPassword, String> {
         val result = PasswordPolicy.validate(value)
         if (!result.isValid) {
             context.disableDefaultConstraintViolation()
-            context.buildConstraintViolationWithTemplate(result.error ?: "비밀번호가 유효하지 않습니다").addConstraintViolation()
+            context.buildConstraintViolationWithTemplate(result.errorCause ?: "비밀번호가 유효하지 않습니다").addConstraintViolation()
         }
 
         return result.isValid

@@ -32,6 +32,3 @@ logging:
 
 jwt:
   secret-key: ${JWT_SECRET_KEY:this-is-a-very-long-and-secure-secret-key-for-hs256-algorithm}
-  access-token-expiration-hours: 1
-  refresh-token-expiration-hours: 24
-  max-device-count: 5
