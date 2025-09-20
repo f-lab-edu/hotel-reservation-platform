@@ -221,20 +221,19 @@ class AuthIntegrationTest(
 
                 val anotherDeviceId = "another-device"
                 val anotherLoginRequest = createLoginRequest(registerCommand, anotherDeviceId)
-                val (anotherAccessToken, anotherRefreshTokenCookie) = performLoginAndGetTokens(anotherLoginRequest)
+                val anotherAccessToken = performLoginAndGetTokens(anotherLoginRequest).first
 
                 val logoutRequest = LogoutRequest(anotherDeviceId)
 
-                val result =
-                    mockMvc
-                        .delete("/auth/logout-device") {
-                            cookie(refreshTokenCookie)
-                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessToken))
-                            content = om.writeValueAsString(logoutRequest)
-                            contentType = MediaType.APPLICATION_JSON
-                        }.andExpect {
-                            status { isOk() }
-                        }.andReturn()
+                mockMvc
+                    .delete("/auth/logout-device") {
+                        cookie(refreshTokenCookie)
+                        header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessToken))
+                        content = om.writeValueAsString(logoutRequest)
+                        contentType = MediaType.APPLICATION_JSON
+                    }.andExpect {
+                        status { isOk() }
+                    }.andReturn()
 
                 Then("다른 디바이스로 접속한 세션 삭제 -> AccessToken, RefreshToken 즉시 무효화") {
                     val anotherAccessTokenInfo = jwtDecoder.extractAuthInfo(anotherAccessToken)
