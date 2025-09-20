@@ -156,7 +156,7 @@ class AuthService(
         if (deviceId != null) {
             logoutDeviceId = deviceId
             if (!tokenRepo.existActiveJti(tokenAuthInfo.jti)) {
-                throw ErrorCode.UNAUTHORIZED.exception("현재 세션이 로그아웃되어 다른 세션을 로그아웃할 수 없습니다")
+                throw ErrorCode.UNAUTHORIZED.exception("현재 세션이 유효하지 않아 다른 세션을 로그아웃할 수 없습니다")
             }
         }
 
@@ -177,5 +177,46 @@ class AuthService(
             loginDateTime = logoutRefreshTokenInfo.loginAt.atZone(UTC).toLocalDateTime(),
             lastActivityDateTime = logoutRefreshTokenInfo.lastActivityAt.atZone(UTC).toLocalDateTime(),
         )
+    }
+
+    fun logoutAll(accessToken: String): List<SessionInfoDto> {
+        // 1. AccessToken 유효성 검사
+        val tokenAuthInfo = jwtDecoder.extractAuthInfo(accessToken)
+        if (!tokenRepo.existActiveJti(tokenAuthInfo.jti)) {
+            throw ErrorCode.UNAUTHORIZED.exception("현재 세션이 유효하지 않아 모든 세션을 로그아웃할 수 없습니다")
+        }
+
+        // 2. 모든 접속 세션 내역 확인
+        val sessionInfos = getSessions(tokenAuthInfo.tokenUserInfo)
+        if (sessionInfos.isEmpty()) {
+            throw ErrorCode.CONFLICT.exception("이미 모두 로그아웃 처리 되었습니다.")
+        }
+
+        // 3. 모든 기기 로그아웃 Lua 스크립트 실행 (로그아웃 요청 된 AccessToken, RefreshToken 무력화)
+        tokenRepo.deleteAuthTokenByLogoutAll(tokenAuthInfo.tokenUserInfo)
+
+        return sessionInfos
+    }
+
+    fun getSessions(accessToken: String): List<SessionInfoDto> {
+        val tokenAuthInfo = jwtDecoder.extractAuthInfo(accessToken)
+        if (!tokenRepo.existActiveJti(tokenAuthInfo.jti)) {
+            throw ErrorCode.UNAUTHORIZED.exception("현재 세션이 유효하지 않아 모든 세션을 로그아웃할 수 없습니다")
+        }
+
+        return getSessions(tokenAuthInfo.tokenUserInfo)
+    }
+
+    fun getSessions(userInfo: TokenUserInfo): List<SessionInfoDto> {
+        val refreshTokenInfos = tokenRepo.findAllRefreshTokenInfo(userInfo)
+
+        return refreshTokenInfos.map {
+            val authInfo = jwtDecoder.extractAuthInfo(it.token)
+            SessionInfoDto(
+                deviceId = authInfo.tokenUserInfo.deviceId,
+                loginDateTime = it.loginAt.atZone(UTC).toLocalDateTime(),
+                lastActivityDateTime = it.lastActivityAt.atZone(UTC).toLocalDateTime(),
+            )
+        }
     }
 }

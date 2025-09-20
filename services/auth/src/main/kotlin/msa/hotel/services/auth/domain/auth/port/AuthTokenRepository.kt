@@ -29,4 +29,8 @@ interface AuthTokenRepository {
         logoutActiveJti: String,
         logoutDeviceId: String,
     )
+
+    fun findAllRefreshTokenInfo(userInfo: TokenUserInfo): List<RefreshTokenInfo>
+
+    fun deleteAuthTokenByLogoutAll(userInfo: TokenUserInfo)
 }
