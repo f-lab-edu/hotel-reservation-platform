@@ -48,4 +48,13 @@ class RedisConfig(
 
         return script
     }
+
+    @Bean
+    fun logoutScript(): DefaultRedisScript<Long> {
+        val script = DefaultRedisScript<Long>()
+        script.setLocation(ClassPathResource("scripts/logout.lua"))
+        script.resultType = Long::class.java
+
+        return script
+    }
 }

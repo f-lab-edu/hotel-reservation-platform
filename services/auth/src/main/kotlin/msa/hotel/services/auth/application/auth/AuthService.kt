@@ -7,6 +7,7 @@ import msa.hotel.modules.jwt.token.dto.TokenUserInfo
 import msa.hotel.modules.web.exception.ErrorCode
 import msa.hotel.services.auth.application.auth.command.LoginCommand
 import msa.hotel.services.auth.application.auth.dto.AuthTokenDto
+import msa.hotel.services.auth.application.auth.dto.SessionInfoDto
 import msa.hotel.services.auth.domain.auth.model.RefreshTokenInfo
 import msa.hotel.services.auth.domain.auth.policy.MaximumLoginClientPolicy
 import msa.hotel.services.auth.domain.auth.policy.TokenExpirationPolicy.ACCESS_TOKEN_EXPIRATION_IN_HOURS
@@ -15,6 +16,7 @@ import msa.hotel.services.auth.domain.auth.port.AuthTokenRepository
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneOffset.UTC
 import java.util.Date
 
 @Service
@@ -128,6 +130,52 @@ class AuthService(
             tokenAuthInfo.tokenUserInfo,
             refreshTokenInfo.loginAt,
             pastActiveJti = tokenAuthInfo.jti,
+        )
+    }
+
+    fun logout(
+        accessToken: String,
+        deviceId: String? = null,
+    ): SessionInfoDto {
+        // 현재 접속 기기가 아닌 다른 접속 기기의 로그아웃을 요청한 경우, 만료안된 토큰만 허용
+        // 1. AccessToken 유효성 검사
+        val tokenAuthInfo =
+            if (deviceId != null) {
+                jwtDecoder.extractAuthInfo(accessToken)
+            } else {
+                jwtDecoder.extractAuthInfoCathExpired(accessToken).first
+            }
+        val tokenDeviceId = tokenAuthInfo.tokenUserInfo.deviceId
+
+        if (tokenDeviceId == deviceId) {
+            throw ErrorCode.BAD_REQUEST.exception("다른 기기 로그아웃 요청 시, 현재 기기 정보 요청은 유효하지 않습니다.")
+        }
+
+        // 현재 접속 기기가 아닌 다른 접속 기기의 로그아웃을 요청한 경우, 지금 세션이 활성화된 정보인지 한번 더 검증
+        var logoutDeviceId = tokenDeviceId
+        if (deviceId != null) {
+            logoutDeviceId = deviceId
+            if (!tokenRepo.existActiveJti(tokenAuthInfo.jti)) {
+                throw ErrorCode.UNAUTHORIZED.exception("현재 세션이 로그아웃되어 다른 세션을 로그아웃할 수 없습니다")
+            }
+        }
+
+        // 2. 로그아웃 요청한 Device ID가 로그인 중인 기기 정보가 맞는지 검사
+        val logoutRefreshTokenInfo =
+            tokenRepo.findRefreshTokenInfo(tokenAuthInfo.tokenUserInfo, logoutDeviceId)
+                ?: throw ErrorCode.UNAUTHORIZED.exception("로그아웃 요청한 $logoutDeviceId 기기 인증 정보가 존재하지 않습니다. 이미 로그아웃 된 상태입니다.")
+
+        // 3. 로그아웃 Lua 스크립트 실행 (로그아웃 요청 된 AccessToken, RefreshToken 무력화)
+        tokenRepo.deleteAuthTokenByLogout(
+            tokenAuthInfo.tokenUserInfo,
+            logoutActiveJti = logoutRefreshTokenInfo.accessTokenJti,
+            logoutDeviceId = logoutDeviceId,
+        )
+
+        return SessionInfoDto(
+            deviceId = logoutDeviceId,
+            loginDateTime = logoutRefreshTokenInfo.loginAt.atZone(UTC).toLocalDateTime(),
+            lastActivityDateTime = logoutRefreshTokenInfo.lastActivityAt.atZone(UTC).toLocalDateTime(),
         )
     }
 }

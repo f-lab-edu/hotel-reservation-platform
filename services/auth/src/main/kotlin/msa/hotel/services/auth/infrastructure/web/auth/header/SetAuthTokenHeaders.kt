@@ -1,5 +1,6 @@
 package msa.hotel.services.auth.infrastructure.web.auth.header
 
+import msa.hotel.modules.web.response.Response
 import msa.hotel.services.auth.application.auth.dto.AuthTokenDto
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_PREFIX
@@ -30,3 +31,28 @@ fun setAuthTokenHeaders(authToken: AuthTokenDto): ResponseEntity<Unit> {
 }
 
 fun makeAccessTokenHeaderValue(accessToken: String): String = "$T_ACCESS_HEADER_PREFIX$accessToken"
+
+fun <T> deleteAuthTokenHeaders(
+    message: String,
+    data: T,
+): ResponseEntity<Response<T>> {
+    val deleteCookie =
+        ResponseCookie
+            .from(T_REFRESH_COOKIE_NAME, "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(0)
+            .build()
+
+    val responseBody =
+        Response.delete(
+            message = message,
+            data = data,
+        )
+
+    return ResponseEntity
+        .ok()
+        .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+        .body(responseBody)
+}

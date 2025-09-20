@@ -15,6 +15,7 @@ import msa.hotel.services.auth.domain.auth.port.AuthTokenRepository
 import msa.hotel.services.auth.domain.identity.model.Role
 import msa.hotel.services.auth.infrastructure.persistence.redis.key.AuthTokenKey.makeRefreshTokenKey
 import msa.hotel.services.auth.infrastructure.web.auth.dto.LoginRequest
+import msa.hotel.services.auth.infrastructure.web.auth.dto.LogoutRequest
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_PREFIX
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_REFRESH_COOKIE_NAME
@@ -25,6 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 import java.lang.Thread.sleep
@@ -181,6 +183,76 @@ class AuthIntegrationTest(
                     reissueUserInfo.userId shouldBe registeredIdentity.id.value
                     reissueUserInfo.role shouldBe registeredIdentity.role.name
                     reissueUserInfo.deviceId shouldBe loginDeviceId
+                }
+            }
+
+            When("로그인 이후 로그아웃 API 요청") {
+                val request = createLoginRequest(registerCommand, loginDeviceId)
+                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(request)
+
+                val result =
+                    mockMvc
+                        .delete("/auth/logout") {
+                            cookie(refreshTokenCookie)
+                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessToken))
+                        }.andExpect {
+                            status { isOk() }
+                        }.andReturn()
+
+                Then("이전에 발급된 AccessToken & RefreshToken 모두 무효화") {
+                    // 응답 내역에 리프레시 토큰 쿠키 삭제
+                    val refreshTokenCookie = result.response.getCookie(T_REFRESH_COOKIE_NAME)
+                    refreshTokenCookie!!.value.isNullOrBlank() shouldBe true
+
+                    // 해당 접속 세션 삭제 -> 리프레시 토큰
+                    val tokenAuthInfo = jwtDecoder.extractAuthInfo(accessToken)
+                    val savedRefreshTokenInfo = repo.findRefreshTokenInfo(tokenAuthInfo.tokenUserInfo)
+                    savedRefreshTokenInfo shouldBe null
+
+                    // 활성 AccessToken 내역 삭제
+                    val checkActiveJti = repo.existActiveJti(tokenAuthInfo.jti)
+                    checkActiveJti shouldBe false
+                }
+            }
+
+            When("로그인한 인증 정보로 다른 Device로 접속 세션 로그아웃 API 요청") {
+                val loginRequest = createLoginRequest(registerCommand, loginDeviceId)
+                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest)
+
+                val anotherDeviceId = "another-device"
+                val anotherLoginRequest = createLoginRequest(registerCommand, anotherDeviceId)
+                val (anotherAccessToken, anotherRefreshTokenCookie) = performLoginAndGetTokens(anotherLoginRequest)
+
+                val logoutRequest = LogoutRequest(anotherDeviceId)
+
+                val result =
+                    mockMvc
+                        .delete("/auth/logout-device") {
+                            cookie(refreshTokenCookie)
+                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessToken))
+                            content = om.writeValueAsString(logoutRequest)
+                            contentType = MediaType.APPLICATION_JSON
+                        }.andExpect {
+                            status { isOk() }
+                        }.andReturn()
+
+                Then("다른 디바이스로 접속한 세션 삭제 -> AccessToken, RefreshToken 즉시 무효화") {
+                    val anotherAccessTokenInfo = jwtDecoder.extractAuthInfo(anotherAccessToken)
+                    // 리프레시 토큰 내역 삭제 확인
+                    val savedAnotherRefreshTokenInfo = repo.findRefreshTokenInfo(anotherAccessTokenInfo.tokenUserInfo)
+                    savedAnotherRefreshTokenInfo shouldBe null
+
+                    // 활성 JTI 삭제 확인
+                    val checkAnotherActiveJti = repo.existActiveJti(anotherAccessTokenInfo.jti)
+                    checkAnotherActiveJti shouldBe false
+
+                    // 다른 접속 중인 세션은 여전히 유효함을 확인
+                    val accessTokenInfo = jwtDecoder.extractAuthInfo(accessToken)
+                    val savedRefreshTokenInfo = repo.findRefreshTokenInfo(accessTokenInfo.tokenUserInfo)
+                    savedRefreshTokenInfo shouldNotBe null
+
+                    val checkActiveJti = repo.existActiveJti(accessTokenInfo.jti)
+                    checkActiveJti shouldBe true
                 }
             }
         }
