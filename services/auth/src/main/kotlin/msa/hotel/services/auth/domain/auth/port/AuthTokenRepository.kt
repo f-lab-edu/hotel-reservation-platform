@@ -18,4 +18,15 @@ interface AuthTokenRepository {
     )
 
     fun existActiveJti(jti: String): Boolean
+
+    fun findRefreshTokenInfo(
+        userInfo: TokenUserInfo,
+        logoutDeviceId: String,
+    ): RefreshTokenInfo?
+
+    fun deleteAuthTokenByLogout(
+        userInfo: TokenUserInfo,
+        logoutActiveJti: String,
+        logoutDeviceId: String,
+    )
 }

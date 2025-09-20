@@ -48,6 +48,9 @@ class JwtDecoder(
             val claims = getClaims(token)
 
             return extractAuthInfo(claims)
+        } catch (e: ExpiredJwtException) {
+            logger.error { "Extract AuthInfo exception (token): $e" }
+            throw ErrorCode.UNAUTHORIZED.exception("인증이 만료됐습니다.")
         } catch (e: Exception) {
             logger.error { "Extract AuthInfo exception (token): $e" }
             throw ErrorCode.UNAUTHORIZED.exception("인증 정보가 올바르지 않습니다.")

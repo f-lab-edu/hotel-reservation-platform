@@ -1,5 +1,6 @@
 package msa.hotel.services.auth.domain.identity.model
 
+import msa.hotel.modules.web.exception.ErrorCode
 import java.time.Instant
 
 class Identity(
@@ -15,6 +16,27 @@ class Identity(
     deletedAt: Instant? = null,
     val createdAt: Instant,
 ) {
+    init {
+        if (email.isBlank()) {
+            throw ErrorCode.CONFLICT.exception("email is blank")
+        }
+        if (!email.matches(".+@.+\\..+".toRegex())) {
+            throw ErrorCode.CONFLICT.exception("invalid email format")
+        }
+        if (passwordHash.isBlank()) {
+            throw ErrorCode.CONFLICT.exception("password hash is blank")
+        }
+        if (lockedUntil != null && lockedUntil.isBefore(createdAt)) {
+            throw ErrorCode.CONFLICT.exception("locked until is before created at")
+        }
+        if (lastLoginAt != null && lastLoginAt.isAfter(createdAt)) {
+            throw ErrorCode.CONFLICT.exception("last login at is after created at")
+        }
+        if (deletedAt != null && deletedAt.isBefore(createdAt)) {
+            throw ErrorCode.CONFLICT.exception("deleted at is before created at")
+        }
+    }
+
     var passwordHash = passwordHash
         private set
 

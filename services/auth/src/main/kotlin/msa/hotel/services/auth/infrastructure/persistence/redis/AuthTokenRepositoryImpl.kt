@@ -19,10 +19,21 @@ class AuthTokenRepositoryImpl(
     private val rt: RedisTemplate<String, String>,
     private val om: ObjectMapper,
     private val loginScript: RedisScript<Long>,
+    private val logoutScript: RedisScript<Long>,
 ) : AuthTokenRepository {
     override fun findRefreshTokenInfo(userInfo: TokenUserInfo): RefreshTokenInfo? {
         val key = makeRefreshTokenKey(userInfo.role, userInfo.userId)
         val refreshTokenInfoString = rt.opsForHash<String, String>().get(key, userInfo.deviceId) ?: return null
+
+        return om.readValue(refreshTokenInfoString, RefreshTokenInfo::class.java)
+    }
+
+    override fun findRefreshTokenInfo(
+        userInfo: TokenUserInfo,
+        logoutDeviceId: String,
+    ): RefreshTokenInfo? {
+        val key = makeRefreshTokenKey(userInfo.role, userInfo.userId)
+        val refreshTokenInfoString = rt.opsForHash<String, String>().get(key, logoutDeviceId) ?: return null
 
         return om.readValue(refreshTokenInfoString, RefreshTokenInfo::class.java)
     }
@@ -67,5 +78,22 @@ class AuthTokenRepositoryImpl(
         rt.opsForValue().get(activeJtiKey) ?: return false
 
         return true
+    }
+
+    override fun deleteAuthTokenByLogout(
+        userInfo: TokenUserInfo,
+        logoutActiveJti: String,
+        logoutDeviceId: String,
+    ) {
+        val refreshTokenKey = makeRefreshTokenKey(role = userInfo.role, userId = userInfo.userId)
+        val sessionAgesKey = makeSessionKey(role = userInfo.role, userId = userInfo.userId)
+        val activeJtiKey = makeActiveJtiKey(logoutActiveJti)
+
+        // --- 원자적 스크립트 실행 ---
+        rt.execute(
+            logoutScript,
+            listOf(refreshTokenKey, sessionAgesKey, activeJtiKey),
+            logoutDeviceId,
+        )
     }
 }
