@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
 
 @Repository
 class AuthTokenRepositoryImpl(
@@ -20,6 +21,7 @@ class AuthTokenRepositoryImpl(
     private val om: ObjectMapper,
     private val loginScript: RedisScript<Long>,
     private val logoutScript: RedisScript<Long>,
+    private val logoutAllScript: RedisScript<Long>,
 ) : AuthTokenRepository {
     override fun findRefreshTokenInfo(userInfo: TokenUserInfo): RefreshTokenInfo? {
         val key = makeRefreshTokenKey(userInfo.role, userInfo.userId)
@@ -94,6 +96,26 @@ class AuthTokenRepositoryImpl(
             logoutScript,
             listOf(refreshTokenKey, sessionAgesKey, activeJtiKey),
             logoutDeviceId,
+        )
+    }
+
+    override fun findAllRefreshTokenInfo(userInfo: TokenUserInfo): List<RefreshTokenInfo> {
+        val refreshTokensKey = makeRefreshTokenKey(role = userInfo.role, userId = userInfo.userId)
+        val refreshTokenEntries = rt.opsForHash<String, String>().entries(refreshTokensKey)
+
+        return refreshTokenEntries.values.map { om.readValue(it, RefreshTokenInfo::class.java) }
+    }
+
+    override fun deleteAuthTokenByLogoutAll(userInfo: TokenUserInfo) {
+        // Lua 스크립트 실행을 위한 파라미터 준비 (해당 유저의 모든 AccessToken, RefreshToken 무력화)
+        val refreshTokenKey = makeRefreshTokenKey(role = userInfo.role, userId = userInfo.userId)
+        val sessionAgesKey = makeSessionKey(role = userInfo.role, userId = userInfo.userId)
+
+        // --- 원자적 스크립트 실행 ---
+        rt.execute(
+            logoutAllScript,
+            listOf(refreshTokenKey, sessionAgesKey),
+            UUID.randomUUID().toString(),
         )
     }
 }

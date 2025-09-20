@@ -27,6 +27,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.transaction.annotation.Transactional
 import java.lang.Thread.sleep
@@ -252,6 +253,67 @@ class AuthIntegrationTest(
 
                     val checkActiveJti = repo.existActiveJti(accessTokenInfo.jti)
                     checkActiveJti shouldBe true
+                }
+            }
+
+            When("여러 접속에 로그인 후 모든 기기 로그아웃 API 요청") {
+                val accessTokens = mutableListOf<String>()
+                for (i in 1..3) {
+                    val loginRequest = createLoginRequest(registerCommand, "device-$i")
+                    accessTokens.add(performLoginAndGetTokens(loginRequest).first)
+                }
+                mockMvc
+                    .delete("/auth/logout-all") {
+                        header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessTokens.last()))
+                    }.andExpect {
+                        status { isOk() }
+                    }.andReturn()
+
+                Then("발급됐던 인증 토큰 모두 즉시 무효화") {
+                    // AccessToken 무효화 -> 활성 JTI 내역 모두 삭제
+                    accessTokens.forEach {
+                        val accessTokenInfo = jwtDecoder.extractAuthInfo(it)
+                        val checkActiveJti = repo.existActiveJti(accessTokenInfo.jti)
+                        checkActiveJti shouldBe false
+                    }
+
+                    // 리프레시 토큰 무효화 -> 리프레시 토큰 내역 모두 삭제
+                    val userInfo = jwtDecoder.extractAuthInfo(accessTokens.first()).tokenUserInfo
+                    val refreshTokenInfos = repo.findAllRefreshTokenInfo(userInfo)
+                    refreshTokenInfos.size shouldBe 0
+                }
+            }
+
+            When("여러 디바이스로 로그인 한 후 접속 중인 모든 세션 확인 API 요청") {
+                val accessTokens = mutableListOf<String>()
+                val deviceIds = mutableListOf<String>()
+                for (i in 1..3) {
+                    val deviceId = "device-$i"
+                    deviceIds.add(deviceId)
+                    val loginRequest = createLoginRequest(registerCommand, deviceId)
+                    accessTokens.add(performLoginAndGetTokens(loginRequest).first)
+                }
+
+                val result =
+                    mockMvc
+                        .get("/auth/sessions") {
+                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessTokens.last()))
+                        }.andExpect {
+                            status { isOk() }
+                        }.andReturn()
+
+                Then("접속 중인 디바이스 정보 응답") {
+                    val responseBody = om.readTree(result.response.contentAsString)
+                    val message = responseBody.get("message").asText()
+                    message shouldBe "접속 중인 세션 조회에 성공했습니다."
+
+                    // 응답에 접속 디바이스 기기 목록 확인
+                    val sessions = responseBody.get("data").get("sessionInfos").toList()
+                    sessions.size shouldBe 3
+                    sessions.forEach {
+                        val deviceId = it.get("deviceId").asText()
+                        deviceIds.contains(deviceId) shouldBe true
+                    }
                 }
             }
         }
