@@ -26,6 +26,9 @@ class IdentityLoginService(
         if (identity.role != role) {
             throw ErrorCode.FORBIDDEN.exception("${identity.role.name} 유저로 등록된 이메일입니다.")
         }
+        if (identity.status == Status.PENDING) {
+            throw ErrorCode.FORBIDDEN.exception("이메일 인증이 완료된 상태가 아닙니다. 메일함을 확인해주세요.")
+        }
         if (identity.status == Status.LOCKED) {
             checkLockedLogin(identity)
         }

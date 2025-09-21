@@ -1,5 +1,6 @@
 package msa.hotel.services.auth
 
+import msa.hotel.services.auth.config.DotenvLoader
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
@@ -20,5 +21,7 @@ import org.springframework.boot.runApplication
 class AuthApplication
 
 fun main(args: Array<String>) {
+    DotenvLoader.load()
+
     runApplication<AuthApplication>(*args)
 }

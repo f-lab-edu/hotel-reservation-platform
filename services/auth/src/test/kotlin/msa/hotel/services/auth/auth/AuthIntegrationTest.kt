@@ -13,6 +13,7 @@ import msa.hotel.services.auth.application.identity.command.RegisterIdentityComm
 import msa.hotel.services.auth.domain.auth.policy.MaximumLoginClientPolicy.MAX_CLIENT
 import msa.hotel.services.auth.domain.auth.port.AuthTokenRepository
 import msa.hotel.services.auth.domain.identity.model.Role
+import msa.hotel.services.auth.domain.identity.port.IdentityRepository
 import msa.hotel.services.auth.infrastructure.persistence.redis.key.AuthTokenKey.makeRefreshTokenKey
 import msa.hotel.services.auth.infrastructure.web.auth.dto.LoginRequest
 import msa.hotel.services.auth.infrastructure.web.auth.dto.LogoutRequest
@@ -40,6 +41,7 @@ import java.util.UUID
 class AuthIntegrationTest(
     private val identityService: IdentityService,
     private val repo: AuthTokenRepository,
+    private val identityRepo: IdentityRepository,
     private val mockMvc: MockMvc,
     private val om: ObjectMapper,
     private val jwtDecoder: JwtDecoder,
@@ -68,7 +70,7 @@ class AuthIntegrationTest(
             deviceId = deviceId,
         )
 
-        Given("가입된 멤버 및 로그인 디바이스 정보") {
+        Given("이메일 인증까지 완료한 Identity 제공 및 기본 로그인 디바이스 정보") {
             val registerCommand =
                 RegisterIdentityCommand(
                     email = "${UUID.randomUUID()}@email.com",
@@ -76,6 +78,10 @@ class AuthIntegrationTest(
                     role = Role.MEMBER,
                 )
             val registeredIdentity = identityService.register(registerCommand)
+            val identity = identityRepo.findById(registeredIdentity.id)
+            identity!!.verifyMail()
+            identityRepo.save(identity)
+
             val loginDeviceId = "test-device-1"
 
             When("동시 접속 기기가 없을 경우의 로그인 API 요청") {
@@ -127,7 +133,8 @@ class AuthIntegrationTest(
                 performLoginAndGetTokens(exceededLoginRequest)
 
                 Then("제일 오래전에 접속한 기기 세션 자동 로그아웃") {
-                    val refreshTokensKey = makeRefreshTokenKey(role = registeredIdentity.role.name, userId = registeredIdentity.id.value)
+                    val refreshTokensKey =
+                        makeRefreshTokenKey(role = registeredIdentity.role.name, userId = registeredIdentity.id.value)
 
                     // 1. 로그인 세션 정보 -> 리프레시 토큰 수는 최대 기기 수와 같아야 함
                     val refreshTokenCount = redisTemplate.opsForHash<String, String>().size(refreshTokensKey)
@@ -152,7 +159,10 @@ class AuthIntegrationTest(
                     mockMvc
                         .post("/auth/reissue") {
                             cookie(pastRefreshTokenCookie)
-                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(pastAccessToken)) // 재발급 시에도 AccessToken 확인
+                            header(
+                                T_ACCESS_HEADER_NAME,
+                                makeAccessTokenHeaderValue(pastAccessToken),
+                            ) // 재발급 시에도 AccessToken 확인
                         }.andExpect {
                             status { isCreated() }
                         }.andReturn()
