@@ -44,10 +44,12 @@ subprojects {
             implementation("org.springframework.boot:spring-boot-starter-web")
             implementation("org.springframework.boot:spring-boot-starter-validation")
 
-            implementation("io.github.oshai:kotlin-logging-jvm:7.0.11")
+            val kotlinLoggingVersion = "7.0.11"
+            implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
             implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-            implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
+            val dotenvVersion = "6.5.1"
+            implementation("io.github.cdimascio:dotenv-kotlin:$dotenvVersion")
 
             testImplementation("org.springframework.boot:spring-boot-starter-test") {
                 exclude(group = "org.junit.vintage")

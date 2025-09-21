@@ -119,19 +119,19 @@ class IdentityIntegrationTest(
             }
 
             When("이메일 검증 메일 발송 처리 후 이메일 검증 확인 API 요청") {
-                val apiResult =
-                    mockMvc
-                        .get("/identity/verify/confirm?code=$code&email=${request.email}")
-                        .andExpect {
-                            status { isOk() }
-                        }.andReturn()
+
+                mockMvc
+                    .get("/identity/verify/confirm?code=$code&email=${request.email}")
+                    .andExpect {
+                        status { isOk() }
+                    }.andReturn()
 
                 Then("identity 상태 ACTIVE로 업데이트, 이메일 인증 코드 redis 삭제") {
                     val identity = repo.findById(IdentityId(userId!!))
                     identity!!.status shouldBe Status.ACTIVE
 
                     // 이메일 인증 코드 redis 삭제됨
-                    code = emailVerifyCodeRepo.findCodeByUserId(userId!!)
+                    code = emailVerifyCodeRepo.findCodeByUserId(userId)
                     code shouldBe null
                 }
             }
