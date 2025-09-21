@@ -41,3 +41,6 @@ out/
 ### JOOQ ###
 services/auth/src/main/generated
 services/auth/gradle.properties
+
+### env ###
+services/auth/.env

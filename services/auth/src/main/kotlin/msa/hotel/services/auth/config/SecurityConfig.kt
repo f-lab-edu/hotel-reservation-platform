@@ -21,8 +21,16 @@ class SecurityConfig {
                 it
                     .requestMatchers("/auth/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/identity")
-                    .permitAll()
+                    .requestMatchers(
+                        HttpMethod.POST,
+                        "/identity",
+                        "/identity/verify/request",
+                        "/identity/verify/confirm",
+                    ).permitAll()
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/identity/verify/confirm",
+                    ).permitAll()
                     .anyRequest()
                     .authenticated()
             }

@@ -8,7 +8,8 @@ class Identity(
     val email: String,
     passwordHash: String,
     val role: Role,
-    status: Status = Status.ACTIVE,
+    status: Status = Status.PENDING,
+    mailVerificationAt: Instant? = null,
     failedLoginCount: UInt = 0u,
     lockedUntil: Instant? = null,
     passwordUpdatedAt: Instant,
@@ -26,10 +27,13 @@ class Identity(
         if (passwordHash.isBlank()) {
             throw ErrorCode.CONFLICT.exception("password hash is blank")
         }
+        if (mailVerificationAt != null && mailVerificationAt.isBefore(createdAt)) {
+            throw ErrorCode.CONFLICT.exception("mail verification at is before created at")
+        }
         if (lockedUntil != null && lockedUntil.isBefore(createdAt)) {
             throw ErrorCode.CONFLICT.exception("locked until is before created at")
         }
-        if (lastLoginAt != null && lastLoginAt.isAfter(createdAt)) {
+        if (lastLoginAt != null && lastLoginAt.isBefore(createdAt)) {
             throw ErrorCode.CONFLICT.exception("last login at is after created at")
         }
         if (deletedAt != null && deletedAt.isBefore(createdAt)) {
@@ -46,6 +50,9 @@ class Identity(
     var status: Status = status
         private set
 
+    var mailVerificationAt = mailVerificationAt
+        private set
+
     var failedLoginCount = failedLoginCount
         private set
 
@@ -57,6 +64,11 @@ class Identity(
 
     var lastLoginAt = lastLoginAt
         private set
+
+    fun verifyMail() {
+        status = Status.ACTIVE
+        mailVerificationAt = Instant.now()
+    }
 
     fun lock(until: Instant) {
         status = Status.LOCKED

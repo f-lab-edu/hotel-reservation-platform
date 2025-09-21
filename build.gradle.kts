@@ -21,7 +21,6 @@ allprojects {
 
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect")
-        implementation("io.github.oshai:kotlin-logging-jvm:7.0.11")
 
         val kotestVersion = "5.9.1"
         testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
@@ -35,6 +34,7 @@ allprojects {
 
 subprojects {
     val springProjects = setOf(":modules:web", ":modules:jwt")
+
     if (path.startsWith(":services:") || path in springProjects) {
         apply(plugin = "org.jetbrains.kotlin.plugin.spring")
         apply(plugin = "org.springframework.boot")
@@ -44,7 +44,12 @@ subprojects {
             implementation("org.springframework.boot:spring-boot-starter-web")
             implementation("org.springframework.boot:spring-boot-starter-validation")
 
+            val kotlinLoggingVersion = "7.0.11"
+            implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
             implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+            val dotenvVersion = "6.5.1"
+            implementation("io.github.cdimascio:dotenv-kotlin:$dotenvVersion")
 
             testImplementation("org.springframework.boot:spring-boot-starter-test") {
                 exclude(group = "org.junit.vintage")

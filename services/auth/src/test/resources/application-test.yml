@@ -15,3 +15,6 @@ spring:
     enabled: true
     baseline-on-migrate: true # 기존에 테이블이 있는 DB에 처음 적용할 때, 현재 상태를 기준으로 삼는 설정
     schemas: test-auth-db
+  mail:
+    username: ${MAIL_TEST_USERNAME}
+    password: ${MAIL_TEST_PASSWORD}
