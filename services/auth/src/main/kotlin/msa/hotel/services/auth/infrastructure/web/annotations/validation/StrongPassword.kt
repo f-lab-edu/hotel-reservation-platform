@@ -1,4 +1,4 @@
-package msa.hotel.services.auth.infrastructure.web.validation
+package msa.hotel.services.auth.infrastructure.web.annotations.validation
 
 import jakarta.validation.Constraint
 import jakarta.validation.Payload

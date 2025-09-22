@@ -8,11 +8,19 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import msa.hotel.modules.web.response.Response
 import msa.hotel.modules.web.support.toResponse
+import msa.hotel.services.auth.application.identity.IdentityService
+import msa.hotel.services.auth.application.identity.command.RegisterIdentityCommand
+import msa.hotel.services.auth.auth.createLoginRequest
+import msa.hotel.services.auth.auth.performLoginAndGetTokens
 import msa.hotel.services.auth.domain.identity.model.IdentityId
 import msa.hotel.services.auth.domain.identity.model.Role
 import msa.hotel.services.auth.domain.identity.model.Status
 import msa.hotel.services.auth.domain.identity.port.EmailVerifyCodeRepository
 import msa.hotel.services.auth.domain.identity.port.IdentityRepository
+import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
+import msa.hotel.services.auth.infrastructure.web.auth.header.makeAccessTokenHeaderValue
+import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeRequest
+import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeResponse
 import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityRequest
 import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityResponse
 import msa.hotel.services.auth.infrastructure.web.identity.dto.SendVerifyEmailRequest
@@ -38,6 +46,7 @@ class IdentityIntegrationTest(
     private val repo: IdentityRepository,
     private val passwordEncoder: PasswordEncoder,
     private val emailVerifyCodeRepo: EmailVerifyCodeRepository,
+    private val identityService: IdentityService,
 ) : BehaviorSpec({
         Given("정상적인 신규 Identity 등록 정보") {
             val request =
@@ -133,6 +142,51 @@ class IdentityIntegrationTest(
                     // 이메일 인증 코드 redis 삭제됨
                     code = emailVerifyCodeRepo.findCodeByUserId(userId)
                     code shouldBe null
+                }
+            }
+        }
+
+        Given("이메일 검증까지 완료된 후 로그인 완료") {
+            val registerCommand =
+                RegisterIdentityCommand(
+                    email = "${UUID.randomUUID()}@email.com",
+                    password = "test1234!",
+                    role = Role.MEMBER,
+                )
+            val identityDto = identityService.register(registerCommand)
+            val identity = repo.findById(IdentityId(identityDto.id.value))!!
+            identity.verifyMail()
+            repo.save(identity)
+
+            val loginRequest = createLoginRequest(registerCommand, "test-device-1")
+            val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest, mockMvc, om)
+
+            When("로그인된 인증 정보로 비밀번호 변경 API 요청") {
+                val request =
+                    PasswordChangeRequest(
+                        currentPassword = registerCommand.password,
+                        changePassword = "1234test!",
+                    )
+                val apiResult =
+                    mockMvc
+                        .post("/identity/password/change") {
+                            contentType = MediaType.APPLICATION_JSON
+                            content = om.writeValueAsString(request)
+                            cookie(refreshTokenCookie)
+                            header(T_ACCESS_HEADER_NAME, makeAccessTokenHeaderValue(accessToken))
+                        }.andExpect {
+                            status { isOk() }
+                        }.andReturn()
+                Then("비밀번호 변경 확인") {
+                    val response: Response<PasswordChangeResponse> = apiResult.toResponse(om)
+                    response.message shouldBe "비밀번호 변경에 성공했습니다."
+                    val data = response.data!!
+                    data.id shouldBe identity.id.value
+                    data.email shouldBe identity.email
+                    data.role shouldBe identity.role.name
+
+                    val savedIdentity = repo.findById(IdentityId(identity.id.value))!!
+                    passwordEncoder.matches(request.changePassword!!, savedIdentity.passwordHash) shouldBe true
                 }
             }
         }

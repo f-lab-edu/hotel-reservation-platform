@@ -26,6 +26,7 @@ class SecurityConfig {
                         "/identity",
                         "/identity/verify/request",
                         "/identity/verify/confirm",
+                        "/identity/password/change",
                     ).permitAll()
                     .requestMatchers(
                         HttpMethod.GET,

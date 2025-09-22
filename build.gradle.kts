@@ -76,7 +76,7 @@ subprojects {
 
         sourceSets.main
             .get()
-            .java
+            .kotlin
             .srcDirs("src/main/generated")
     }
 }
