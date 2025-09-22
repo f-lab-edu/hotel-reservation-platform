@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import msa.hotel.services.auth.application.identity.command.RegisterIdentityCommand
 import msa.hotel.services.auth.domain.identity.model.Role
-import msa.hotel.services.auth.infrastructure.web.validation.StrongPassword
+import msa.hotel.services.auth.infrastructure.web.annotations.validation.StrongPassword
 
 @Suppress("ktlint:standard:no-blank-line-in-list")
 data class RegisterIdentityRequest(

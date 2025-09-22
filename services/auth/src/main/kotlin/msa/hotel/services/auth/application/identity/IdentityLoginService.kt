@@ -32,8 +32,9 @@ class IdentityLoginService(
         if (identity.status == Status.LOCKED) {
             checkLockedLogin(identity)
         }
-        if (identity.passwordHash != pwEncoder.encode(password)) {
+        if (!pwEncoder.matches(command.password, identity.passwordHash)) {
             checkFailLoginCount(identity)
+            throw ErrorCode.UNAUTHORIZED.exception("비밀번호가 올바르지 않습니다.")
         }
 
         return identity

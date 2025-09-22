@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage
 import msa.hotel.modules.idgenerator.IdGenerator
 import msa.hotel.modules.web.exception.ErrorCode
 import msa.hotel.services.auth.application.identity.command.EmailConfirmCommand
+import msa.hotel.services.auth.application.identity.command.PasswordChangeCommand
 import msa.hotel.services.auth.application.identity.command.RegisterIdentityCommand
 import msa.hotel.services.auth.application.identity.command.SendVerifyEmailCommand
 import msa.hotel.services.auth.application.identity.dto.IdentityDto
@@ -123,6 +124,27 @@ class IdentityService(
         identity.verifyMail()
         repo.save(identity)
         emailVerifyTokenRepo.deleteCodeByUserId(identity.id.value)
+
+        return IdentityDto.from(identity)
+    }
+
+    fun changePassword(command: PasswordChangeCommand): IdentityDto {
+        val userInfo = command.authInfo.tokenUserInfo
+        val identity =
+            repo.findById(IdentityId(userInfo.userId))
+                ?: throw ErrorCode.CONFLICT.exception("인증 정보와 일치하는 등록 정보가 존재하지 않습니다")
+
+        if (!pwEncoder.matches(command.currentPassword, identity.passwordHash)) {
+            throw ErrorCode.VALIDATION_ERROR.exception("현재 비밀번호가 올바르지 않습니다")
+        }
+
+        val pwValidResult = PasswordPolicy.validate(command.changePassword)
+        if (!pwValidResult.isValid) {
+            throw ErrorCode.VALIDATION_ERROR.exception("변경하려는 비밀번호가 비밀번호 정책에 위반됩니다 : ${pwValidResult.errorCause}")
+        }
+
+        identity.updatePassword(pwEncoder.encode(command.changePassword))
+        repo.save(identity)
 
         return IdentityDto.from(identity)
     }

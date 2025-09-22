@@ -1,12 +1,16 @@
 package msa.hotel.services.auth.infrastructure.web.identity
 
 import jakarta.validation.Valid
+import msa.hotel.modules.jwt.token.dto.TokenAuthInfo
 import msa.hotel.modules.web.response.Response
 import msa.hotel.services.auth.application.identity.IdentityService
 import msa.hotel.services.auth.application.identity.dto.IdentityDto
 import msa.hotel.services.auth.domain.identity.policy.EmailVerifyPolicy
+import msa.hotel.services.auth.infrastructure.web.annotations.authinfo.AuthInfo
 import msa.hotel.services.auth.infrastructure.web.identity.dto.EmailConfirmRequest
 import msa.hotel.services.auth.infrastructure.web.identity.dto.EmailConfirmResponse
+import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeRequest
+import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeResponse
 import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityRequest
 import msa.hotel.services.auth.infrastructure.web.identity.dto.RegisterIdentityResponse
 import msa.hotel.services.auth.infrastructure.web.identity.dto.SendVerifyEmailRequest
@@ -72,5 +76,24 @@ class IdentityController(
 
         // 별도 View Client 부재로 간단한 알림창으로 응답 구현
         return EmailVerifyPolicy.confirmResponse(data.email)
+    }
+
+    @PostMapping("/password/change")
+    fun changePassword(
+        @Valid
+        @RequestBody
+        request: PasswordChangeRequest,
+        @AuthInfo
+        authInfo: TokenAuthInfo,
+    ): Response<PasswordChangeResponse> {
+        val command = request.toPasswordChangeCommand(authInfo)
+        val identity: IdentityDto = identityService.changePassword(command)
+
+        val data = PasswordChangeResponse.from(identity)
+
+        return Response.create(
+            message = "비밀번호 변경에 성공했습니다.",
+            data = data,
+        )
     }
 }

@@ -94,4 +94,9 @@ class Identity(
         failedLoginCount = 0u
         lastLoginAt = loginAt
     }
+
+    fun updatePassword(passwordHash: String) {
+        this.passwordHash = passwordHash
+        this.passwordUpdatedAt = Instant.now()
+    }
 }
