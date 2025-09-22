@@ -6,7 +6,6 @@ import io.kotest.extensions.spring.SpringTestExtension
 import io.kotest.extensions.spring.SpringTestLifecycleMode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import jakarta.servlet.http.Cookie
 import msa.hotel.modules.jwt.token.JwtDecoder
 import msa.hotel.services.auth.application.identity.IdentityService
 import msa.hotel.services.auth.application.identity.command.RegisterIdentityCommand
@@ -15,7 +14,6 @@ import msa.hotel.services.auth.domain.auth.port.AuthTokenRepository
 import msa.hotel.services.auth.domain.identity.model.Role
 import msa.hotel.services.auth.domain.identity.port.IdentityRepository
 import msa.hotel.services.auth.infrastructure.persistence.redis.key.AuthTokenKey.makeRefreshTokenKey
-import msa.hotel.services.auth.infrastructure.web.auth.dto.LoginRequest
 import msa.hotel.services.auth.infrastructure.web.auth.dto.LogoutRequest
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_PREFIX
@@ -47,29 +45,6 @@ class AuthIntegrationTest(
     private val jwtDecoder: JwtDecoder,
     private val redisTemplate: RedisTemplate<String, String>,
 ) : BehaviorSpec({
-        fun performLoginAndGetTokens(request: LoginRequest): Pair<String, Cookie> {
-            val result =
-                mockMvc
-                    .post("/auth/login") {
-                        contentType = MediaType.APPLICATION_JSON
-                        content = om.writeValueAsString(request)
-                    }.andReturn()
-
-            val accessToken = result.response.getHeader(T_ACCESS_HEADER_NAME)!!.substring(7)
-            val refreshTokenCookie = result.response.getCookie(T_REFRESH_COOKIE_NAME)!!
-            return Pair(accessToken, refreshTokenCookie)
-        }
-
-        fun createLoginRequest(
-            command: RegisterIdentityCommand,
-            deviceId: String,
-        ) = LoginRequest(
-            email = command.email,
-            password = command.password,
-            role = command.role,
-            deviceId = deviceId,
-        )
-
         Given("이메일 인증까지 완료한 Identity 제공 및 기본 로그인 디바이스 정보") {
             val registerCommand =
                 RegisterIdentityCommand(
@@ -125,12 +100,12 @@ class AuthIntegrationTest(
                 for (i in 1..maxDeviceCount) {
                     sleep(100)
                     val loginRequest = createLoginRequest(registerCommand, "device-$i")
-                    performLoginAndGetTokens(loginRequest)
+                    performLoginAndGetTokens(loginRequest, mockMvc, om)
                 }
 
                 val newDeviceId = "device-${maxDeviceCount + 1}"
                 val exceededLoginRequest = createLoginRequest(registerCommand, newDeviceId)
-                performLoginAndGetTokens(exceededLoginRequest)
+                performLoginAndGetTokens(exceededLoginRequest, mockMvc, om)
 
                 Then("제일 오래전에 접속한 기기 세션 자동 로그아웃") {
                     val refreshTokensKey =
@@ -152,7 +127,7 @@ class AuthIntegrationTest(
 
             When("로그인 이후 인증 토큰 재발급 API 요청") {
                 val request = createLoginRequest(registerCommand, loginDeviceId)
-                val (pastAccessToken, pastRefreshTokenCookie) = performLoginAndGetTokens(request)
+                val (pastAccessToken, pastRefreshTokenCookie) = performLoginAndGetTokens(request, mockMvc, om)
                 val pastRefreshToken = pastRefreshTokenCookie.value
 
                 val result =
@@ -199,7 +174,7 @@ class AuthIntegrationTest(
 
             When("로그인 이후 로그아웃 API 요청") {
                 val request = createLoginRequest(registerCommand, loginDeviceId)
-                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(request)
+                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(request, mockMvc, om)
 
                 val result =
                     mockMvc
@@ -228,11 +203,11 @@ class AuthIntegrationTest(
 
             When("로그인한 인증 정보로 다른 Device로 접속 세션 로그아웃 API 요청") {
                 val loginRequest = createLoginRequest(registerCommand, loginDeviceId)
-                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest)
+                val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest, mockMvc, om)
 
                 val anotherDeviceId = "another-device"
                 val anotherLoginRequest = createLoginRequest(registerCommand, anotherDeviceId)
-                val anotherAccessToken = performLoginAndGetTokens(anotherLoginRequest).first
+                val anotherAccessToken = performLoginAndGetTokens(anotherLoginRequest, mockMvc, om).first
 
                 val logoutRequest = LogoutRequest(anotherDeviceId)
 
@@ -270,7 +245,7 @@ class AuthIntegrationTest(
                 val accessTokens = mutableListOf<String>()
                 for (i in 1..3) {
                     val loginRequest = createLoginRequest(registerCommand, "device-$i")
-                    accessTokens.add(performLoginAndGetTokens(loginRequest).first)
+                    accessTokens.add(performLoginAndGetTokens(loginRequest, mockMvc, om).first)
                 }
                 mockMvc
                     .delete("/auth/logout-all") {
@@ -301,7 +276,7 @@ class AuthIntegrationTest(
                     val deviceId = "device-$i"
                     deviceIds.add(deviceId)
                     val loginRequest = createLoginRequest(registerCommand, deviceId)
-                    accessTokens.add(performLoginAndGetTokens(loginRequest).first)
+                    accessTokens.add(performLoginAndGetTokens(loginRequest, mockMvc, om).first)
                 }
 
                 val result =

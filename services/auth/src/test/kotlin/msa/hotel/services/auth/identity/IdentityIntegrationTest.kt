@@ -6,19 +6,18 @@ import io.kotest.extensions.spring.SpringTestExtension
 import io.kotest.extensions.spring.SpringTestLifecycleMode
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import jakarta.servlet.http.Cookie
 import msa.hotel.modules.web.response.Response
 import msa.hotel.modules.web.support.toResponse
 import msa.hotel.services.auth.application.identity.IdentityService
 import msa.hotel.services.auth.application.identity.command.RegisterIdentityCommand
+import msa.hotel.services.auth.auth.createLoginRequest
+import msa.hotel.services.auth.auth.performLoginAndGetTokens
 import msa.hotel.services.auth.domain.identity.model.IdentityId
 import msa.hotel.services.auth.domain.identity.model.Role
 import msa.hotel.services.auth.domain.identity.model.Status
 import msa.hotel.services.auth.domain.identity.port.EmailVerifyCodeRepository
 import msa.hotel.services.auth.domain.identity.port.IdentityRepository
-import msa.hotel.services.auth.infrastructure.web.auth.dto.LoginRequest
 import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_ACCESS_HEADER_NAME
-import msa.hotel.services.auth.infrastructure.web.auth.header.HeaderConstants.T_REFRESH_COOKIE_NAME
 import msa.hotel.services.auth.infrastructure.web.auth.header.makeAccessTokenHeaderValue
 import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeRequest
 import msa.hotel.services.auth.infrastructure.web.identity.dto.PasswordChangeResponse
@@ -147,29 +146,6 @@ class IdentityIntegrationTest(
             }
         }
 
-        fun performLoginAndGetTokens(request: LoginRequest): Pair<String, Cookie> {
-            val result =
-                mockMvc
-                    .post("/auth/login") {
-                        contentType = MediaType.APPLICATION_JSON
-                        content = om.writeValueAsString(request)
-                    }.andReturn()
-
-            val accessToken = result.response.getHeader(T_ACCESS_HEADER_NAME)!!.substring(7)
-            val refreshTokenCookie = result.response.getCookie(T_REFRESH_COOKIE_NAME)!!
-            return Pair(accessToken, refreshTokenCookie)
-        }
-
-        fun createLoginRequest(
-            command: RegisterIdentityCommand,
-            deviceId: String,
-        ) = LoginRequest(
-            email = command.email,
-            password = command.password,
-            role = command.role,
-            deviceId = deviceId,
-        )
-
         Given("이메일 검증까지 완료된 후 로그인 완료") {
             val registerCommand =
                 RegisterIdentityCommand(
@@ -183,7 +159,7 @@ class IdentityIntegrationTest(
             repo.save(identity)
 
             val loginRequest = createLoginRequest(registerCommand, "test-device-1")
-            val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest)
+            val (accessToken, refreshTokenCookie) = performLoginAndGetTokens(loginRequest, mockMvc, om)
 
             When("로그인된 인증 정보로 비밀번호 변경 API 요청") {
                 val request =
