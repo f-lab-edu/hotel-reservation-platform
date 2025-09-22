@@ -180,9 +180,10 @@ class IdentityIntegrationTest(
                 Then("비밀번호 변경 확인") {
                     val response: Response<PasswordChangeResponse> = apiResult.toResponse(om)
                     response.message shouldBe "비밀번호 변경에 성공했습니다."
-                    response.data!!.id shouldBe identity.id.value
-                    response.data!!.email shouldBe identity.email
-                    response.data!!.role shouldBe identity.role.name
+                    val data = response.data!!
+                    data.id shouldBe identity.id.value
+                    data.email shouldBe identity.email
+                    data.role shouldBe identity.role.name
 
                     val savedIdentity = repo.findById(IdentityId(identity.id.value))!!
                     passwordEncoder.matches(request.changePassword!!, savedIdentity.passwordHash) shouldBe true
